@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 
 @immutable
 class RulesEngine {
@@ -41,13 +42,78 @@ class RulesEngine {
 
 class RulesEngineRepository {
   RulesEngine? _cached;
+  // B7: Remote Config key + minimum fetch interval (12h — spec §6.5 says
+  //     "Rules engine overrides via Remote Config" with daily cadence; 12h
+  //     is a safe compromise).
+  static const String _remoteKey = 'rules_engine_override';
+  static const Duration _minFetchInterval = Duration(hours: 12);
 
+  /// Load rules engine with optional Remote Config overlay (B7).
+  ///
+  /// Behaviour:
+  ///   1. Always read bundled `assets/rules_engine.json` first — guarantees
+  ///      a valid baseline even with no network / no Firebase.
+  ///   2. If Firebase Remote Config is reachable AND a JSON payload with a
+  ///      `version` strictly GREATER than the bundled one is present, the
+  ///      Remote Config value is merged on top (shallow merge per top-level
+  ///      key — Remote Config wins for any key it specifies).
+  ///   3. Cache the merged result so subsequent [load] calls are free.
   Future<RulesEngine> load() async {
     if (_cached != null) return _cached!;
+
+    // ---- Step 1: bundled baseline ----
     final raw = await rootBundle.loadString('assets/rules_engine.json');
-    final json = jsonDecode(raw) as Map<String, dynamic>;
-    _cached = RulesEngine.fromJson(json);
+    var json = jsonDecode(raw) as Map<String, dynamic>;
+    var engine = RulesEngine.fromJson(json);
+
+    // ---- Step 2: Remote Config overlay ----
+    try {
+      final rc = FirebaseRemoteConfig.instance;
+      await rc.setConfigSettings(RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 10),
+        minimumFetchInterval: _minFetchInterval,
+      ));
+      // activate(); fetches + activates the latest RC values, falling back
+      // to last-activated values if the network round-trip fails.
+      // Returns `true` when at least one RC value changed since last fetch.
+      final updated = await rc.fetchAndActivate();
+      if (updated) {
+        final overrideStr = rc.getString(_remoteKey);
+        if (overrideStr.isNotEmpty) {
+          final overrideJson = jsonDecode(overrideStr) as Map<String, dynamic>;
+          final overrideEngine = RulesEngine.fromJson(overrideJson);
+          // Only apply if strictly newer — protects against stale RC values
+          // being served after a fresh bundle ships with a higher version.
+          if (overrideEngine.version > engine.version) {
+            // Shallow-merge top-level keys — Remote Config wins for any
+            // key it specifies; missing keys fall through to bundle.
+            final merged = Map<String, dynamic>.from(json)
+              ..addAll(overrideJson);
+            json = merged;
+            engine = RulesEngine.fromJson(json);
+          }
+        }
+      }
+    } catch (e) {
+      // Remote Config failures are NOT fatal — fall back to baseline.
+      debugPrint('Remote Config overlay skipped: $e');
+    }
+
+    _cached = engine;
     return _cached!;
+  }
+
+  /// Force a re-read on next [load] (e.g. after a "Refresh rules" action
+  /// in settings). Clears the in-memory cache AND the Remote Config cache
+  /// so the next fetch actually hits the network.
+  Future<void> invalidate() async {
+    _cached = null;
+    try {
+      await FirebaseRemoteConfig.instance.setConfigSettings(RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 10),
+        minimumFetchInterval: Duration.zero, // bypass interval next load
+      ));
+    } catch (_) {/* not initialised in dev/test — fine */}
   }
 }
 

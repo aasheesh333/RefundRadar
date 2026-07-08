@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/providers/auth_provider.dart';
+import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/shared/widgets/stepper_timeline.dart';
@@ -113,7 +116,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: FilledButton(
-                            onPressed: () {
+                            onPressed: () async {
                               // B4 analytics: wizard_completed (spec §10).
                               // Outcome follows the level reached:
                               //   0 = escalate (L1 only)
@@ -130,7 +133,28 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                                     daysOpen: 0,
                                     wasWon: false,
                                   );
-                              context.go('/reminders');
+                              // B6: fire reminder sync for this dispute so
+                              //     the user's next-step reminder is in place
+                              //     before navigating to /reminders.
+                              //     Fire-and-forget within a try-catch so a
+                              //     failure here doesn't trip the analyser
+                              //     guards.
+                              try {
+                                final uid = await ref.read(userIdProvider.future);
+                                if (uid != null) {
+                                  final disputes = await ref.read(
+                                      disputesProvider(uid).future);
+                                  final d = disputes
+                                      .where((e) => e.id == widget.disputeId)
+                                      .firstOrNull;
+                                  if (d != null) {
+                                    await syncRemindersForDispute(ref, uid, d);
+                                  }
+                                }
+                              } catch (e) {
+                                // Don't block navigation on reminder sync.
+                              }
+                              if (context.mounted) context.go('/reminders');
                             },
                             style: FilledButton.styleFrom(
                               backgroundColor: const Color(0xFF0B3D2E),

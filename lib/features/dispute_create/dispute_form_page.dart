@@ -7,6 +7,7 @@ import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
@@ -105,7 +106,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       createdAt: DateTime.now(),
     );
     final repo = ref.read(disputeRepositoryProvider);
-    await repo.saveDispute(uid, dispute);
+    final saved = await repo.saveDispute(uid, dispute);
     // B3: increment free-tier counter (no-op for premium, but cheap).
     if (!isPremium) {
       await ref.read(freeDisputesUsedProvider.notifier).increment();
@@ -115,6 +116,10 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
           disputeType: dispute.type.id,
           isPremium: isPremium,
         );
+    // B6: generate / sync reminders + schedule local notifications.
+    //    Safe no-op if Firestore isn't reachable; failures are caught by
+    //    the outer zone and reported to Crashlytics.
+    await syncRemindersForDispute(ref, uid, saved);
     if (mounted) context.go('/home');
   }
 

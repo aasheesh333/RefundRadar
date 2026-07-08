@@ -90,7 +90,7 @@ Phase checklist cross-referenced to `Refund Plan.html` Section 7.
 - ✅ **Pass 12 — full `flutter analyze` clean (0 issues), debug APK builds** (`build/app/outputs/flutter-apk/app-debug.apk`, ~159 MB). Pre-existing lints (_rot helper, dart:ui redundant import, deprecated Color getters, missing RulesEngine type, FCM curly braces) all fixed.
 - 📊 **UI/UX redesign of all 13 mockup screens: 100% complete.**
 
-### Phase 3 — Monetization & polish ⚠️ IN PROGRESS (B2/B3/B4/B5 done, B1/B6/B7/B8 pending)
+### Phase 3 — Monetization & polish ✅ COMPLETE (B1/B2/B3/B4/B5/B6/B7/B8 + OneSignal done)
 - ✅ **B2 Crashlytics wired** — `lib/main.dart` async error-zone + `FlutterError.onError` + `PlatformDispatcher.onError` forwarding to `FirebaseCrashlytics.instance.recordError` / `recordFlutterFatalError`. Falls back to console-print when Firebase isn't initialised.
 - ✅ **B4 AnalyticsService** — `lib/services/analytics_service.dart` typed surface for `dispute_created` / `wizard_completed` / `paywall_view` / `purchase` + `premium` user property + `app_open`. Provider `analyticsServiceProvider`. Resilient to missing Firebase. **Call-sites wired**:
   - `paywall_view` → `lib/features/paywall/paywall_page.dart:64` `_logView()` (post-frame on first build, trigger from query param)
@@ -177,8 +177,10 @@ This is the **most detailed backlog item.** Spec section `Refund Plan.html` Sect
 ## 5. Top backlog items (ordered by importance)
 
 ### Build-critical (block release)
-- **B1** — Template library: author 51 JSON assets (EN+HI translated), build `TemplateRepository`, refactor `template_library_page.dart` to consume it. (Detailed plan in §3 above.) Pre-requisite for paywall gating + letter generator to actually mean something.
-- **B2** — Crashlytics wiring in `main.dart`: `FlutterError.onError`, `PlatformDispatcher.instance.onError`, async zone wrapper.
+- ✅ **B1** — Template library: 51 JSON assets (EN+HI) live under `assets/templates/{upi,fastag,bank_charges,wrong_transfer,advanced}/`; `lib/data/models/template.dart` immutable model with `fromJson`/`titleFor`/`bodyFor`/`fill`; `lib/data/repositories/template_repository.dart` with `templatesProvider` + `isLocked()`; `template_library_page.dart` rewritten to consume `templatesProvider`. Done Jul 8 2026.
+- ✅ **B2** — Crashlytics wiring in `main.dart`: `FlutterError.onError`, `PlatformDispatcher.instance.onError`, async zone wrapper.
+- ✅ **OneSignal** — `lib/services/onesignal_service.dart` configure()/syncTags()/subscriptionId; init in `main.dart` via `ONESIGNAL_APP_ID` + `ONESIGNAL_API_KEY` dart-defines; tag sync mirrors FCM 9 topics in `fcm_reevaluater.dart`. Package `onesignal_flutter ^5.2.2` (resolved 5.6.3). Coexists with FCM (FCM primary, OneSignal secondary). Done Jul 8 2026.
+- ✅ **Release APK** — GitHub Actions release job built signed `app-release.apk` (60.3MB) at run [28970645413](https://github.com/aasheesh333/RefundRadar/actions/runs/28970645413) on Jul 8 2026 using env-based release-keystore signing + all 14 GitHub secrets (5 Firebase + RevenueCat + 4 keystore + 2 OneSignal + VERSION_CODE/N). Commit `826c9a0` on `main`. Workflow name is "Build Debug APK" (legacy name; rename later if needed); dispatch input `build_type=release` triggers signed release job.
 
 ### Monetization (Phase 3 🔑 ASK USER for RevenueCat keys)
 - **B3** — RevenueCat end-to-end: import `purchases_flutter`, `Purchases.configure()` with keys from user, fetch Offerings, wire paywall plan cards to `purchasePackage()`, persist `isPremium`, restore purchases. Add missing gates: 2nd-dispute block on `/disputes/form`, lock Ombudsman letter generator for free users. 🔑 Needs public SDK keys from user (RevenueCat dashboard).
@@ -188,12 +190,12 @@ This is the **most detailed backlog item.** Spec section `Refund Plan.html` Sect
 - **B5** — FCM wiring: add a `Provider` that watches `userIdProvider` + `disputesProvider` + `isPremiumProvider` + `localeProvider` and calls `FcmTopicService.reevaluate(...)` on every change. Already implemented — just needs dispatch.
 
 ### UX gaps
-- **B6** — Real reminders implementation: `Reminder` model + `FirestoreReminderRepository` (reads `users/{uid}/reminders`) + `remindersProvider` + `flutter_local_notifications` scheduling in `notification_service.dart`.
-- **B8** — Loading skeletons (shimmer) + retry-able branded error banners; replace generic `CircularProgressIndicator()` across screens.
+- ✅ **B6** — Real reminders implementation: `Reminder` model + `ReminderStage` enum (4 stages); `FirestoreReminderRepository` (CRUD + idempotent `syncForDispute`); `ReminderGenerator.forDispute()` derives reminders from dispute's `filedDates` + RBI TAT (30-day L1 → 7-day L2 → 30-day ombudsman follow-up, plus 7-day draft-L1 nudge); `remindersProvider` StreamProvider.family live Firestore stream; notifications scheduled via existing `NotificationService.scheduleDeadlineReminder`. Wired: `dispute_form_page.dart` after save, `dispute_detail_page.dart` on `_toggleResolved`, `wizard_page.dart` "Done - set reminder" button. Page rewritten: `reminders_page.dart` is now a `ConsumerWidget` with cards (emoji tile, title, body, overdue/due-today/in-N-days badge, Dismiss + Open actions, empty state). Done Jul 8 2026.
+- ✅ **B8** — Loading skeletons (`skeleton.dart` with `SkeletonBox` + `SkeletonList` shimmer) + retry-able branded error banners (`branded_error_banner.dart`). Wired into `home_page.dart`, `template_library_page.dart`, `dispute_detail_page.dart`. Done Jul 8 2026.
 
 ### Data robustness
-- **B7** — Remote Config overlay in `RulesEngineRepository`: `firebase_remote_config` import, `fetchAndActivate()`, merge JSON payload if version is higher.
-- **B8** — `FirebaseFirestore.instance.enablePersistence(...)` + cache size in `main.dart` before `runApp`.
+- ✅ **B7** — Remote Config overlay in `RulesEngineRepository`: `FirebaseRemoteConfig.fetchAndActivate()` overlays the bundled `rules_engine.json` with a `rules_engine_override` Remote Config key (string-encoded JSON) — applied only when the Remote Config value's `version` is strictly greater than the bundled version. Failures fall back to the bundled baseline (debug builds without Firebase never break). Added `invalidate()` for "Refresh rules" actions. Done Jul 8 2026.
+- ✅ **B8** — `FirebaseFirestore.instance.settings` with `persistenceEnabled: true` + `cacheSizeBytes: 50 MB` set in `_initFirebase()` (only when Firebase really initialised, since `Settings` would throw on a no-op Firebase). Done Jul 8 2026.
 
 ### UI redesign (Passes 6–12 listing above)
 - Each pass should land ~1–3 files, run `dart analyze <file>` after each, full `flutter analyze` at end of Pass 12.

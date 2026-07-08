@@ -7,10 +7,13 @@ import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/extensions/dispute_type_display.dart';
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/rbi_timeline.dart';
 import 'package:refund_radar/shared/widgets/activity_log.dart';
+import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
+import 'package:refund_radar/shared/widgets/skeleton.dart';
 
 class DisputeDetailPage extends ConsumerWidget {
   final String id;
@@ -41,10 +44,8 @@ class DisputeDetailPage extends ConsumerWidget {
             );
             return _DisputeBody(uid: uid, dispute: dispute);
           },
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
-          ),
-          error: (e, _) => Center(child: Text('Error: $e')),
+  loading: () => const SkeletonList(itemCount: 3),
+  error: (e, _) => BrandedErrorBanner(message: e.toString()),
         ),
       ),
     );
@@ -490,14 +491,15 @@ class _DisputeBody extends ConsumerWidget {
         ? DisputeStatus.filedL1
         : DisputeStatus.resolved;
     final repo = ref.read(disputeRepositoryProvider);
-    await repo.saveDispute(
-      uid,
-      dispute.copyWith(
-        status: nextStatus,
-        resolvedAt: nextStatus == DisputeStatus.resolved ? DateTime.now() : null,
-      ),
+    final updated = dispute.copyWith(
+      status: nextStatus,
+      resolvedAt: nextStatus == DisputeStatus.resolved ? DateTime.now() : null,
     );
+    await repo.saveDispute(uid, updated);
+    // B6: lifecycle changed → re-sync reminders + local notifications.
+    await syncRemindersForDispute(ref, uid, updated);
     ref.invalidate(disputesProvider(uid));
+    ref.invalidate(remindersProvider(uid));
   }
 }
 

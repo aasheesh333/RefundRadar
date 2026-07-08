@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -10,6 +11,7 @@ import 'package:refund_radar/core/router/app_router.dart';
 import 'package:refund_radar/core/theme/app_theme.dart';
 import 'package:refund_radar/core/providers/theme_provider.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
+import 'package:refund_radar/services/notification_service.dart';
 import 'package:refund_radar/services/revenue_cat_service.dart';
 import 'package:refund_radar/services/onesignal_service.dart';
 import 'package:refund_radar/firebase_options.dart';
@@ -44,6 +46,22 @@ Future<void> _initFirebase() async {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true; // handled — don't re-throw to the platform
     };
+
+    // B8: enable Firestore offline persistence. Cache 50 MB so dispute /
+    //     reminder reads + writes survive transient network loss — the
+    //     app is info-only so even a multi-day outage keeps the user's
+    //     drafts + status queries working. Done inside the
+    //     `_crashlyticsEnabled` branch because it only works for real
+    //     Firebase projects. Failures here are non-fatal: a re-activated
+    //     cache from a previous run is preserved by the SDK automatically.
+    try {
+      FirebaseFirestore.instance.settings = const Settings(
+        persistenceEnabled: true,
+        cacheSizeBytes: 50 * 1024 * 1024, // 50 MB
+      );
+    } catch (e) {
+      debugPrint('Firestore persistence not enabled: $e');
+    }
   }
 }
 
@@ -59,6 +77,10 @@ void main() {
     //    this once it succeeds.
     final container = ProviderContainer();
     await hydratePersistedAppState(container);
+    // 5a. Initialise local notifications (B6 reminders local push). Safe
+    //     no-op if permission hasn't been granted yet — user grants via
+    //     settings UI or the onboarding SMS screen.
+    await container.read(notificationServiceProvider).init();
     // 5. Configure RevenueCat in the same container so it can write into
     //    `isPremiumProvider` (and persist it) on purchase / restore.
     await container.read(revenueCatServiceProvider).configure();

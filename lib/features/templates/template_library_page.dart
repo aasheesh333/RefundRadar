@@ -9,6 +9,8 @@ import '../../data/repositories/rules_engine_repository.dart';
 import '../../data/repositories/template_repository.dart';
 import '../../shared/widgets/filter_pills.dart';
 import '../../shared/widgets/status_pill.dart';
+import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
+import 'package:refund_radar/shared/widgets/skeleton.dart';
 
 class TemplateLibraryPage extends ConsumerStatefulWidget {
   const TemplateLibraryPage({super.key});
@@ -44,13 +46,11 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                   freeIds: rules.freeTemplateIds.toSet(),
                   localeCode: locale.languageCode,
                 ),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                error: (e, _) => Center(child: Text('Error: $e')),
-              ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
+    loading: () => const SkeletonList(itemCount: 4),
+    error: (e, _) => BrandedErrorBanner(message: e.toString()),
+    ),
+    loading: () => const SkeletonList(itemCount: 4),
+    error: (e, _) => BrandedErrorBanner(message: e.toString()),
         ),
       ),
     );

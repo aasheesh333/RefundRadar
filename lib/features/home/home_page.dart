@@ -8,6 +8,7 @@ import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/owed_counter_card.dart';
 import 'package:refund_radar/shared/widgets/dispute_card.dart';
+import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -278,35 +279,5 @@ class _Error extends StatelessWidget {
   final String message;
   const _Error({required this.message});
   @override
-  Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline,
-                  color: AppColors.error, size: 48),
-              const SizedBox(height: 12),
-              Text(
-                'Something went wrong',
-                style: const TextStyle(
-                  fontFamily: AppTypography.family,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimaryLight,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondaryLight,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+  Widget build(BuildContext context) => BrandedErrorBanner(message: message);
 }
