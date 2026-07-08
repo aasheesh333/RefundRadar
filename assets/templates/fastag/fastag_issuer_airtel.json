@@ -1,0 +1,10 @@
+{
+  "id": "fastag_issuer_airtel",
+  "titleEn": "FASTag — Airtel Payments Bank dispute",
+  "titleHi": "FASTag — Airtel Payments बैंक विवाद",
+  "category": "FASTag",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "To: payments.customers@airtelbank.com\n\nSubject: FASTag Dispute — Vehicle {VEHICLE_NO} — Txn {TXN_ID}\n\nAirtel Payments Bank FASTag team,\n\nDispute for my Airtel FASTag (Vehicle: {VEHICLE_NO}, Tag ID: {TAG_ID}).\n\nTxn ID: {TXN_ID}\nDate & time: {TXN_DATETIME}\nToll plaza: {PLAZA_NAME}\nLane: {LANE_ID}\nAmount: Rs. {AMOUNT}\nIssue type: {ISSUE_TYPE}\n\nResolution requested: chargeback of Rs. {AMOUNT} within 7 days. Else escalation to IHMCL and 1033.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: payments.customers@airtelbank.com\n\nविषय: फास्टैग विवाद — वाहन {VEHICLE_NO} — ट्रांज़ैक्शन {TXN_ID}\n\nAirtel Payments बैंक फास्टैग टीम,\n\nमेरे Airtel FASTag (वाहन: {VEHICLE_NO}, टैग ID: {TAG_ID}) विवाद।\n\nTxn ID: {TXN_ID}\nदिनांक व समय: {TXN_DATETIME}\nटोल प्लाज़ा: {PLAZA_NAME}\nलेन: {LANE_ID}\nराशि: Rs. {AMOUNT}\nसमस्या प्रकार: {ISSUE_TYPE}\n\nराहत: 7 दिनों के भीतर Rs. {AMOUNT} चार्जबैक। अन्यथा IHMCL और 1033 पर शिकायत।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

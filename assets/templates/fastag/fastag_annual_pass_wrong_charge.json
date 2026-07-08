@@ -1,0 +1,10 @@
+{
+  "id": "fastag_annual_pass_wrong_charge",
+  "titleEn": "FASTag — Annual Pass (Rajmargyatra) wrong charge",
+  "titleHi": "FASTag — वार्षिक पास (राजमार्गयात्रा) गलत शुल्क",
+  "category": "FASTag",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "To: support@ihmcl.co.in\nCC: rajmargyatra-support@ihmcl.co.in\n\nSubject: Annual Pass (Rs. 3,075) — Per-crossing charge wrongly applied — Vehicle {VEHICLE_NO}\n\nIHMCL / NHAI,\n\nI have a valid FASTag Annual Pass (Rs. 3,075, effective from 1 Apr 2026; via Rajmargyatra app) linked to my vehicle {VEHICLE_NO} (Tag ID {TAG_ID}).\n\nDespite the active pass, on {TXN_DATETIME} at plaza {PLAZA_NAME}, my FASTag was charged a per-crossing fee of Rs. {AMOUNT} (Txn ID {TXN_ID}) instead of allowing free crossing under the 200-crossing / 12-month entitlement.\n\nAnnual Pass activation date: {PASS_ACTIVATION_DATE}\nCrossings used so far: {CROSSINGS_USED}\n\nWrongful charge: Rs. {AMOUNT}\n\nRefund the Rs. {AMOUNT} and confirm reunion of my pass counter.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: support@ihmcl.co.in\nCC: rajmargyatra-support@ihmcl.co.in\n\nविषय: वार्षिक पास (Rs. 3,075) — प्रति-क्रॉसिंग शुल्क गलत लगाया — वाहन {VEHICLE_NO}\n\nIHMCL / NHAI,\n\nमेरे वाहन {VEHICLE_NO} (टैग ID {TAG_ID}) के लिए एक वैध FASTag वार्षिक पास (Rs. 3,075, 1 अप्रैल 2026 से प्रभावी; राजमार्गयात्रा ऐप के ज़रिए) है।\n\nपास सक्रिय होने पर भी, {TXN_DATETIME} को प्लाज़ा {PLAZA_NAME} पर मेरे FASTag से प्रति-क्रॉसिंग शुल्क Rs. {AMOUNT} (Txn ID {TXN_ID}) काटा गया, 200-क्रॉसिंग / 12-माह अधिकार के तहत मुफ़्त क्रॉसिंग के बजाय।\n\nवार्षिक पास सक्रियण तिथि: {PASS_ACTIVATION_DATE}\nअब तक उपयोग की क्रॉसिंग: {CROSSINGS_USED}\n\nगलत शुल्क: Rs. {AMOUNT}\n\nRs. {AMOUNT} रिफंड करें और मेरे पास काउंटर के सही संयोजन की पुष्टि करें।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

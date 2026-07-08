@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
+import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/shared/widgets/stepper_timeline.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 
@@ -112,7 +113,25 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: FilledButton(
-                            onPressed: () => context.go('/reminders'),
+                            onPressed: () {
+                              // B4 analytics: wizard_completed (spec §10).
+                              // Outcome follows the level reached:
+                              //   0 = escalate (L1 only)
+                              //   1 = escalate (L2 - NPCI)
+                              //   2+ = ombudsman (L3 - RBI)
+                              // Days open unknown here without DB lookup;
+                              // pass 0 — the analytics layer accepts it
+                              // (server can enrich later from Firestore).
+                              final outcome = _currentLevel >= 2
+                                  ? 'ombudsman'
+                                  : 'escalate';
+                              ref.read(analyticsServiceProvider).logWizardCompleted(
+                                    outcome: outcome,
+                                    daysOpen: 0,
+                                    wasWon: false,
+                                  );
+                              context.go('/reminders');
+                            },
                             style: FilledButton.styleFrom(
                               backgroundColor: const Color(0xFF0B3D2E),
                             ),
@@ -133,7 +152,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
     );
   }
 
-  List<_Step> _buildSteps(rules) {
+  List<_Step> _buildSteps(RulesEngine rules) {
     return [
       _Step(
         title: 'Level 1 - UPI app / bank',

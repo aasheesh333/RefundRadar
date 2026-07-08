@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_followup_30day",
+  "titleEn": "Bank charge — 30-day follow-up",
+  "titleHi": "बैंक शुल्क — 30 दिन फॉलो-अप",
+  "category": "Bank charges",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "Subject: Follow-up — Bank Charge Complaint — 30 days elapsed — Ref {TICKET_NO}\n\nTo: {BANK_NAME} Nodal Officer,\n\nRef: my complaint {TICKET_NO} dated {COMPLAINT_DATE} regarding a Rs. {AMOUNT} improper charge on {TXN_DATE} (Txn ID {TXN_ID}).\n\n30 days have passed without satisfactory resolution. Resolve within 48 hours, or I will approach the RBI Ombudsman under RB-IOS 2026 within 7 days.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "विषय: फॉलो-अप — बैंक शुल्क शिकायत — 30 दिन बीत गए — संदर्भ {TICKET_NO}\n\nप्रति: {BANK_NAME} नोडल अधिकारी,\n\nसंदर्भ: मेरी शिकायत {TICKET_NO}, दिनांक {COMPLAINT_DATE}, एक Rs. {AMOUNT} अनुचित शुल्क को लेकर, दिनांक {TXN_DATE}, Txn ID {TXN_ID}।\n\nसंतोषजनक हल के बिना 30 दिन बीत चुके हैं। 48 घंटे के भीतर हल करें, अन्यथा मैं 7 दिनों के भीतर RB-IOS 2026 तहत RBI लोकपाल के पास जाऊँगा/जाऊँगी।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

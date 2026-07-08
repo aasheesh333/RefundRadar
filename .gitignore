@@ -30,3 +30,13 @@ GoogleService-Info.plist
 .env
 .env.local
 secrets/
+
+# Build artifacts
+android/build/
+/android/app/build/
+
+# Playwright MCP screenshots/snapshots
+.playwright-mcp/
+
+# Mockup HTML + screenshots (kept locally only)
+ss/

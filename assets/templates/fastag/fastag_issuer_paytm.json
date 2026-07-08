@@ -1,0 +1,10 @@
+{
+  "id": "fastag_issuer_paytm",
+  "titleEn": "FASTag — Paytm Payments Bank (PPBL) migration notice",
+  "titleHi": "FASTag — Paytm Payments बैंक (PPBL) माइग्रेशन नोटिस",
+  "category": "FASTag",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "To: nodalofficer@paytmbank.com\nCC: support@paytmbank.com\n\nSubject: Paytm FASTag — Discontinue / Migrate / Refund balance — Vehicle {VEHICLE_NO}\n\nPaytm Payments Bank Ltd,\n\nThis concerns my Paytm FASTag (Vehicle: {VEHICLE_NO}, Tag ID: {TAG_ID}). As per RBI / NHAI direction, PPBL FASTags are discontinued w.e.f. 15 Mar 2024. My tag is no longer accepted at toll plazas and I have a balance of Rs. {AMOUNT} in my FASTag wallet.\n\nPlease:\n  1. Refund my unused FASTag wallet balance of Rs. {AMOUNT}.\n  2. Confirm closure of the PPBL FASTag.\n  3. Issue the security deposit refund.\n\nResolution expected within 7 days; else I will escalate to IHMCL and the RBI Ombudsman.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: nodalofficer@paytmbank.com\nCC: support@paytmbank.com\n\nविषय: Paytm FASTag — बंद / माइग्रेट / बैलेंस रिफंड — वाहन {VEHICLE_NO}\n\nPaytm Payments Bank Ltd,\n\nयह मेरे Paytm FASTag (वाहन: {VEHICLE_NO}, टैग ID: {TAG_ID}) से संबंधित है। RBI / NHAI निर्देशानुसार PPBL FASTag 15 मार्च 2024 से बंद कर दिए गए हैं। मेरा टैग टोल प्लाज़ा पर स्वीकार नहीं हो रहा और मेरे FASTag वॉलेट में Rs. {AMOUNT} बैलेंस है।\n\nकृपया:\n  1. मेरे अप्रयुक्त FASTag वॉलेट बैलेंस Rs. {AMOUNT} रिफंड करें।\n  2. PPBL FASTag बंद की पुष्टि करें।\n  3. सिक्योरिटी डिपॉज़िट रिफंड जारी करें।\n\n7 दिनों के भीतर हल अपेक्षित; अन्यथा IHMCL और RBI लोकपाल के पास जाऊँगा/जाऊँगी।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_tokens.dart';
 
+/// Hero "You're owed" gradient card matching mockup Screen 4.
+/// Dark green gradient background, amber-heavy counter moved to WHITE per
+/// mockup (the accent lives in the daily-growth pill), overline uppercase
+/// label + pulsing accent dot, subtitle + green "↑ ₹{perDay}/day" pill.
 class OwedCounterCard extends StatefulWidget {
   final double totalOwed;
   final int disputeCount;
   final double perDay;
+  final bool compact;
   const OwedCounterCard({
     super.key,
     required this.totalOwed,
     required this.disputeCount,
     required this.perDay,
+    this.compact = false,
   });
 
   @override
@@ -19,6 +26,7 @@ class _OwedCounterCardState extends State<OwedCounterCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double> _anim;
+  late Animation<double> _dot;
 
   @override
   void initState() {
@@ -27,7 +35,9 @@ class _OwedCounterCardState extends State<OwedCounterCard>
         duration: const Duration(milliseconds: 600), vsync: this);
     _anim = Tween<double>(begin: 0, end: widget.totalOwed)
         .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
-    _ctrl.forward();
+    _dot = Tween<double>(begin: 0.4, end: 1.0).animate(
+        CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+    _ctrl.repeat(reverse: true, period: const Duration(milliseconds: 1400));
   }
 
   @override
@@ -50,39 +60,103 @@ class _OwedCounterCardState extends State<OwedCounterCard>
 
   @override
   Widget build(BuildContext context) {
+    const begin = Alignment.topLeft;
+    const end = Alignment.bottomRight;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B3D2E),
-        borderRadius: BorderRadius.circular(16),
+      padding: const EdgeInsets.all(18),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: begin,
+          end: end,
+          colors: [AppColors.primary, AppColors.primaryDark],
+        ),
+        borderRadius: BorderRadius.all(Radius.circular(AppRadii.lg)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Total Owed',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleSmall
-                  ?.copyWith(color: const Color(0xFFE8F0EC).withValues(alpha: 0.7))),
-          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Text(
+                "YOU'RE OWED",
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
+                  color: Color(0xB3FFFFFF),
+                ),
+              ),
+              const SizedBox(width: 6),
+              FadeTransition(
+                opacity: _dot,
+                child: Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: AppColors.accent,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                          color: AppColors.accent,
+                          blurRadius: 6,
+                          spreadRadius: 0),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
           AnimatedBuilder(
             animation: _anim,
             builder: (c, _) => Text(
               _formatIndian(_anim.value),
-              style: TextStyle(
-                fontFamily: 'Manrope',
+              style: const TextStyle(
+                fontFamily: AppTypography.family,
                 fontSize: 40,
                 fontWeight: FontWeight.w800,
-                color: const Color(0xFFF5A623),
-                fontFeatures: const [FontFeature.tabularFigures()],
+                height: 1.0,
+                letterSpacing: -0.8,
+                fontFeatures: [FontFeature.tabularFigures()],
+                color: Colors.white,
               ),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'across ${widget.disputeCount} disputes, growing ₹${widget.perDay.toStringAsFixed(0)}/day',
-            style: TextStyle(color: const Color(0xFFE8F0EC).withValues(alpha: 0.7), fontSize: 12),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Flexible(
+                child: Text(
+                  '${widget.disputeCount} ${widget.disputeCount == 1 ? 'dispute' : 'disputes'}',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xB3FFFFFF),
+                  ),
+                ),
+              ),
+              if (widget.perDay > 0)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0x2616C784),
+                    borderRadius: BorderRadius.circular(AppRadii.pill),
+                  ),
+                  child: Text(
+                    '↑ ₹${widget.perDay.toStringAsFixed(0)}/day',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.accent,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -102,6 +176,6 @@ class _OwedCounterCardState extends State<OwedCounterCard>
       parts.insert(0, str[i]);
       count++;
     }
-    return '₹${parts.join()}';
+    return '₹ ${parts.join()}';
   }
 }

@@ -1,0 +1,10 @@
+{
+  "id": "imps_npci_portal",
+  "titleEn": "IMPS — NPCI portal escalation",
+  "titleHi": "IMPS — NPCI पोर्टल शिकायत",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "To: NPCI Dispute Redressal (https://upihelp.npci.org.in)\n\nEscalating failed IMPS transaction against {BANK_NAME}.\n\nRRN: {UTR}\nAmount: Rs. {AMOUNT}\nDate: {TXN_DATE}\nBeneficiary MMID/ifsc: {VPA_PAYEE}\nPayer: {VPA}\nBank complaint date: {COMPLAINT_DATE}\nRef: {TICKET_NO}\nDays elapsed: {DAYS_ELAPSED}\nCompensation claimed: Rs. {COMPENSATION_DUE}\n\nRelief: reverse Rs. {AMOUNT} + credit Rs. {COMPENSATION_DUE}.\n\nAttachments: bank statement, IMPS-failed screenshot, bank complaint acknowledgement.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: NPCI विवाद निवारण (https://upihelp.npci.org.in)\n\n{BANK_NAME} के विरुद्ध विफल IMPS लेनदेन बढ़ाता/बढ़ाती।\n\nRRN: {UTR}\nराशि: Rs. {AMOUNT}\nदिनांक: {TXN_DATE}\nBeneficiary MMID/IFSC: {VPA_PAYEE}\nPayer: {VPA}\nबैंक शिकायत दिनांक: {COMPLAINT_DATE}\nसंदर्भ: {TICKET_NO}\nबीते दिन: {DAYS_ELAPSED}\nदावा मुआवज़ा: Rs. {COMPENSATION_DUE}\n\nराहत: Rs. {AMOUNT} रिवर्स + Rs. {COMPENSATION_DUE} जमा करें।\n\nसंलग्न: बैंक स्टेटमेंट, IMPS-विफल स्क्रीनशॉट, बैंक शिकायत स्वीकृति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

@@ -23,18 +23,23 @@ Under built per the Notion spec "Refund Radar — AI Agent Build Spec (Productio
 ```
 lib/
   core/         - theme, router, providers, utils, events
-  data/         - models, repositories (Firestore, rules engine)
-  features/     - 10 screens: onboarding, home, dispute_*, wizard, paywall, reminders, settings, ombudsman, templates
+  data/         - models, repositories (Firestore, rules engine, dispute_type_display)
+  features/     - onboarding(3), home, dispute_create(type+form), dispute_detail, wizard, paywall, reminders, settings, ombudsman, templates
   services/     - compensation_calculator, sms_parser, fcm_topics, notification_service
-  shared/       - widgets: OwedCounterCard, DisputeCard, StepperTimeline, DangerBanner, PrimaryCTA
-  l10n/         - app_localizations (hand-crafted, supports en + hi)
+  shared/       - 14 widgets: OwedCounterCard, DisputeCard, StepperTimeline(DangerBanner,PrimaryCTA)+ redesign set (AppBackButton, StatusPill, FilterPills, ToggleSwitch, RadioRow, InfoBanner, PageDots, HeroEmojiCircle, OnboardingStepHeader)
+  l10n/         - app_en.arb + app_hi.arb (51 keys each, strict parity)
   firebase_options.dart  - Firebase config (REPLACE with real values)
 assets/
-  rules_engine.json     - source of truth for RBI/NPCI rules (Section 2 + 5)
-firestore.rules         - users/{uid}/** user-scoped
+  rules_engine.json     - source of truth for RBI/NPCI rules (Section 2 + 5); 7 disputeTypes, 18 FASTag issuers, 5 freeTemplateIds
+  templates/            - (pending) 51 template JSON assets per spec §2.6.1
+firestore.rules         - users/{uid}/** user-scoped + deny-all default
 .github/workflows/
   android.yml           - debug APK CI build
 ```
+
+## Build status
+
+See **[PROGRESS.md](PROGRESS.md)** for the live build log, UI/UX redesign progress, and the prioritized backlog. The immutable spec is `Refund Plan.html` (Notion export — single source of truth; do not edit).
 
 ## Setup
 
@@ -78,15 +83,23 @@ base64 -i android/app/google-services.json | gh secret set FIREBASE_CONFIG_ANDRO
 - 30-day FASTag dispute window countdown
 - 45-day UPI chargeback window countdown
 - Escalation ladder (level 1 bank, level 2 NPCI, level 3 RBI Ombudsman)
-- Pre-filled complaint templates (50+ — basic Level-1 per dispute type free, ...)
+- Pre-filled complaint templates (19 built inline; target 51 JSON assets per spec §2.6.1 — see PROGRESS.md §3)
 - Ombudsman letter generator (Premium)
-- Paywall (RevenueCat): ₹99/mo, ₹499/yr
+- Paywall (RevenueCat): ₹99/mo, ₹499/yr (UI present; RevenueCat integration pending)
 - Bilingual English + Hindi
 - Light + dark themes
-- FCM topic-based engagement campaigns
+- FCM topic-based engagement campaigns (service present; wiring pending)
 - Local scheduled notifications for deadlines
 - Offline-first via Firestore
 - SMS-paste parser (regex UTR/amount/date)
+
+## UI/UX redesign progress
+
+13 HTML mockup screens approved by user (`ss/Screen01.png` … `ss/Screen13.png`); Flutter rewrite flown in passes:
+- ✅ Pass 0 design tokens · Pass 1 nine shared widgets · Pass 2 onboarding · Pass 3 dispute type · Pass 4 settings · Pass 5 templates
+- ⏳ Pass 6 home + cards · Pass 7 dispute detail + RBI timeline · Pass 8 dispute form · Pass 9 escalate page · Pass 10 history page · Pass 11 SMS permission + Add banks (+ fix `/onboard/sms` broken route) · Pass 12 sweep + full `flutter analyze`
+
+Full pass schedule + per-file status in PROGRESS.md §4.
 
 ## Disclaimers
 Refund Radar is an independent informational tool. It is not affiliated with RBI, NPCI, NHAI, IHMCL, or any bank. We never ask for banking passwords, OTPs, or PINs. Complaints are filed by you on official portals. Compensation estimates are based on published RBI/NPCI rules and actual outcomes depend on your bank/regulator.

@@ -1,0 +1,10 @@
+{
+  "id": "atm_followup_30day",
+  "titleEn": "ATM — 30-day follow-up reminder",
+  "titleHi": "ATM — 30 दिन रिमाइंडर",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "Subject: Follow-up — Failed ATM Withdrawal — 30 days elapsed — Txn {UTR}\n\nTo: {BANK_NAME} Nodal Officer,\n\nRef: complaint {TICKET_NO} dated {COMPLAINT_DATE} regarding failed ATM withdrawal of Rs. {AMOUNT} (txn {UTR}) at {ENTITY_NAME} on {TXN_DATE}.\n\n30 days have passed without a satisfactory response OR reversal. RBI TAT compensation is accruing at Rs. 100/day.\n\nTotal compensation due today: Rs. {COMPENSATION_DUE}.\n\nResolve within 48 hours, or I will approach the RBI Ombudsman under RB-IOS 2026.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "विषय: फॉलो-अप — विफल ATM निकासी — 30 दिन बीत गए — Txn {UTR}\n\nप्रति: {BANK_NAME} नोडल अधिकारी,\n\nसंदर्भ: शिकायत {TICKET_NO}, दिनांक {COMPLAINT_DATE}, विफल ATM निकासी Rs. {AMOUNT} (txn {UTR}) स्थान {ENTITY_NAME}, दिनांक {TXN_DATE}।\n\nबिना संतोषजनक उत्तर या रिवर्सल के 30 दिन बीत चुके। RBI TAT मुआवज़ा Rs. 100/दिन बढ़ रहा है।\n\nआज कुल देय मुआवज़ा: Rs. {COMPENSATION_DUE}।\n\n48 घंटे के भीतर हल करें, अन्यथा मैं RBI लोकपाल (RB-IOS 2026) के पास जाऊँगा/जाऊँगी।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

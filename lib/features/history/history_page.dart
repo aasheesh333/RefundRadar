@@ -1,0 +1,472 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/providers/auth_provider.dart';
+import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/data/extensions/dispute_type_display.dart';
+import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/services/compensation_calculator.dart';
+import 'package:refund_radar/shared/widgets/filter_pills.dart';
+
+/// History (Ledger) page matching mockup Screen 9.
+/// Filter pills + win-rate stats header + card list of past/resolved disputes
+/// + "Load older" footer.
+class HistoryPage extends ConsumerStatefulWidget {
+  const HistoryPage({super.key});
+  @override
+  ConsumerState<HistoryPage> createState() => _HistoryPageState();
+}
+
+const _kFilters = ['All', 'Won', 'Lost', 'Escalated'];
+
+class _HistoryPageState extends ConsumerState<HistoryPage> {
+  String _filter = 'All';
+
+  @override
+  Widget build(BuildContext context) {
+    final uidAsync = ref.watch(userIdProvider);
+    return Scaffold(
+      backgroundColor: AppColors.bgLight,
+      body: SafeArea(
+        child: uidAsync.when(
+          data: (uid) {
+            if (uid == null) return const _Loading();
+            final disputesAsync = ref.watch(disputesProvider(uid));
+            return disputesAsync.when(
+              data: (disputes) => _Body(
+                disputes: disputes,
+                filter: _filter,
+                onFilter: (f) => setState(() => _filter = f),
+              ),
+              loading: () => const _Loading(),
+              error: (e, _) => Center(child: Text('Error: $e')),
+            );
+          },
+          loading: () => const _Loading(),
+          error: (e, _) => Center(child: Text('Error: $e')),
+        ),
+      ),
+    );
+  }
+}
+
+class _Body extends StatelessWidget {
+  final List<Dispute> disputes;
+  final String filter;
+  final ValueChanged<String> onFilter;
+  const _Body({
+    required this.disputes,
+    required this.filter,
+    required this.onFilter,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final past = disputes
+        .where((d) =>
+            d.status == DisputeStatus.resolved ||
+            d.status == DisputeStatus.expired)
+        .toList();
+    final filtered = past.where((d) {
+      switch (filter) {
+        case 'Won':
+          return d.status == DisputeStatus.resolved &&
+              (d.resolvedAmount ?? 0) > 0;
+        case 'Lost':
+          return d.status == DisputeStatus.expired ||
+              (d.status == DisputeStatus.resolved &&
+                  (d.resolvedAmount ?? 0) == 0);
+        case 'Escalated':
+          return d.status == DisputeStatus.ombudsman;
+        default:
+          return true;
+      }
+    }).toList();
+
+    final wonAmount = past
+        .where((d) => d.status == DisputeStatus.resolved)
+        .fold<double>(0, (s, d) => s + (d.resolvedAmount ?? 0));
+    final totalResolved = past.where((d) => d.status == DisputeStatus.resolved).length;
+    final totalDecided = past.length;
+    final winRate =
+        totalDecided == 0 ? 0 : ((totalResolved / totalDecided) * 100).round();
+
+    return Column(
+      children: [
+        // header
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'History',
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimaryLight,
+                ),
+              ),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceLight,
+                  border:
+                      Border.all(color: AppColors.dividerLight, width: 1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child:
+                      Text('🔍', style: TextStyle(fontSize: 18)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // filter pills
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          child: FilterPills(
+            pills: _kFilters
+                .map((f) => (
+                      label: f,
+                      selected: filter == f,
+                      onTap: () => onFilter(f),
+                    ))
+                .toList(),
+          ),
+        ),
+        // stats row
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  _StatBox(
+                    label: 'TOTAL WON',
+                    value: CompensationCalculator.formatIndian(wonAmount),
+                    valueColor: AppColors.accent,
+                  ),
+                  const SizedBox(width: 24),
+                  _StatBox(
+                    label: 'WIN RATE',
+                    value: '$winRate%',
+                    valueColor: AppColors.textPrimaryLight,
+                  ),
+                ],
+              ),
+              const Text(
+                'This year',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondaryLight,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: filtered.isEmpty
+              ? const _EmptyHistory()
+              : ListView.separated(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                  itemCount: filtered.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
+                  itemBuilder: (_, i) => _HistoryCard(dispute: filtered[i]),
+                ),
+        ),
+        // "Load older" footer
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: AppColors.surfaceLight,
+            border: Border(
+              top: BorderSide(color: AppColors.dividerLight, width: 1),
+            ),
+          ),
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Load older · ${filtered.isNotEmpty ? "more" : "—"}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondaryLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatBox extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color valueColor;
+  const _StatBox({required this.label, required this.value, required this.valueColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.6,
+            color: AppColors.textSecondaryLight,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: valueColor,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HistoryCard extends StatelessWidget {
+  final Dispute dispute;
+  const _HistoryCard({required this.dispute});
+
+  @override
+  Widget build(BuildContext context) {
+    final won = dispute.status == DisputeStatus.resolved &&
+        (dispute.resolvedAmount ?? 0) > 0;
+    final lost = dispute.status == DisputeStatus.expired ||
+        (dispute.status == DisputeStatus.resolved &&
+            (dispute.resolvedAmount ?? 0) == 0);
+    final partial = dispute.status == DisputeStatus.resolved &&
+        won &&
+        (dispute.resolvedAmount ?? 0) < dispute.amount;
+
+    final amount = dispute.resolvedAmount ?? 0;
+    final (cardBorderColor, emojiBg, amountColor, badge, statusLabel) = switch ((
+      won,
+      lost,
+      partial
+    )) {
+      (true, _, true) => (
+          AppColors.alertSoft,
+          AppColors.alertSoft,
+          AppColors.alert,
+          AppColors.alert,
+          'PARTIAL'
+        ),
+      (true, _, _) => (
+          AppColors.dividerLight,
+          AppColors.accentSoft,
+          AppColors.accent,
+          AppColors.accent,
+          'WON'
+        ),
+      (_, true, _) => (
+          AppColors.errorSoft,
+          AppColors.errorSoft,
+          AppColors.error,
+          AppColors.error,
+          'LOST'
+        ),
+      _ => (
+          AppColors.dividerLight,
+          AppColors.premiumGoldSoft,
+          AppColors.textPrimaryLight,
+          AppColors.premiumGold,
+          'FILED'
+        ),
+    };
+
+    return InkWell(
+      onTap: () => context.push('/disputes/${dispute.id}'),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLight,
+          border: Border.all(color: cardBorderColor, width: 1),
+          borderRadius: BorderRadius.circular(AppRadii.lg),
+          boxShadow: AppShadows.card,
+        ),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: emojiBg,
+                    borderRadius: BorderRadius.circular(AppRadii.sm),
+                  ),
+                  child: Center(
+                    child: Text(dispute.type.emoji,
+                        style: const TextStyle(fontSize: 16)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        dispute.type.displayName,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimaryLight,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${dispute.entityName ?? "—"} · ${_fmtDate(dispute.resolvedAt ?? dispute.txnDate)}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondaryLight,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      CompensationCalculator.formatIndian(amount),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: amountColor,
+                      ),
+                    ),
+                    Text(
+                      statusLabel,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: badge,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.only(top: 8),
+              decoration: const BoxDecoration(
+                border: Border(
+                  top: BorderSide(
+                    color: AppColors.dividerLight,
+                    width: 1,
+                    style: BorderStyle.solid,
+                  ),
+                ),
+              ),
+              child: _footerText(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _footerText() {
+    final l1 = dispute.filedDates['l1'];
+    final resolved = dispute.resolvedAt;
+    if (dispute.status == DisputeStatus.resolved && resolved != null && l1 != null) {
+      final days = resolved.difference(l1).inDays;
+      final comp = (dispute.resolvedAmount ?? 0) > dispute.amount
+          ? ' · ₹100 comp included'
+          : ' · ₹${dispute.type.compensationPerDay ?? 100} comp';
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Filed ${_fmtDate(l1)} · resolved in $days days',
+            style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight),
+          ),
+          Text(
+            comp,
+            style: const TextStyle(
+                fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.accent),
+          ),
+        ],
+      );
+    }
+    return Text(
+      dispute.status == DisputeStatus.expired
+          ? 'Dispute window expired without resolution'
+          : '${dispute.type.compensationLabel ?? "Guidance mode"} · ${_fmtDate(dispute.txnDate)}',
+      style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight),
+    );
+  }
+
+  String _fmtDate(DateTime d) =>
+      '${d.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]}';
+}
+
+class _EmptyHistory extends StatelessWidget {
+  const _EmptyHistory();
+  @override
+  Widget build(BuildContext context) => const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('📜', style: TextStyle(fontSize: 40)),
+              SizedBox(height: 12),
+              Text(
+                'No history yet',
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimaryLight,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'Resolved and expired disputes will appear here.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondaryLight,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+class _Loading extends StatelessWidget {
+  const _Loading();
+  @override
+  Widget build(BuildContext context) => const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
+}

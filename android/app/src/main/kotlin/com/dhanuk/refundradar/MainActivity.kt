@@ -1,4 +1,4 @@
-package com.refundradar.refund_radar
+package com.dhanuk.refundradar
 
 import io.flutter.embedding.android.FlutterActivity
 

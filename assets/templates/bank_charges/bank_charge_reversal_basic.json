@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_reversal_basic",
+  "titleEn": "Bank charge — Wrong/unknown reversal request (Level 1)",
+  "titleHi": "बैंक शुल्क — गलत/अज्ञात वापसी अनुरोध (स्तर 1)",
+  "category": "Bank charges",
+  "escalationLevel": 1,
+  "isPremium": false,
+  "bodyEn": "Subject: Wrong/Unknown Charge Reversal Request — Account {ACCOUNT_NO}\n\nTo: {BANK_NAME} Grievance Redressal,\n\nDear Team,\n\nOn {TXN_DATE}, my account was debited Rs. {AMOUNT} (reference {TXN_ID}) for a charge I did not authorize and was not informed about. As per RBI Fair Practices Code and the banker-customer contractual relationship, every charge must be disclosed and consented.\n\nI demand reversal of Rs. {AMOUNT} within 30 days. Failing which, I will approach the RBI Ombudsman under RB-IOS 2026.\n\nComplaint reference: {TICKET_NO}\nAccount holder: {USER_NAME}\nMobile: {MOBILE_NO}\n\nRegards,\n{USER_NAME}",
+  "bodyHi": "विषय: गलत/अज्ञात शुल्क वापसी अनुरोध — खाता {ACCOUNT_NO}\n\nप्रति: {BANK_NAME} शिकायत निवारण,\n\nप्रिय टीम,\n\n{TXN_DATE} को मेरे खाते से Rs. {AMOUNT} (संदर्भ {TXN_ID}) काटे गए एक शुल्क के लिए जिसे मैंने अधिकृत नहीं किया और जिसकी जानकारी नहीं दी गई। RBI फेयर प्रैक्टिसेज कोड और बैंकर-ग्राहक संविदानुसार हर शुल्क प्रकट और सहमत होना चाहिए।\n\nमैं 30 दिनों के भीतर Rs. {AMOUNT} रिवर्सल की मांग करता/करती हूँ। नहले तो मैं RB-IOS 2026 के तहत RBI लोकपाल के पास जाऊँगा/जाऊँगी।\n\nशिकायत संदर्भ: {TICKET_NO}\nखाताधारक: {USER_NAME}\nमोबाइल: {MOBILE_NO}\n\nभवदीय,\n{USER_NAME}"
+}

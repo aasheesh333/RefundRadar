@@ -1,0 +1,10 @@
+{
+  "id": "fastag_issuer_icici",
+  "titleEn": "FASTag — ICICI Bank dispute email",
+  "titleHi": "FASTag — ICICI बैंक विवाद ईमेल",
+  "category": "FASTag",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "To: etoll.customers@icicibank.com\n\nSubject: FASTag Dispute — Vehicle {VEHICLE_NO} — Txn {TXN_ID}\n\nICICI Bank FASTag team,\n\nI am raising a dispute for a FASTag transaction on my ICICI FASTag (Vehicle: {VEHICLE_NO}, Tag ID: {TAG_ID}).\n\nTxn ID: {TXN_ID}\nDate & time: {TXN_DATETIME}\nToll plaza: {PLAZA_NAME}\nLane: {LANE_ID}\nAmount: Rs. {AMOUNT}\nIssue type: {ISSUE_TYPE}\n\nResolution requested: chargeback of Rs. {AMOUNT} to my FASTag wallet within 7 days. If no resolution, I will escalate to IHMCL (falsededuction@ihmcl.com) and the 1033 helpline.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: etoll.customers@icicibank.com\n\nविषय: फास्टैग विवाद — वाहन {VEHICLE_NO} — ट्रांज़ैक्शन {TXN_ID}\n\nICICI बैंक फास्टैग टीम,\n\nमैं अपने ICICI FASTag (वाहन: {VEHICLE_NO}, टैग आईडी: {TAG_ID}) पर एक लेनदेन के लिए विवाद दर्ज कर रहा/रही हूँ।\n\nTxn ID: {TXN_ID}\nदिनांक व समय: {TXN_DATETIME}\nटोल प्लाज़ा: {PLAZA_NAME}\nलेन: {LANE_ID}\nराशि: Rs. {AMOUNT}\nसमस्या प्रकार: {ISSUE_TYPE}\n\nराहत: 7 दिनों के भीतर मेरे FASTag वॉलेट में Rs. {AMOUNT} चार्जबैक। हल न होने पर मैं IHMCL (falsededuction@ihmcl.com) और 1033 हेल्पलाइन पर शिकायत बढ़ाऊँगा/बढ़ाऊँगी।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

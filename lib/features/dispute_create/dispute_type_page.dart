@@ -1,93 +1,245 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/theme/app_tokens.dart';
+import '../../data/extensions/dispute_type_display.dart';
+import '../../data/models/dispute.dart';
+import '../../shared/widgets/app_back_button.dart';
+import '../../shared/widgets/onboarding_step_header.dart';
 
-class DisputeTypePage extends StatelessWidget {
+/// Dispute Type Selector — vertical list of selectable cards with sticky
+/// "Continue" footer.
+class DisputeTypePage extends StatefulWidget {
   const DisputeTypePage({super.key});
+  @override
+  State<DisputeTypePage> createState() => _DisputeTypePageState();
+}
+
+class _DisputeTypePageState extends State<DisputeTypePage> {
+  DisputeType? _selected;
+
+  /// 4 categories shown in the mockup (UPI, ATM, FASTag, IMPS).
+  static const _order = [
+    DisputeType.upiP2m,
+    DisputeType.atm,
+    DisputeType.fastag,
+    DisputeType.imps,
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New dispute')),
-      body: GridView.count(
-        padding: const EdgeInsets.all(16),
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 1,
-        children: [
-          _TypeCard(
-            label: 'Failed UPI',
-            sub: 'P2P / P2M / IMPS',
-            icon: Icons.payments,
-            onTap: () => context.push('/disputes/form?type=upi_p2p'),
-          ),
-          _TypeCard(
-            label: 'FASTag',
-            sub: 'Wrong toll deduction',
-            icon: Icons.directions_car,
-            onTap: () => context.push('/disputes/form?type=fastag'),
-          ),
-          _TypeCard(
-            label: 'ATM',
-            sub: 'Cash not dispensed',
-            icon: Icons.atm,
-            onTap: () => context.push('/disputes/form?type=atm'),
-          ),
-          _TypeCard(
-            label: 'Bank charge',
-            sub: 'Wrong / hidden fee',
-            icon: Icons.account_balance,
-            onTap: () => context.push('/disputes/form?type=bank_charge'),
-          ),
-          _TypeCard(
-            label: 'Wrong transfer',
-            sub: 'Wrong UPI ID',
-            icon: Icons.send,
-            onTap: () => context.push('/disputes/form?type=wrong_transfer'),
-          ),
-          _TypeCard(
-            label: 'IMPS',
-            sub: 'Money not credited',
-            icon: Icons.bolt,
-            onTap: () => context.push('/disputes/form?type=imps'),
-          ),
-        ],
+      backgroundColor: AppColors.bgLight,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // top bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
+              child: Row(
+                children: [
+                  const AppBackButton(),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OnboardingStepHeader(
+                      step: 'Step 1 of 4',
+                      title: 'What happened?',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 24, 20, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Choose dispute category',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondaryLight,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView.separated(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                itemCount: _order.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemBuilder: (context, i) => _Row(
+                  type: _order[i],
+                  selected: _selected == _order[i],
+                  onTap: () => setState(() => _selected = _order[i]),
+                ),
+              ),
+            ),
+            // sticky footer
+            SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+                decoration: const BoxDecoration(
+                  color: AppColors.surfaceLight,
+                  border: Border(
+                    top: BorderSide(color: AppColors.dividerLight, width: 1),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Selected',
+                            style: AppTypography.overline(
+                              color: AppColors.accent,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _selected?.displayName ?? '—',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimaryLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: 50,
+                      child: FilledButton(
+                        onPressed: _selected == null
+                            ? null
+                            : () => context.push(
+                                  '/disputes/form?type=${_selected!.id}'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          disabledBackgroundColor:
+                              AppColors.surfaceAltLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(AppRadii.md),
+                          ),
+                        ),
+                        child: const Text('Continue →'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _TypeCard extends StatelessWidget {
-  final String label;
-  final String sub;
-  final IconData icon;
-  final VoidCallback onTap;
-  const _TypeCard({
-    required this.label,
-    required this.sub,
-    required this.icon,
+class _Row extends StatelessWidget {
+  const _Row({
+    required this.type,
+    required this.selected,
     required this.onTap,
   });
+
+  final DisputeType type;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 36, color: const Color(0xFF16C784)),
-              const SizedBox(height: 12),
-              Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-              const SizedBox(height: 4),
-              Text(sub,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  textAlign: TextAlign.center),
-            ],
+      borderRadius: BorderRadius.circular(AppRadii.lg),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLight,
+          border: Border.all(
+            color: selected ? AppColors.primary : AppColors.dividerLight,
+            width: selected ? 2 : 1,
           ),
+          borderRadius: BorderRadius.circular(AppRadii.lg),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: type.softColor,
+                borderRadius: BorderRadius.circular(AppRadii.sm),
+              ),
+              child: Center(child: Text(type.emoji, style: const TextStyle(fontSize: 22))),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    type.displayName,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimaryLight,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    type.subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondaryLight,
+                    ),
+                  ),
+                  if (type.compensationLabel != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      type.compensationLabel!,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            selected
+                ? Container(
+                    width: 22,
+                    height: 22,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                  )
+                : Container(
+                    width: 18,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.dividerLight,
+                        width: 2,
+                      ),
+                    ),
+                  ),
+          ],
         ),
       ),
     );

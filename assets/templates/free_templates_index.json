@@ -1,7 +1,0 @@
-[
-  {"id": "upi_p2p_bank_complaint", "titleEn": "UPI P2P - Bank complaint (Level 1)", "isPremium": false, "category": "UPI / IMPS / ATM"},
-  {"id": "fastag_ihmcl_false_deduction_generic", "titleEn": "FASTag - IHMCL false deduction (generic)", "isPremium": false, "category": "FASTag"},
-  {"id": "bank_charge_reversal_basic", "titleEn": "Bank charge - Reversal request", "isPremium": false, "category": "Bank charges"},
-  {"id": "wrong_transfer_bank_request", "titleEn": "Wrong transfer - Bank request", "isPremium": false, "category": "Wrong transfer"},
-  {"id": "fastag_1033_call_script", "titleEn": "FASTag - 1033 call script", "isPremium": false, "category": "FASTag"}
-]

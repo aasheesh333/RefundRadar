@@ -1,0 +1,10 @@
+{
+  "id": "imps_followup_30day",
+  "titleEn": "IMPS — 30-day follow-up reminder",
+  "titleHi": "IMPS — 30 दिन रिमाइंडर",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "Subject: Follow-up — Failed IMPS Transaction — 30 days elapsed — RRN {UTR}\n\nTo: {BANK_NAME} Nodal Officer,\n\nRef: complaint {TICKET_NO} dated {COMPLAINT_DATE} regarding failed IMPS transfer of Rs. {AMOUNT} (RRN {UTR}) on {TXN_DATE}.\n\n30 days passed without resolution. Daily Rs. 100 compensation meter is active.\n\nTotal compensation due today: Rs. {COMPENSATION_DUE}.\n\nResolve within 48 hours, or I will approach NPCI and the RBI Ombudsman.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "विषय: फॉलो-अप — विफल IMPS लेनदेन — 30 दिन बीत गए — RRN {UTR}\n\nप्रति: {BANK_NAME} नोडल अधिकारी,\n\nसंदर्भ: शिकायत {TICKET_NO}, दिनांक {COMPLAINT_DATE}, विफल IMPS ट्रांसफर Rs. {AMOUNT} (RRN {UTR}), दिनांक {TXN_DATE}।\n\nबिना हल के 30 दिन बीत चुके। Rs. 100/दिन मुआवज़ा मीटर सक्रिय।\n\nआज कुल देय मुआवज़ा: Rs. {COMPENSATION_DUE}।\n\n48 घंटे के भीतर हल करें, अन्यथा मैं NPCI और RBI लोकपाल के पास जाऊँगा/जाऊँगी।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "fastag_ihmcl_no_crossing",
+  "titleEn": "FASTag — IHMCL deduction without crossing (variant B)",
+  "titleHi": "FASTag — IHMCL बिना क्रॉसिंग कटौती (प्रकार B)",
+  "category": "FASTag",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "To: falsededuction@ihmcl.com\nCC: etc.nodal@ihmcl.com\n\nSubject: FASTag Deduction — Vehicle Did Not Cross — Vehicle {VEHICLE_NO}\n\nIHMCL,\n\nMy vehicle {VEHICLE_NO} was NOT on the toll road on {TXN_DATETIME} when a deduction of Rs. {AMOUNT} (Txn ID {TXN_ID}) was made at plaza {PLAZA_NAME}.\n\nThis is a flat wrongful deduction — the vehicle was elsewhere. GPS / ANPR logs from the plaza will show that {VEHICLE_NO} did not enter that lane.\n\nRefund requested: Rs. {AMOUNT}.\n\nEvidence attached: vehicle park-/photos for the timestamp, FASTag statement screenshot, any ANPR plaza log request acknowledgment.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: falsededuction@ihmcl.com\nCC: etc.nodal@ihmcl.com\n\nविषय: FASTag कटौती — वाहन क्रॉस नहीं हुआ — वाहन {VEHICLE_NO}\n\nIHMCL,\n\nमेरा वाहन {VEHICLE_NO} {TXN_DATETIME} को टोल रोड पर नहीं था जब प्लाज़ा {PLAZA_NAME} पर Rs. {AMOUNT} (Txn ID {TXN_ID}) की कटौती हुई।\n\nयह पूरी तरह गलत कटौती है — वाहन कहीं और था। प्लाज़ा के GPS / ANPR लॉग दिखाएँगे कि {VEHICLE_NO} उस लेन में प्रवेश नहीं करा।\n\nअनुरोधित रिफंड: Rs. {AMOUNT}।\n\nसाक्ष्य संलग्न: वाहन पार्क/फोटो, FASTag स्टेटमेंट स्क्रीनशॉट, ANPR प्लाज़ा लॉग अनुरोध स्वीकृति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

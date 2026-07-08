@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_hidden_fee_dispute",
+  "titleEn": "Bank charge — Hidden fee dispute",
+  "titleHi": "बैंक शुल्क — हिडन फी विवाद",
+  "category": "Bank charges",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "Subject: Hidden Fee Dispute — Undisclosed Charge — Account {ACCOUNT_NO}\n\nTo: {BANK_NAME} Nodal Officer,\n\nMy account {ACCOUNT_NO} was charged Rs. {AMOUNT} on {TXN_DATE} (Txn ID {TXN_ID}). The Schedule of Charges / Tariff Sheet provided to me at account opening does NOT mention this fee. This is a hidden fee in violation of the RBI Fair Practices Code and the BCSBI Code of Bank's Commitment to Customers.\n\nCharge category label on statement: {ISSUE_TYPE}\n\nDemand:\n  1. Reverse Rs. {AMOUNT}.\n  2. Confirm that this charge is removed from all future billing.\n  3. Provide the exact circular/clause under which this fee was levied.\n\nResolve within 30 days, else I will escalate to the RBI Ombudsman.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "विषय: हिडन फी विवाद — अप्रकट शुल्क — खाता {ACCOUNT_NO}\n\nप्रति: {BANK_NAME} नोडल अधिकारी,\n\nमेरे खाते {ACCOUNT_NO} से {TXN_DATE} को Rs. {AMOUNT} (Txn ID {TXN_ID}) काटे गए। खाता खोलते समय दी गई चार्ज अनुसूची / टैरिफ शीट में इस शुल्क का उल्लेख नहीं है। यह RBI फेयर प्रैक्टिसेज कोड और BCSBI कमिटमेंट के विरुद्ध एक हिडन फी है।\n\nस्टेटमेंट पर शुल्क श्रेणी: {ISSUE_TYPE}\n\nमांग:\n  1. Rs. {AMOUNT} रिवर्स करें।\n  2. पुष्टि करें कि यह शुल्क भविष्य की बिलिंग से हटा दिया गया है।\n  3. वह सर्कुलर/खंड प्रदान करें जिसके तहत यह शुल्क लगाया गया।\n\n30 दिनों में हल करें, अन्यथा RBI लोकपाल के पास जाऊँगा/जाऊँगी।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

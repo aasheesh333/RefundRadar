@@ -1,0 +1,10 @@
+{
+  "id": "fastag_issuer_idfc",
+  "titleEn": "FASTag — IDFC FIRST Bank dispute",
+  "titleHi": "FASTag — IDFC FIRST बैंक विवाद",
+  "category": "FASTag",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "To: fastagsupport@idfcfirstbank.com\n\nSubject: FASTag Dispute — Vehicle {VEHICLE_NO} — Txn {TXN_ID}\n\nIDFC FIRST Bank FASTag team,\n\nDispute for my IDFC FIRST Bank FASTag (Vehicle: {VEHICLE_NO}, Tag ID: {TAG_ID}).\n\nTxn ID: {TXN_ID}\nDate & time: {TXN_DATETIME}\nToll plaza: {PLAZA_NAME}\nLane: {LANE_ID}\nAmount: Rs. {AMOUNT}\nIssue type: {ISSUE_TYPE}\n\nResolution requested: chargeback of Rs. {AMOUNT} within 7 days. If unresolved, escalation to IHMCL and 1033 helpline.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: fastagsupport@idfcfirstbank.com\n\nविषय: फास्टैग विवाद — वाहन {VEHICLE_NO} — ट्रांज़ैक्शन {TXN_ID}\n\nIDFC FIRST बैंक फास्टैग टीम,\n\nमेरे IDFC FIRST Bank FASTag (वाहन: {VEHICLE_NO}, टैग ID: {TAG_ID}) विवाद।\n\nTxn ID: {TXN_ID}\nदिनांक व समय: {TXN_DATETIME}\nटोल प्लाज़ा: {PLAZA_NAME}\nलेन: {LANE_ID}\nराशि: Rs. {AMOUNT}\nसमस्या प्रकार: {ISSUE_TYPE}\n\nराहत: 7 दिनों के भीतर Rs. {AMOUNT} चार्जबैक। हल न होने पर IHMCL और 1033 पर शिकायत।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

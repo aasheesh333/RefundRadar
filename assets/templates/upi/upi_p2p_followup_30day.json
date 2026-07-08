@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_followup_30day",
+  "titleEn": "UPI P2P — 30-day follow-up reminder",
+  "titleHi": "UPI P2P — 30 दिन रिमाइंडर",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "Subject: Follow-up — Failed UPI Transaction — 30 days elapsed — UTR {UTR}\n\nTo: {BANK_NAME} Nodal Officer,\n\nReference: My complaint ref {TICKET_NO} dated {COMPLAINT_DATE} regarding failed UPI transaction of Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE}.\n\n30 days have passed without a satisfactory response or reversal. As per the RBI TAT circular, the daily Rs. 100 compensation meter is now active and continues to accrue.\n\nTotal compensation due as of today: Rs. {COMPENSATION_DUE}.\n\nPlease resolve and credit the full amount within 48 hours, failing which I will approach the RBI Ombudsman under RB-IOS 2026.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "विषय: फॉलो-अप — विफल UPI लेनदेन — 30 दिन बीत गए — UTR {UTR}\n\nप्रति: {BANK_NAME} नोडल अधिकारी,\n\nसंदर्भ: मेरी शिकायत संख्या {TICKET_NO}, दिनांक {COMPLAINT_DATE}, विफल UPI लेनदेन Rs. {AMOUNT} (UTR {UTR}) दिनांक {TXN_DATE} को。\n\nबिना संतोषजनक उत्तर या रिवर्सल के 30 दिन बीत चुके हैं। RBI TAT सर्कुलर के अनुसार Rs. 100/दिन मुआवज़ा मीटर सक्रिय है और बढ़ता जा रहा है।\n\nआज तक कुल देय मुआवज़ा: Rs. {COMPENSATION_DUE}।\n\nकृपया 48 घंटे के भीतर पूर्ण राशि जमा करें, अन्यथा मैं RB-IOS 2026 के तहत RBI लोकपाल के पास जाऊँगा।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

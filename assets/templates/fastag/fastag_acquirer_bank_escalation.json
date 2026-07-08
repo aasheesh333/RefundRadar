@@ -1,0 +1,10 @@
+{
+  "id": "fastag_acquirer_bank_escalation",
+  "titleEn": "FASTag — Acquirer bank escalation",
+  "titleHi": "FASTag — अधिग्रहण बैंक एस्केलेशन",
+  "category": "FASTag",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "To: nodal.officer@{ACQUIRER_BANK}.com\nCC: falsededuction@ihmcl.com\n\nSubject: FASTag Acquirer-side Issue — Vehicle {VEHICLE_NO} — Plaza {PLAZA_NAME}\n\nTo the Acquirer / Toll Operator Nodal Officer,\n\nMy vehicle {VEHICLE_NO} (FASTag {TAG_ID}) had an incorrect deduction at plaza {PLAZA_NAME} on {TXN_DATETIME}.\n\nTxn ID: {TXN_ID}\nAmount: Rs. {AMOUNT}\nIssue type: {ISSUE_TYPE}\n\nIssuer bank ({BANK_NAME}) has confirmed that the deduction was correctly initiated from the FASTag wallet, and the issue lies on the acquirer side (incorrect plaza / lane / vehicle-class mapping at the toll operator).\n\nPlease:\n  1. Reverse the wrongful charge of Rs. {AMOUNT}.\n  2. Provide the plaza ANPR / lane log for the relevant timestamp.\n  3. Apply the applicable operator penalty under IHMCL SOP.\n\nIf unresolved in 7 days, I will escalate to IHMCL and the RBI Ombudsman.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: nodal.officer@{ACQUIRER_BANK}.com\nCC: falsededuction@ihmcl.com\n\nविषय: FASTag अधिग्रहण-पक्ष समस्या — वाहन {VEHICLE_NO} — प्लाज़ा {PLAZA_NAME}\n\nअधिग्रहण / टोल ऑपरेटर नोडल अधिकारी,\n\nमेरा वाहन {VEHICLE_NO} (FASTag {TAG_ID}) प्लाज़ा {PLAZA_NAME} पर {TXN_DATETIME} को गलत रूप से कटौती का शिकार हुआ।\n\nTxn ID: {TXN_ID}\nराशि: Rs. {AMOUNT}\nसमस्या प्रकार: {ISSUE_TYPE}\n\nजारीकर्ता बैंक ({BANK_NAME}) ने पुष्टि की है कि FASTag वॉलेट से कटौती सही ढंग से शुरू हुई और समस्या अधिग्रहण पक्ष पर है (टोल ऑपरेटर पर गलत प्लाज़ा / लेन / वाहन-श्रेणी मैपिंग)।\n\nकृपया:\n  1. Rs. {AMOUNT} गलत शुल्क रिवर्स करें।\n  2. संबंधित टाइमस्टैम्प के लिए प्लाज़ा ANPR / लेन लॉग उपलब्ध कराएँ।\n  3. IHMCL SOP तहत लागू ऑपरेटर पेनल्टी लगाएँ।\n\n7 दिनों में हल न होने पर IHMCL और RBI लोकपाल के पास जाऊँगा/जाऊँगी।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

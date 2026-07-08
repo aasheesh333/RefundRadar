@@ -6,11 +6,26 @@ on:
   pull_request:
     branches: [main, master]
   workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
 
 jobs:
-  build:
+  # ---------------------------------------------------------------------------
+  # Debug build — works with placeholder Firebase / placeholder RevenueCat.
+  # Every push/PR runs this. Uses NO secrets.
+  # ---------------------------------------------------------------------------
+  debug:
+    name: Debug APK
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_type == 'debug' }}
 
     steps:
       - name: Checkout
@@ -38,23 +53,12 @@ jobs:
         run: flutter gen-l10n || true
 
       - name: Verify analysis
-        run: flutter analyze || true
+        run: flutter analyze
         continue-on-error: true
 
       - name: Run tests
         run: flutter test
         continue-on-error: true
-
-      - name: Decode Firebase config (if secret set)
-        env:
-          FIREBASE_CONFIG_ANDROID: ${{ secrets.FIREBASE_CONFIG_ANDROID }}
-        run: |
-          if [ -n "$FIREBASE_CONFIG_ANDROID" ]; then
-            echo "$FIREBASE_CONFIG_ANDROID" | base64 -d > android/app/google-services.json
-            echo "google-services.json created"
-          else
-            echo "FIREBASE_CONFIG_ANDROID not set - using placeholder config"
-          fi
 
       - name: Build debug APK
         run: flutter build apk --debug --no-tree-shake-icons
@@ -64,6 +68,130 @@ jobs:
         with:
           name: refund-radar-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 30
+
+      - name: List build output
+        run: ls -lh build/app/outputs/flutter-apk/ || true
+
+  # ---------------------------------------------------------------------------
+  # Release build — needs secrets. Manual dispatch only
+  # (workflow_dispatch with build_type=release). Stops if any required
+  # secret is missing.
+  # ---------------------------------------------------------------------------
+  release:
+    name: Release APK (signed)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'release' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Verify required secrets are present
+        env:
+          FB_ANDROID_API_KEY: ${{ secrets.FB_ANDROID_API_KEY }}
+          FB_ANDROID_APP_ID: ${{ secrets.FB_ANDROID_APP_ID }}
+          FB_MESSAGING_SENDER_ID: ${{ secrets.FB_MESSAGING_SENDER_ID }}
+          FB_PROJECT_ID: ${{ secrets.FB_PROJECT_ID }}
+          FB_STORAGE_BUCKET: ${{ secrets.FB_STORAGE_BUCKET }}
+          REVENUECAT_SDK_KEY: ${{ secrets.REVENUECAT_SDK_KEY }}
+          ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
+          ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
+          VERSION_CODE: ${{ secrets.VERSION_CODE }}
+          VERSION_NAME: ${{ secrets.VERSION_NAME }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          missing=()
+          for v in FB_ANDROID_API_KEY FB_ANDROID_APP_ID FB_MESSAGING_SENDER_ID \
+                   FB_PROJECT_ID FB_STORAGE_BUCKET \
+                   REVENUECAT_SDK_KEY \
+                   ONESIGNAL_APP_ID ONESIGNAL_API_KEY \
+                   VERSION_CODE VERSION_NAME \
+                   KEYSTORE_BASE64 KEYSTORE_PASSWORD \
+                   KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "$(eval echo \"\$$v\")" ]; then missing+=("$v"); fi
+          done
+          if [ ${#missing[@]} -ne 0 ]; then
+            echo "::error::Missing required secrets: ${missing[*]}"
+            echo "Add them in GitHub repo → Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate localization
+        run: flutter gen-l10n
+
+      - name: Verify analysis
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+        continue-on-error: true
+
+      - name: Decode release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/keystore.jks
+
+      - name: Build release APK (signed)
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          FB_ANDROID_API_KEY: ${{ secrets.FB_ANDROID_API_KEY }}
+          FB_ANDROID_APP_ID: ${{ secrets.FB_ANDROID_APP_ID }}
+          FB_MESSAGING_SENDER_ID: ${{ secrets.FB_MESSAGING_SENDER_ID }}
+          FB_PROJECT_ID: ${{ secrets.FB_PROJECT_ID }}
+          FB_STORAGE_BUCKET: ${{ secrets.FB_STORAGE_BUCKET }}
+          REVENUECAT_SDK_KEY: ${{ secrets.REVENUECAT_SDK_KEY }}
+          ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
+          ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
+          VERSION_CODE: ${{ secrets.VERSION_CODE }}
+          VERSION_NAME: ${{ secrets.VERSION_NAME }}
+        run: |
+          flutter build apk --release \
+            --no-tree-shake-icons \
+            --build-name="$VERSION_NAME" \
+            --build-number="$VERSION_CODE" \
+            --dart-define=FB_ANDROID_API_KEY="$FB_ANDROID_API_KEY" \
+            --dart-define=FB_ANDROID_APP_ID="$FB_ANDROID_APP_ID" \
+            --dart-define=FB_MESSAGING_SENDER_ID="$FB_MESSAGING_SENDER_ID" \
+            --dart-define=FB_PROJECT_ID="$FB_PROJECT_ID" \
+            --dart-define=FB_STORAGE_BUCKET="$FB_STORAGE_BUCKET" \
+            --dart-define=REVENUECAT_SDK_KEY="$REVENUECAT_SDK_KEY" \
+            --dart-define=ONESIGNAL_APP_ID="$ONESIGNAL_APP_ID" \
+            --dart-define=ONESIGNAL_API_KEY="$ONESIGNAL_API_KEY" \
+            --dart-define=VERSION_NAME="$VERSION_NAME" \
+            --dart-define=VERSION_CODE="$VERSION_CODE"
+
+      - name: Cleanup keystore
+        if: always()
+        run: rm -f android/app/keystore.jks
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: refund-radar-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
 
       - name: List build output

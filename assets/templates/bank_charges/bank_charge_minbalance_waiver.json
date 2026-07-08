@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_minbalance_waiver",
+  "titleEn": "Bank charge — Min-balance penalty waiver request",
+  "titleHi": "बैंक शुल्क — न्यूनतम-बैलेंस पेनल्टी माफ़ी अनुरोध",
+  "category": "Bank charges",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "Subject: Minimum Balance Penalty Waiver — Account {ACCOUNT_NO}\n\nTo: {BANK_NAME} Branch Manager / Nodal Officer,\n\nAccount {ACCOUNT_NO} holder name: {USER_NAME}.\n\nOn {TXN_DATE}, my account was debited Rs. {AMOUNT} as a non-maintenance of minimum balance penalty (Txn ID {TXN_ID}).\n\nGrounds for waiver:\n  • I was not properly informed at the time of account opening of the monthly minimum balance requirement (RBI Master Circular on Customer Service in Banks).\n  • OR: My branch had informed me of waiver on a category-wise basis (BSBD account / pensioner / student / PMJDY).\n  • OR: There was a temporary technical/service outage preventing deposit.\n\nReason I am citing: {ISSUE_TYPE}\n\nRequest: refund Rs. {AMOUNT} within 30 days. Else escalation to the RBI Ombudsman.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "विषय: न्यूनतम बैलेंस पेनल्टी माफ़ी — खाता {ACCOUNT_NO}\n\nप्रति: {BANK_NAME} शाखा प्रबंधक / नोडल अधिकारी,\n\nखाता {ACCOUNT_NO} धारक: {USER_NAME}।\n\n{TXN_DATE} को मेरे खाते से Rs. {AMOUNT} न्यूनतम-बैलेंस गैर-अनुरक्षण पेनल्टी (Txn ID {TXN_ID}) के रूप में काटे गए।\n\nमाफ़ी के आधार:\n  • खाता खोलते समय मुझे मासिक न्यूनतम बैलेंस आवश्यकता की ठीक से जानकारी नहीं दी गई (RBI Master Circular on Customer Service)।\n  • या: मेरी शाखा ने श्रेणी-वार माफ़ी की जानकारी दी थी (BSBD / पेंशनर / छात्र / PMJDY)।\n  • या: जमा रोकने वाली अस्थायी तकनीकी/सेवा आउटेज थी।\n\nमैं यह आधार बता रहा/रही हूँ: {ISSUE_TYPE}\n\nअनुरोध: 30 दिनों के भीतर Rs. {AMOUNT} रिफंड करें। अन्यथा RBI लोकपाल के पास जाऊँगा/जाऊँगी।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

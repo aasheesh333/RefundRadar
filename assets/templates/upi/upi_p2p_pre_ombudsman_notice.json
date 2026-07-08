@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_pre_ombudsman_notice",
+  "titleEn": "UPI P2P — Pre-Ombudsman final notice",
+  "titleHi": "UPI P2P — ऑम्बड्समैन अंतिम नोटिस",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "Subject: FINAL NOTICE — Forthcoming RBI Ombudsman Complaint — UTR {UTR}\n\nTo: {BANK_NAME} Principal Nodal Officer,\n\nThis is my FINAL notice before I file a complaint with the RBI Integrated Ombudsman (RB-IOS 2026) via https://cms.rbi.org.in within the next 7 days.\n\n1. Transaction failed on {TXN_DATE}, Rs. {AMOUNT}, UTR {UTR}.\n2. Bank complaint dated {COMPLAINT_DATE}, ref {TICKET_NO}.\n3. Neither reversal nor a satisfactory reply received in {DAYS_ELAPSED} days.\n4. Compensation accrued: Rs. {COMPENSATION_DUE} (Rs. 100/day = RBI TAT circular).\n\nRelief I will claim before the Ombudsman:\n  • Reversal of the failed transaction — Rs. {AMOUNT}\n  • Compensation for delay — Rs. {COMPENSATION_DUE}\n  • Harassment and time-cost compensation under RB-IOS 2026 — up to Rs. 3,00,000.\n\nTo avoid this escalation, credit Rs. {AMOUNT} + Rs. {COMPENSATION_DUE} to my account within 7 days.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "विषय: अंतिम नोटिस — आगामी RBI लोकपाल शिकायत — UTR {UTR}\n\nप्रति: {BANK_NAME} प्रधान नोडल अधिकारी,\n\nयह मेरा अंतिम नोटिस है, इसके बाद मैं अगले 7 दिनों में RBI एकीकृत लोकपाल (RB-IOS 2026) के पास https://cms.rbi.org.in पर शिकायत दर्ज करूँगा/करूँगी।\n\n1. लेनदेन {TXN_DATE} को विफल, Rs. {AMOUNT}, UTR {UTR}।\n2. बैंक शिकायत दिनांक {COMPLAINT_DATE}, संदर्भ {TICKET_NO}।\n3. {DAYS_ELAPSED} दिनों में न रिवर्सल, न संतोषजनक उत्तर।\n4. जमा मुआवज़ा: Rs. {COMPENSATION_DUE} (Rs. 100/दिन, RBI TAT सर्कुलर)।\n\nलोकपाल के पास दावा राहत:\n  • विफल लेनदेन रिवर्सल — Rs. {AMOUNT}\n  • देरी मुआवज़ा — Rs. {COMPENSATION_DUE}\n  • RB-IOS 2026 के तहत उत्पीड़न + समय-लागत मुआवज़ा — Rs. 3,00,000 तक।\n\nइस एस्केलेशन से बचने के लिए 7 दिनों के भीतर Rs. {AMOUNT} + Rs. {COMPENSATION_DUE} मेरे खाते में जमा करें।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

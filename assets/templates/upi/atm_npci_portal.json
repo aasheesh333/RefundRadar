@@ -1,0 +1,10 @@
+{
+  "id": "atm_npci_portal",
+  "titleEn": "ATM — Switch/network complaint (NPCI)",
+  "titleHi": "ATM — स्विच/नेटवर्क शिकायत (NPCI)",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "To: NPCI Customer Care (https://www.npci.org.in)\n\nI wish to escalate an ATM-cash-not-dispensed complaint against {BANK_NAME}.\n\nTransaction ref: {UTR}\nATM ID / location: {ENTITY_NAME}\nAmount: Rs. {AMOUNT}\nDate: {TXN_DATE}\nBank complaint date: {COMPLAINT_DATE}\nBank ref: {TICKET_NO}\nDays elapsed without resolution: {DAYS_ELAPSED}\nCompensation claimed: Rs. {COMPENSATION_DUE}\n\nRelief requested:\n  • Reverse Rs. {AMOUNT} to my account.\n  • Credit RBI TAT compensation Rs. {COMPENSATION_DUE}.\n\nAttachments: debit-slip / mini-statement, bank complaint acknowledgement.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: NPCI ग्राहक सेवा (https://www.npci.org.in)\n\nमैं {BANK_NAME} के विरुद्ध ATM-नकद-नहीं-वितरित की शिकायत बढ़ाना चाहता/चाहती हूँ।\n\nलेनदेन संदर्भ: {UTR}\nATM ID/स्थान: {ENTITY_NAME}\nराशि: Rs. {AMOUNT}\nदिनांक: {TXN_DATE}\nबैंक शिकायत दिनांक: {COMPLAINT_DATE}\nबैंक संदर्भ: {TICKET_NO}\nहल के बिना बीते दिन: {DAYS_ELAPSED}\nदावा मुआवज़ा: Rs. {COMPENSATION_DUE}\n\nराहत अनुरोधित:\n  • Rs. {AMOUNT} मेरे खाते में रिवर्स करें।\n  • RBI TAT मुआवज़ा Rs. {COMPENSATION_DUE} जमा करें।\n\nसंलग्न: डेबिट-स्लिप / मिनी-स्टेटमेंट, बैंक शिकायत स्वीकृति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

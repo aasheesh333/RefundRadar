@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_bank_complaint",
+  "titleEn": "UPI P2P — Bank complaint (Level 1)",
+  "titleHi": "UPI P2P — बैंक शिकायत (स्तर 1)",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 1,
+  "isPremium": false,
+  "bodyEn": "Subject: Failed UPI Transaction — Refund + RBI TAT Compensation Demand — UTR {UTR}\n\nTo: {BANK_NAME} Grievance Redressal,\n\nDear Team,\n\nOn {TXN_DATE}, Rs. {AMOUNT} was debited from my account via UPI (P2P transfer) under UTR {UTR} but the transaction failed and the beneficiary did not receive the funds.\n\nAs per the RBI Harmonisation of Turn Around Time (TAT) circular (DPSS.CO.PD.No.629/02.03.001/2018-19 dated 20.09.2019), failed UPI P2P transactions must be auto-reversed by T+1, failing which compensation at Rs. 100 per day is payable to the customer.\n\nAs of today, {DAYS_ELAPSED} days have elapsed since the failed transaction. Compensation due: Rs. {COMPENSATION_DUE}.\n\nPlease reverse the failed transaction AND credit the compensation amount to my account within 24 hours, failing which I will escalate to the RBI Ombudsman under RB-IOS 2026.\n\nComplaint reference (please issue): {TICKET_NO}\n\nAccount holder: {USER_NAME}\nMobile: {MOBILE_NO}\n\nRegards,\n{USER_NAME}",
+  "bodyHi": "विषय: विफल UPI लेनदेन — रिफंड + RBI TAT मुआवज़ा मांग — UTR {UTR}\n\nप्रति: {BANK_NAME} शिकायत निवारण,\n\nप्रिय टीम,\n\n{TXN_DATE} को मेरे खाते से Rs. {AMOUNT} UPI (P2P) के माध्यम से कटे, UTR {UTR}, परंतु लेनदेन विफल रहा और प्राप्तकर्ता तक पैसा नहीं पहुँचा।\n\nRBI की TAT सर्कुलर (DPSS.CO.PD.No.629/02.03.001/2018-19, दिनांक 20.09.2019) के अनुसार विफल UPI P2P लेनदेन T+1 तक स्वतः वापस आनी चाहिए, अन्यथा ग्राहक को Rs. 100/दिन मुआवज़ा देय है।\n\nआज तक विफलता को {DAYS_ELAPSED} दिन बीत चुके हैं। देय मुआवज़ा: Rs. {COMPENSATION_DUE}।\n\nकृपया 24 घंटे के भीतर विफल लेनदेन रिवर्स करें और मुआवज़ा राशि मेरे खाते में जमा करें, अन्यथा मैं RB-IOS 2026 के तहत RBI लोकपाल के पास शिकायत करूँगा।\n\nशिकायत संदर्भ (जारी करें): {TICKET_NO}\n\nखाताधारक: {USER_NAME}\nमोबाइल: {MOBILE_NO}\n\nभवदीय,\n{USER_NAME}"
+}

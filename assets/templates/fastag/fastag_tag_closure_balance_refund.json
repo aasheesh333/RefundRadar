@@ -1,0 +1,10 @@
+{
+  "id": "fastag_tag_closure_balance_refund",
+  "titleEn": "FASTag — Tag closure balance refund claim",
+  "titleHi": "FASTag — टैग बंदी बैलेंस रिफंड",
+  "category": "FASTag",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "To: {BANK_NAME} FASTag team\n\nSubject: FASTag Tag Closure & Balance Refund — Vehicle {VEHICLE_NO}\n\nDear {BANK_NAME} FASTag team,\n\nI wish to close my FASTag (Vehicle {VEHICLE_NO}, Tag ID {TAG_ID}) and obtain a refund of my wallet balance and security deposit.\n\nWallet balance: Rs. {AMOUNT}\nSecurity deposit: Rs. {SECURITY_DEPOSIT}\nTotal refund expected: Rs. {TOTAL_AMOUNT}\n\nReason for closure: {ISSUE_TYPE}\n\nPer RBI/NPCI rules, FASTag closure dues must be settled within 10 working days from the closure request. Please process the refund and issue a closure acknowledgement.\n\nIf not settled in 10 working days, I will escalate to NPCI / RBI Ombudsman.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: {BANK_NAME} फास्टैग टीम\n\nविषय: FASTag टैग बंदी एवं बैलेंस रिफंड — वाहन {VEHICLE_NO}\n\nप्रिय {BANK_NAME} फास्टैग टीम,\n\nमैं अपना FASTag (वाहन {VEHICLE_NO}, टैग ID {TAG_ID}) बंद कर वॉलेट बैलेंस व सिक्योरिटी डिपॉज़िट रिफंड चाहता/चाहती हूँ।\n\nवॉलेट बैलेंस: Rs. {AMOUNT}\nसिक्योरिटी डिपॉज़िट: Rs. {SECURITY_DEPOSIT}\nकुल अपेक्षित रिफंड: Rs. {TOTAL_AMOUNT}\n\nबंदी का कारण: {ISSUE_TYPE}\n\nRBI/NPCI नियमानुसार FASTag बंदी की राशि 10 कार्य दिनों के भीतर निपटाई जानी चाहिए। कृपया रिफंड प्रोसेस करें और बंदी स्वीकृति जारी करें।\n\n10 कार्य दिनों में नहले तो मैं NPCI / RBI लोकपाल के पास जाऊँगा/जाऊँगी।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

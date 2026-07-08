@@ -1,20 +1,88 @@
+import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:refund_radar/core/providers/app_state_provider.dart';
+import 'package:refund_radar/core/providers/fcm_reevaluater.dart';
 import 'package:refund_radar/core/router/app_router.dart';
 import 'package:refund_radar/core/theme/app_theme.dart';
 import 'package:refund_radar/core/providers/theme_provider.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
+import 'package:refund_radar/services/revenue_cat_service.dart';
+import 'package:refund_radar/services/onesignal_service.dart';
 import 'package:refund_radar/firebase_options.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+/// Crashbus configuration flag. If Firebase fails to initialise (e.g. test/dev
+/// without real config), we run without Crashlytics rather than letting the
+/// app crash on startup. Set to `true` by `_initFirebase` on success.
+bool _crashlyticsEnabled = false;
+
+Future<void> _initFirebase() async {
   try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  } catch (_) {
-    // Firebase placeholder config - real values set via GitHub secrets later
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+    _crashlyticsEnabled = true;
+  } catch (e, st) {
+    // Firebase placeholder config - real values set via GitHub secrets later.
+    // Crashlytics not initialised; the error zone below becomes a no-op.
+    debugPrint('Firebase init skipped: $e');
+    debugPrint(st.toString());
   }
-  runApp(const ProviderScope(child: RefundRadarApp()));
+
+  if (_crashlyticsEnabled) {
+    // 1. Catch Flutter framework errors (rendering, async widget errors) and
+    //    forward them to Crashlytics in addition to the default console.
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+    };
+
+    // 2. Catch any uncaught errors from the platform (outside the Flutter
+    //    framework) — e.g. isolate crashes.
+    PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+      return true; // handled — don't re-throw to the platform
+    };
+  }
+}
+
+void main() {
+  // 3. Wrap the entire app in a crash-capturing async zone. Any async error
+  //    not handled by Future.catchError goes here first.
+  runZonedGuarded<Future<void>>(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await _initFirebase();
+    // 4. Hydrate persisted app state (premium flag, free-dispute counter).
+    //    Done before runApp so the first frame renders with the right
+    //    entitlement. RevenueCat's own customer-info updates will overwrite
+    //    this once it succeeds.
+    final container = ProviderContainer();
+    await hydratePersistedAppState(container);
+    // 5. Configure RevenueCat in the same container so it can write into
+    //    `isPremiumProvider` (and persist it) on purchase / restore.
+    await container.read(revenueCatServiceProvider).configure();
+    // 5b. Configure OneSignal. Coexists with FCM (OneSignal is used only
+    //     as a segmentation / analytics layer; FCM stays primary for push
+    //     delivery per spec §3 + §6.6). Reads OneSignal app id + api key
+    //     from `--dart-define` flags injected by the GitHub Actions
+    //     release job. In debug builds without dart-define, OneSignal.configure
+    //     is a no-op (service.isInitialized stays false).
+    await container.read(oneSignalServiceProvider).configure(
+          appId: const String.fromEnvironment('ONESIGNAL_APP_ID'),
+          apiKey: const String.fromEnvironment('ONESIGNAL_API_KEY'),
+        );
+    runApp(UncontrolledProviderScope(
+      container: container,
+      child: const RefundRadarApp(),
+    ));
+  }, (Object error, StackTrace stack) {
+    if (_crashlyticsEnabled) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: false);
+    } else {
+      debugPrint('Uncaught async error: $error\n$stack');
+    }
+  });
 }
 
 class RefundRadarApp extends ConsumerWidget {
@@ -30,11 +98,18 @@ class RefundRadarApp extends ConsumerWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
-      routerConfig: router,
-      locale: locale,
-      supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      debugShowCheckedModeBanner: false,
+    routerConfig: router,
+    locale: locale,
+    supportedLocales: AppLocalizations.supportedLocales,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    debugShowCheckedModeBanner: false,
+    builder: (context, child) => Stack(
+      children: [
+        child ?? const SizedBox.shrink(),
+        // FCM topic re-evaluation effect (B5). Runs for the whole session.
+        const FcmReevaluator(),
+      ],
+    ),
     );
   }
 }

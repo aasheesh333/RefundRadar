@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2m_pre_ombudsman_notice",
+  "titleEn": "UPI P2M — Pre-Ombudsman final notice",
+  "titleHi": "UPI P2M — ऑम्बड्समैन अंतिम नोटिस",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "Subject: FINAL NOTICE — Forthcoming RBI Ombudsman Complaint — UTR {UTR}\n\nTo: {BANK_NAME} Principal Nodal Officer,\n\nMy final notice before I file with the RBI Integrated Ombudsman (RB-IOS 2026) at https://cms.rbi.org.in within 7 days.\n\n1. P2M transaction failed on {TXN_DATE}, Rs. {AMOUNT}, UTR {UTR}.\n2. Bank complaint dated {COMPLAINT_DATE}, ref {TICKET_NO}.\n3. {DAYS_ELAPSED} days elapsed, no resolution.\n4. Compensation accrued: Rs. {COMPENSATION_DUE}.\n\nOmbudsman reliefs I will claim:\n  • Rs. {AMOUNT} reversal\n  • Rs. {COMPENSATION_DUE} delay compensation\n  • Up to Rs. 3,00,000 harassment / time-cost compensation under RB-IOS 2026\n\nTo avoid escalation, credit Rs. {AMOUNT} + Rs. {COMPENSATION_DUE} within 7 days.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "विषय: अंतिम नोटिस — आगामी RBI लोकपाल शिकायत — UTR {UTR}\n\nप्रति: {BANK_NAME} प्रधान नोडल अधिकारी,\n\nमेरा अंतिम नोटिस, इसके बाद 7 दिनों में RBI एकीकृत लोकपाल (RB-IOS 2026) को https://cms.rbi.org.in पर शिकायत दर्ज होगी।\n\n1. P2M लेनदेन {TXN_DATE} को विफल, Rs. {AMOUNT}, UTR {UTR}।\n2. बैंक शिकायत {COMPLAINT_DATE}, संदर्भ {TICKET_NO}।\n3. {DAYS_ELAPSED} दिन बीते, कोई हल नहीं।\n4. जमा मुआवज़ा: Rs. {COMPENSATION_DUE}।\n\nलोकपाल राहत दावा:\n  • Rs. {AMOUNT} रिवर्सल\n  • Rs. {COMPENSATION_DUE} देरी मुआवज़ा\n  • RB-IOS 2026 तहत Rs. 3,00,000 तक उत्पीड़न/समय-लागत मुआवज़ा\n\nएस्केलेशन से बचने के लिए 7 दिनों में Rs. {AMOUNT} + Rs. {COMPENSATION_DUE} जमा करें।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

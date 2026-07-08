@@ -1,0 +1,10 @@
+{
+  "id": "atm_pre_ombudsman_notice",
+  "titleEn": "ATM — Pre-Ombudsman final notice",
+  "titleHi": "ATM — ऑम्बड्समैन अंतिम नोटिस",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "Subject: FINAL NOTICE — Forthcoming RBI Ombudsman Complaint — ATM Txn {UTR}\n\nTo: {BANK_NAME} Principal Nodal Officer,\n\nFinal notice: I will file with the RBI Integrated Ombudsman (RB-IOS 2026) at https://cms.rbi.org.in within 7 days.\n\n1. ATM withdrawal failed {TXN_DATE}, Rs. {AMOUNT}, txn {UTR}, location {ENTITY_NAME}.\n2. Bank complaint {COMPLAINT_DATE}, ref {TICKET_NO}.\n3. {DAYS_ELAPSED} days elapsed, no resolution.\n4. Compensation accrued: Rs. {COMPENSATION_DUE}.\n\nOmbudsman reliefs:\n  • Rs. {AMOUNT}\n  • Rs. {COMPENSATION_DUE} delay compensation\n  • Up to Rs. 3,00,000 harassment compensation under RB-IOS 2026.\n\nCredit Rs. {AMOUNT} + Rs. {COMPENSATION_DUE} within 7 days to avoid escalation.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "विषय: अंतिम नोटिस — आगामी RBI लोकपाल शिकायत — ATM Txn {UTR}\n\nप्रति: {BANK_NAME} प्रधान नोडल अधिकारी,\n\nअंतिम नोटिस: मैं 7 दिनों के भीतर RBI एकीकृत लोकपाल (RB-IOS 2026) https://cms.rbi.org.in पर शिकायत करूँगा/करूँगी।\n\n1. ATM निकासी विफल {TXN_DATE}, Rs. {AMOUNT}, txn {UTR}, स्थान {ENTITY_NAME}।\n2. बैंक शिकायत {COMPLAINT_DATE}, संदर्भ {TICKET_NO}।\n3. {DAYS_ELAPSED} दिन बीते, कोई हल नहीं।\n4. जमा मुआवज़ा: Rs. {COMPENSATION_DUE}।\n\nलोकपाल राहत:\n  • Rs. {AMOUNT}\n  • Rs. {COMPENSATION_DUE} देरी मुआवज़ा\n  • RB-IOS 2026 तहत Rs. 3,00,000 तक उत्पीड़न मुआवज़ा।\n\nएस्केलेशन रोकने के लिए 7 दिनों में Rs. {AMOUNT} + Rs. {COMPENSATION_DUE} जमा करें।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

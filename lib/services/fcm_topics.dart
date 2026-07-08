@@ -85,12 +85,20 @@ class DisputeStats {
     var upi = false;
     for (final d in disputes) {
       if (d.status != DisputeStatus.resolved &&
-          d.status != DisputeStatus.expired) active++;
-      if (d.status == DisputeStatus.expired) expired = true;
-      if (d.type == DisputeType.fastag) fastag = true;
+          d.status != DisputeStatus.expired) {
+        active++;
+      }
+      if (d.status == DisputeStatus.expired) {
+        expired = true;
+      }
+      if (d.type == DisputeType.fastag) {
+        fastag = true;
+      }
       if (d.type == DisputeType.upiP2p ||
           d.type == DisputeType.upiP2m ||
-          d.type == DisputeType.imps) upi = true;
+          d.type == DisputeType.imps) {
+        upi = true;
+      }
     }
     return DisputeStats(
       activeDisputes: active,

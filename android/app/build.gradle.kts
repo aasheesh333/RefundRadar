@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.refundradar.refund_radar"
+    namespace = "com.dhanuk.refundradar"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,18 +16,54 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.refundradar.refund_radar"
+        applicationId = "com.dhanuk.refundradar"
         minSdk = maxOf(flutter.minSdkVersion, 21)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    // ---------------------------------------------------------------------------
+    // Release signing.
+    // 1. Local: define these as env vars or in ~/.gradle/gradle.properties.
+    // 2. CI: GitHub secrets — see .github/workflows/android.yml → release job.
+    // Falls back to debug signing config when the keystore file isn't present
+    // (i.e. local dev builds without a release key). This keeps
+    // `flutter build apk --release` working on developer machines that don't
+    // have a release keystore yet.
+    // ---------------------------------------------------------------------------
+    val keystorePath = file("keystore.jks")
+    val keystorePassword = (System.getenv("KEYSTORE_PASSWORD") ?: "")
+    val keyAliasValue = (System.getenv("KEY_ALIAS") ?: "")
+    val keyPasswordValue = (System.getenv("KEY_PASSWORD") ?: "")
+    val hasKeystore = keystorePath.exists() && keystorePassword.isNotEmpty() && keyAliasValue.isNotEmpty() && keyPasswordValue.isNotEmpty()
+
+    if (hasKeystore) {
+        signingConfigs {
+            create("release") {
+                storeFile = keystorePath
+                storePassword = keystorePassword
+                keyAlias = keyAliasValue
+                keyPassword = keyPasswordValue
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            if (hasKeystore) {
+                signingConfig = signingConfigs.getByName("release")
+            } else {
+                // Fallback: sign with debug keys (developer machines only).
+                signingConfig = signingConfigs.getByName("debug")
+            }
+            // Strip native debug symbols and enable R8.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }

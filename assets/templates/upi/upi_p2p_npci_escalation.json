@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_npci_escalation",
+  "titleEn": "UPI P2P — NPCI portal escalation",
+  "titleHi": "UPI P2P — NPCI पोर्टल शिकायत",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "To: NPCI Dispute Redressal Portal (https://upihelp.npci.org.in)\n\nI wish to escalate a UPI dispute that the PSP/bank has failed to resolve.\n\n--- Dispute details ---\nUTR / RRN: {UTR}\nAmount: Rs. {AMOUNT}\nDate: {TXN_DATE}\nVPA of payer: {VPA}\nVPA of payee: {VPA_PAYEE}\nPayer bank: {BANK_NAME}\nComplaint date to bank: {COMPLAINT_DATE}\nBank complaint ref: {TICKET_NO}\nDays elapsed without resolution: {DAYS_ELAPSED}\nCompensation claimed: Rs. {COMPENSATION_DUE}\n\n--- Relief requested ---\n1. Reverse the failed transaction of Rs. {AMOUNT} to my account.\n2. Credit RBI-mandated compensation of Rs. {COMPENSATION_DUE} for the delay beyond T+1.\n\nI attach: (a) bank statement showing debit, (b) screenshot of failed UPI status, (c) my complaint acknowledgement to {BANK_NAME}.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: NPCI विवाद निवारण पोर्टल (https://upihelp.npci.org.in)\n\nमैं एक UPI विवाद को बढ़ाना चाहता/चाहती हूँ जिसे PSP/बैंक ने हल नहीं किया है।\n\n--- विवाद विवरण ---\nUTR / RRN: {UTR}\nराशि: Rs. {AMOUNT}\nदिनांक: {TXN_DATE}\nPayer VPA: {VPA}\nPayee VPA: {VPA_PAYEE}\nPayer बैंक: {BANK_NAME}\nबैंक को शिकायत दिनांक: {COMPLAINT_DATE}\nबैंक शिकायत संदर्भ: {TICKET_NO}\nहल के बिना बीते दिन: {DAYS_ELAPSED}\nदावा किया मुआवज़ा: Rs. {COMPENSATION_DUE}\n\n--- राहत अनुरोधित ---\n1. विफल लेनदेन Rs. {AMOUNT} मेरे खाते में रिवर्स करें।\n2. T+1 से अधिक देरी के लिए RBI अनिवार्य मुआवज़ा Rs. {COMPENSATION_DUE} जमा करें।\n\nमैं संलग्न करता/करती हूँ: (a) डेबिट दिखाता बैंक स्टेटमेंट, (b) विफल UPI स्टेटस स्क्रीनशॉट, (c) {BANK_NAME} को शिकायत स्वीकृति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

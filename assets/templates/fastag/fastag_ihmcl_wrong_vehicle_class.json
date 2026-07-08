@@ -1,0 +1,10 @@
+{
+  "id": "fastag_ihmcl_wrong_vehicle_class",
+  "titleEn": "FASTag — IHMCL wrong vehicle class (variant C)",
+  "titleHi": "FASTag — IHMCL गलत वाहन श्रेणी (प्रकार C)",
+  "category": "FASTag",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "To: falsededuction@ihmcl.com\nCC: etc.nodal@ihmcl.com\n\nSubject: Wrong Vehicle Class Charge in FASTag — Vehicle {VEHICLE_NO}\n\nIHMCL,\n\nMy vehicle {VEHICLE_NO} is registered as a light motor vehicle (LMV / car) but at the toll plaza {PLAZA_NAME} on {TXN_DATETIME}, FASTag (Tag ID {TAG_ID}) deducted Rs. {AMOUNT} as if for a higher vehicle class (7+ tyres / commercial), Txn ID {TXN_ID}.\n\nCorrect fare for my class: Rs. {CORRECT_AMOUNT}\nAmount wrongly deducted: Rs. {AMOUNT}\nExcess: Rs. {TOTAL_AMOUNT}\n\nRefund requested: Rs. {TOTAL_AMOUNT} — the excess charged\nCorrective action requested: update my vehicle class in the NPCI NETC registry if wrongly tagged.\n\nAttached: RC book copy (vehicle class), FASTag statement screenshot.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: falsededuction@ihmcl.com\nCC: etc.nodal@ihmcl.com\n\nविषय: FASTag में गलत वाहन श्रेणी अनारोपित — वाहन {VEHICLE_NO}\n\nIHMCL,\n\nमेरा वाहन {VEHICLE_NO} एक हल्की मोटर वाहन (LMV / कार) के रूप में पंजीकृत है, परंतु टोल प्लाज़ा {PLAZA_NAME} पर {TXN_DATETIME} को FASTag (Tag ID {TAG_ID}) ने एक उच्च वाहन श्रेणी (7+ tyres / व्यावसायिक) के रूप में Rs. {AMOUNT} काटे, Txn ID {TXN_ID}।\n\nमेरी श्रेणी का सही किराया: Rs. {CORRECT_AMOUNT}\nगलत काटी गई राशि: Rs. {AMOUNT}\nअधिक: Rs. {TOTAL_AMOUNT}\n\nरिफंड अनुरोधित: Rs. {TOTAL_AMOUNT}\nसुधार अनुरोधित: NPCI NETC रजिस्ट्री में मेरी वाहन श्रेणी अपडेट करें यदि गलत टैग की गई।\n\nसंलग्न: RC बुक कॉपी (वाहन श्रेणी), FASTag स्टेटमेंट स्क्रीनशॉट।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

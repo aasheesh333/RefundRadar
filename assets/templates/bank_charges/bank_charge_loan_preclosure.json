@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_loan_preclosure",
+  "titleEn": "Bank charge — Loan pre-closure charge dispute",
+  "titleHi": "बैंक शुल्क — लोन प्री-क्लोज़र शुल्क विवाद",
+  "category": "Bank charges",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "Subject: Loan Pre-closure Charge Dispute — Loan {ACCOUNT_NO}\n\nTo: {BANK_NAME} Nodal Officer,\n\nLoan Account: {ACCOUNT_NO}\nBorrower: {USER_NAME}\nMobile: {MOBILE_NO}\n\nOn {TXN_DATE}, I pre-closed my floating-interest-rate loan and was charged Rs. {AMOUNT} (Txn ID {TXN_ID}) as a pre-closure fee. As per RBI Direction DNBR.2018-19/03 (Master Direction – Residential Mortgage Loans), foreclosure charges on floating-rate home loans to individuals are PROHIBITED. The same applies to floating-rate personal loans to individuals per RBI Master Direction DNBR.2022-23/14.\n\nLoan type (state in dispute note): {ISSUE_TYPE}\n\nI request reversal of Rs. {AMOUNT} within 30 days, else RBI Ombudsman complaint under RB-IOS 2026.\n\nRegards,\n{USER_NAME}",
+  "bodyHi": "विषय: लोन प्री-क्लोज़र शुल्क विवाद — लोन {ACCOUNT_NO}\n\nप्रति: {BANK_NAME} नोडल अधिकारी,\n\nलोन खाता: {ACCOUNT_NO}\nउधारकर्ता: {USER_NAME}\nमोबाइल: {MOBILE_NO}\n\n{TXN_DATE} को मैंने अपनी फ्लोटिंग-ब्याज-दर वाली लोन प्री-क्लोज़ की और Rs. {AMOUNT} (Txn ID {TXN_ID}) प्री-क्लोज़र फीस काटी गई। RBI Direction DNBR.2018-19/03 (Master Direction – Residential Mortgage Loans) के अनुसार व्यक्तियों को फ्लोटिंग-दर होम लोन पर फोरक्लोज़र शुल्क प्रतिबंधित है। यही नियम व्यक्तिगत फ्लोटिंग-दर पर्सनल लोन पर RBI Master Direction DNBR.2022-23/14 के अनुसार लागू होता है।\n\nलोन प्रकार (विवाद नोट में बताएँ): {ISSUE_TYPE}\n\nमैं 30 दिनों के भीतर Rs. {AMOUNT} रिवर्सल का अनुरोध करता/करती हूँ, अन्यथा RB-IOS 2026 के तहत RBI लोकपाल शिकायत।\n\nभवदीय,\n{USER_NAME}"
+}

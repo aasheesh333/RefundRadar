@@ -1,0 +1,10 @@
+{
+  "id": "atm_bank_complaint",
+  "titleEn": "ATM — Cash not dispensed (Level 1)",
+  "titleHi": "ATM — नकद नहीं मिली (स्तर 1)",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "Subject: Failed ATM Cash Withdrawal — Refund + RBI TAT Compensation Demand —txn {UTR}\n\nTo: {BANK_NAME} Grievance Redressal,\n\nDear Team,\n\nOn {TXN_DATE}, I attempted to withdraw Rs. {AMOUNT} from an ATM (location: {ENTITY_NAME}); my account was debited but the cash was not dispensed. Transaction reference: {UTR}.\n\nUnder the RBI Harmonisation of TAT circular (20.09.2019), failed ATM withdrawals must be reversed by T+5, failing which Rs. 100 per day compensation is payable to the customer.\n\n{DAYS_ELAPSED} days have elapsed. Compensation due: Rs. {COMPENSATION_DUE}.\n\nPlease credit Rs. {AMOUNT} + Rs. {COMPENSATION_DUE} within 24 hours, failing which I will approach the RBI Ombudsman under RB-IOS 2026.\n\nComplaint reference: {TICKET_NO}\nAccount holder: {USER_NAME}\nMobile: {MOBILE_NO}\n\nRegards,\n{USER_NAME}",
+  "bodyHi": "विषय: विफल ATM नकद निकासी — रिफंड + RBI TAT मुआवज़ा मांग — ट्रांज़ैक्शन {UTR}\n\nप्रति: {BANK_NAME} शिकायत निवारण,\n\nप्रिय टीम,\n\n{TXN_DATE} को मैंने एक ATM से Rs. {AMOUNT} निकालने का प्रयास किया (स्थान: {ENTITY_NAME}); मेरे खाते से राशि कट गई परंतु नकद वितरित नहीं हुई। लेनदेन संदर्भ: {UTR}।\n\nRBI TAT सर्कुलर (20.09.2019) के अनुसार विफल ATM निकासी T+5 तक रिवर्स होनी चाहिए, अन्यथा Rs. 100/दिन मुआवज़ा देय है।\n\n{DAYS_ELAPSED} दिन बीत चुके हैं। देय मुआवज़ा: Rs. {COMPENSATION_DUE}।\n\nकृपया 24 घंटे के भीतर Rs. {AMOUNT} + Rs. {COMPENSATION_DUE} जमा करें, अन्यथा मैं RBI लोकपाल (RB-IOS 2026) के पास जाऊँगा/जाऊँगी।\n\nशिकायत संदर्भ: {TICKET_NO}\nखाताधारक: {USER_NAME}\nमोबाइल: {MOBILE_NO}\n\nभवदीय,\n{USER_NAME}"
+}

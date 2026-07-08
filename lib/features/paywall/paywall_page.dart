@@ -1,9 +1,127 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
-class PaywallPage extends StatelessWidget {
+import 'package:refund_radar/core/providers/app_state_provider.dart';
+import 'package:refund_radar/services/analytics_service.dart';
+import 'package:refund_radar/services/revenue_cat_service.dart';
+
+/// Premium upsell page (Backlog B3).
+///
+/// Connects to RevenueCat to:
+///   - fetch the current offering's packages(),
+///   - drive `purchasePackage()` on plan buttons,
+///   - `restorePurchases()` on the Restore button,
+///   - log `paywall_view` once per visit and `purchase` on success.
+///
+/// If the SDK isn't configured (debug builds without `--dart-define`), we
+/// still show the page but display a "unavailable in this build" banner
+/// and let the user dismiss. The Test Store key fallback in
+/// `RevenueCatService.envSdkKey` means this branch should rarely hit on a
+/// real device — but keep it for safety.
+class PaywallPage extends ConsumerStatefulWidget {
   final String returnPath;
-  const PaywallPage({super.key, required this.returnPath});
+  final String trigger;
+
+  const PaywallPage({
+    super.key,
+    required this.returnPath,
+    required this.trigger,
+  });
+
+  @override
+  ConsumerState<PaywallPage> createState() => _PaywallPageState();
+}
+
+class _PaywallPageState extends ConsumerState<PaywallPage> {
+  Offerings? _offerings;
+  bool _loading = true;
+  String? _error;
+  String? _purchasingPackageId;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOfferings();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _logView());
+  }
+
+  Future<void> _fetchOfferings() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final svc = ref.read(revenueCatServiceProvider);
+      final offerings = await svc.fetchOfferings();
+      setState(() {
+        _offerings = offerings;
+        _loading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Could not load plans. Tap retry.';
+        _loading = false;
+      });
+    }
+  }
+
+  void _logView() {
+    final isPremium = ref.read(isPremiumProvider);
+    ref.read(analyticsServiceProvider).logPaywallView(
+          trigger: widget.trigger,
+          isPremium: isPremium,
+        );
+  }
+
+  Future<void> _buy(Package pkg) async {
+    if (_purchasingPackageId != null) return;
+    setState(() => _purchasingPackageId = pkg.identifier);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    try {
+      final svc = ref.read(revenueCatServiceProvider);
+      final ok = await svc.purchasePackage(pkg, source: 'paywall');
+      if (!mounted) return;
+      if (ok) {
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('Premium unlocked 🎉')),
+        );
+        context.go(widget.returnPath);
+      } else {
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('Purchase did not complete.')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Purchase failed: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _purchasingPackageId = null);
+    }
+  }
+
+  Future<void> _restore() async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    try {
+      final svc = ref.read(revenueCatServiceProvider);
+      final ok = await svc.restorePurchases();
+      if (!mounted) return;
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(ok ? 'Premium restored 🎉' : 'No purchases found.'),
+        ),
+      );
+      if (ok) context.go(widget.returnPath);
+    } catch (e) {
+      if (!mounted) return;
+      scaffoldMessenger.showSnackBar(
+        SnackBar(content: Text('Restore failed: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +130,8 @@ class PaywallPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Icon(Icons.workspace_premium, size: 72, color: Color(0xFFF5A623)),
+          const Icon(Icons.workspace_premium,
+              size: 72, color: Color(0xFFF5A623)),
           const SizedBox(height: 16),
           const Text(
             'Recover more. Unlimited disputes + 50+ templates.',
@@ -20,38 +139,17 @@ class PaywallPage extends StatelessWidget {
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                child: _PlanCard(
-                  title: 'Monthly',
-                  price: '₹99',
-                  highlighted: false,
-                  onTap: () => context.go(returnPath),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _PlanCard(
-                  title: 'Yearly',
-                  price: '₹499',
-                  highlighted: true,
-                  badge: 'Save 58%',
-                  onTap: () => context.go(returnPath),
-                ),
-              ),
-            ],
-          ),
+          _buildPlansArea(),
           const SizedBox(height: 24),
           const _ComparisonTable(),
           const SizedBox(height: 16),
           TextButton(
-            onPressed: () {},
+            onPressed: _purchasingPackageId == null ? _restore : null,
             child: const Text('Restore purchases'),
           ),
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: () => context.go(returnPath),
+            onPressed: () => context.go(widget.returnPath),
             style: FilledButton.styleFrom(
               minimumSize: const Size.fromHeight(52),
               backgroundColor: const Color(0xFF0B3D2E),
@@ -62,32 +160,147 @@ class PaywallPage extends StatelessWidget {
       ),
     );
   }
-}
+
+  Widget _buildPlansArea() {
+    if (_loading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 32),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (_error != null) {
+      return Column(
+        children: [
+          Text(_error!, textAlign: TextAlign.center),
+          const SizedBox(height: 12),
+          OutlinedButton(onPressed: _fetchOfferings, child: const Text('Retry')),
+        ],
+      );
+    }
+    final packages = _offerings?.current?.availablePackages;
+    if (packages == null || packages.isEmpty) {
+      // SDK not configured OR no offering attached in dashboard.
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.amber.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.amber.shade200),
+        ),
+        child: const Text(
+          "Plans aren't available in this build. Premium unlocks "
+          'automatically once a real Google Play purchase completes.',
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+    // Order: Monthly, Yearly first (Yearly highlighted), Lifetime last.
+    final sorted = [...packages]..sort((a, b) {
+        int rank(Package p) => switch (p.packageType) {
+              PackageType.monthly => 0,
+              PackageType.annual => 1,
+              PackageType.lifetime => 2,
+              _ => 3,
+            };
+        return rank(a).compareTo(rank(b));
+      });
+    final monthly = sorted.firstWhere(
+      (p) => p.packageType == PackageType.monthly,
+      orElse: () => sorted.first,
+    );
+    Package? yearly;
+    Package? lifetime;
+    for (final p in sorted) {
+      if (p.packageType == PackageType.annual) yearly = p;
+      if (p.packageType == PackageType.lifetime) lifetime = p;
+    }
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _PlanCard(
+                title: monthly.storeProduct.title,
+                price: monthly.storeProduct.priceString,
+                highlighted: false,
+                onTap: _purchasingPackageId == null
+                    ? () => _buy(monthly)
+                    : null,
+                loading: _purchasingPackageId == monthly.identifier,
+              ),
+            ),
+            if (yearly != null) ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: Builder(builder: (innerCtx) {
+                  final y = yearly!;
+                  return _PlanCard(
+                    title: y.storeProduct.title,
+                    price: y.storeProduct.priceString,
+                    highlighted: true,
+                    badge: 'Save 58%',
+                    onTap: _purchasingPackageId == null
+                        ? () => _buy(y)
+                        : null,
+                    loading: _purchasingPackageId == y.identifier,
+                  );
+                }),
+              ),
+            ],
+          ],
+        ),
+        if (lifetime != null) ...[
+          const SizedBox(height: 12),
+          Builder(builder: (innerCtx) {
+            final l = lifetime!;
+            return _PlanCard(
+              title: l.storeProduct.title,
+              price: l.storeProduct.priceString,
+              highlighted: false,
+              fullWidth: true,
+              onTap: _purchasingPackageId == null
+                  ? () => _buy(l)
+                  : null,
+              loading: _purchasingPackageId == l.identifier,
+            );
+          }),
+        ],
+      ],
+     );
+   }
+ }
+
 
 class _PlanCard extends StatelessWidget {
   final String title;
   final String price;
   final bool highlighted;
   final String? badge;
-  final VoidCallback onTap;
+  final bool fullWidth;
+  final VoidCallback? onTap;
+  final bool loading;
   const _PlanCard({
     required this.title,
     required this.price,
     required this.highlighted,
     this.badge,
+    this.fullWidth = false,
     required this.onTap,
+    this.loading = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: loading ? null : onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
+        width: fullWidth ? double.infinity : null,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: highlighted ? const Color(0xFF16C784) : Colors.grey.shade300,
+            color:
+                highlighted ? const Color(0xFF16C784) : Colors.grey.shade300,
             width: highlighted ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -96,20 +309,29 @@ class _PlanCard extends StatelessWidget {
           children: [
             if (badge != null) ...[
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF16C784).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(badge!,
-                    style: const TextStyle(fontSize: 11, color: Color(0xFF16C784))),
+                child: const Text('Save 58%',
+                    style: TextStyle(fontSize: 11, color: Color(0xFF16C784))),
               ),
               const SizedBox(height: 8),
             ],
             Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            Text(price,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800)),
+            if (loading)
+              const SizedBox(
+                height: 28,
+                width: 28,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              Text(price,
+                  style: const TextStyle(
+                      fontSize: 24, fontWeight: FontWeight.w800)),
           ],
         ),
       ),
@@ -129,28 +351,52 @@ class _ComparisonTable extends StatelessWidget {
       children: const [
         TableRow(children: [
           Padding(padding: EdgeInsets.all(12), child: Text('')),
-          Padding(padding: EdgeInsets.all(12), child: Text('Free', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w600))),
-          Padding(padding: EdgeInsets.all(12), child: Text('Premium', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w600))),
+          Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('Free',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.w600))),
+          Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('Premium',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.w600))),
         ]),
         TableRow(children: [
           Padding(padding: EdgeInsets.all(12), child: Text('Active disputes')),
-          Padding(padding: EdgeInsets.all(12), child: Text('1', textAlign: TextAlign.center)),
-          Padding(padding: EdgeInsets.all(12), child: Text('Unlimited', textAlign: TextAlign.center)),
+          Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('1', textAlign: TextAlign.center)),
+          Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('Unlimited', textAlign: TextAlign.center)),
         ]),
         TableRow(children: [
           Padding(padding: EdgeInsets.all(12), child: Text('Templates')),
-          Padding(padding: EdgeInsets.all(12), child: Text('5', textAlign: TextAlign.center)),
-          Padding(padding: EdgeInsets.all(12), child: Text('50+', textAlign: TextAlign.center)),
+          Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('5', textAlign: TextAlign.center)),
+          Padding(
+              padding: EdgeInsets.all(12),
+              child: Text('50+', textAlign: TextAlign.center)),
         ]),
         TableRow(children: [
           Padding(padding: EdgeInsets.all(12), child: Text('Ombudsman letter generator')),
-          Padding(padding: EdgeInsets.all(12), child: Icon(Icons.close, color: Colors.grey)),
-          Padding(padding: EdgeInsets.all(12), child: Icon(Icons.check, color: Color(0xFF16C784))),
+          Padding(
+              padding: EdgeInsets.all(12),
+              child: Icon(Icons.close, color: Colors.grey)),
+          Padding(
+              padding: EdgeInsets.all(12),
+              child: Icon(Icons.check, color: Color(0xFF16C784))),
         ]),
         TableRow(children: [
           Padding(padding: EdgeInsets.all(12), child: Text('Hindi premium templates')),
-          Padding(padding: EdgeInsets.all(12), child: Icon(Icons.close, color: Colors.grey)),
-          Padding(padding: EdgeInsets.all(12), child: Icon(Icons.check, color: Color(0xFF16C784))),
+          Padding(
+              padding: EdgeInsets.all(12),
+              child: Icon(Icons.close, color: Colors.grey)),
+          Padding(
+              padding: EdgeInsets.all(12),
+              child: Icon(Icons.check, color: Color(0xFF16C784))),
         ]),
       ],
     );

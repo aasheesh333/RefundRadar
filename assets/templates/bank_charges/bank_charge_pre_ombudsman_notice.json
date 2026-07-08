@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_pre_ombudsman_notice",
+  "titleEn": "Bank charge — Final notice before Ombudsman",
+  "titleHi": "बैंक शुल्क — ऑम्बड्समैन से पहले अंतिम नोटिस",
+  "category": "Bank charges",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "Subject: FINAL NOTICE — Forthcoming RBI Ombudsman Complaint — Bank Charge Ref {TICKET_NO}\n\nTo: {BANK_NAME} Principal Nodal Officer,\n\nFinal notice before I file a complaint with the RBI Integrated Ombudsman (RB-IOS 2026) via https://cms.rbi.org.in within 7 days.\n\n1. Bank charged Rs. {AMOUNT} on {TXN_DATE} (Txn ID {TXN_ID}) improperly.\n2. My complaint dated {COMPLAINT_DATE}, ref {TICKET_NO}.\n3. {DAYS_ELAPSED} days elapsed, no resolution.\n4. Compensation claimed: Rs. {COMPENSATION_DUE} for deficiency in service, time loss, harassment.\n\nRelief I will claim at the Ombudsman:\n  • Reversal of Rs. {AMOUNT}\n  • Compensation Rs. {COMPENSATION_DUE}\n  • Up to Rs. 3,00,000 harassment compensation under RB-IOS 2026.\n\nTo avoid escalation, credit Rs. {AMOUNT} + Rs. {COMPENSATION_DUE} within 7 days.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "विषय: अंतिम नोटिस — आगामी RBI लोकपाल शिकायत — बैंक शुल्क संदर्भ {TICKET_NO}\n\nप्रति: {BANK_NAME} प्रधान नोडल अधिकारी,\n\n7 दिनों के भीतर RBI एकीकृत लोकपाल (RB-IOS 2026) https://cms.rbi.org.in पर शिकायत दर्ज करने से पहले यह मेरा अंतिम नोटिस है।\n\n1. बैंक ने {TXN_DATE} को Rs. {AMOUNT} (Txn ID {TXN_ID}) अनुचित रूप से काटे।\n2. मेरी शिकायत {COMPLAINT_DATE}, संदर्भ {TICKET_NO}।\n3. {DAYS_ELAPSED} दिन बीते, कोई हल नहीं।\n4. दावा मुआवज़ा: Rs. {COMPENSATION_DUE} सेवा में कमी, समय हानि, उत्पीड़न हेतु।\n\nलोकपाल पर दावा राहत:\n  • Rs. {AMOUNT} रिवर्सल\n  • Rs. {COMPENSATION_DUE} मुआवज़ा\n  • RB-IOS 2026 तहत Rs. 3,00,000 तक उत्पीड़न मुआवज़ा।\n\nएस्केलेशन रोकने के लिए 7 दिनों में Rs. {AMOUNT} + Rs. {COMPENSATION_DUE} जमा करें।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

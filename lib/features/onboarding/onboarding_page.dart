@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/theme/app_tokens.dart';
+import '../../shared/widgets/hero_emoji_circle.dart';
+import '../../shared/widgets/page_dots.dart';
 
 class OnboardingPage extends StatefulWidget {
   const OnboardingPage({super.key});
@@ -18,94 +21,122 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   void _next() {
-    if (_page < 2) {
-      _pc.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.ease);
+    if (_page < _slides.length - 1) {
+      _pc.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.ease,
+      );
     } else {
-      context.go('/home');
+      context.go('/onboard/sms');
     }
   }
+
+  static const _slides = <_SlideData>[
+    _SlideData(
+      emoji: '💸',
+      title: '₹100/day — banks owe YOU\nfor failed UPI',
+      desc:
+          'RBI rules make banks pay compensation for delayed refunds on failed UPI, IMPS, ATM, and FASTag transactions.',
+      softColor: AppColors.accentSoft,
+      ctaLabel: 'Start free',
+    ),
+    _SlideData(
+      emoji: '🚗',
+      title: "FASTag double-cut?\nYou're owed ₹100/day",
+      desc:
+          'NPCI rules say banks must refund FASTag double-debits within 5 days. We track the deadline and escalate.',
+      softColor: AppColors.alertSoft,
+      ctaLabel: 'Continue',
+    ),
+    _SlideData(
+      emoji: '⚖️',
+      title: 'Banks ignoring you?\nTake them to the Ombudsman',
+      desc:
+          "If a bank doesn't refund within 10 days, we auto-draft a Banking Ombudsman complaint citing the exact RBI circular.",
+      softColor: AppColors.premiumGoldSoft,
+      ctaLabel: 'Get started',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.bgLight,
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            PageView(
-              controller: _pc,
-              onPageChanged: (i) => setState(() => _page = i),
-              children: const [
-                _Slide(
-                  title: '₹100/day — banks owe YOU\nfor failed UPI',
-                  desc: 'RBI rules make banks pay compensation for delayed refunds.',
-                  icon: Icons.payments_rounded,
+            // top bar with skip
+            Padding(
+              padding: const EdgeInsets.only(top: 16, right: 16),
+              child: Align(
+                alignment: Alignment.topRight,
+                child: TextButton(
+                  onPressed: () => context.go('/home'),
+                  style: TextButton.styleFrom(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    foregroundColor: AppColors.textSecondaryLight,
+                  ),
+                  child: const Text(
+                    'Skip',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-                _Slide(
-                  title: 'FASTag double-cut?\n30 din ka window',
-                  desc: 'NPCI mandates 30 days to dispute toll deductions.',
-                  icon: Icons.directions_car_rounded,
-                ),
-                _Slide(
-                  title: 'We guide, you claim\nRBI-rule backed',
-                  desc: 'Smart deadlines, pre-made complaints, escalation ladder.',
-                  icon: Icons.gavel_rounded,
-                ),
-              ],
+              ),
             ),
-            Positioned(
-              top: 16,
-              right: 16,
-              child: TextButton(onPressed: () => context.go('/home'), child: const Text('Skip')),
+            // slides
+            Expanded(
+              child: PageView.builder(
+                controller: _pc,
+                itemCount: _slides.length,
+                onPageChanged: (i) => setState(() => _page = i),
+                itemBuilder: (context, i) => _SlideView(
+              slide: _slides[i],
+              totalSlides: _slides.length,
             ),
-            Positioned(
-              bottom: 32,
-              left: 0,
-              right: 0,
+              ),
+            ),
+            // bottom stack: dots + CTA + disclaimer
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(3, (i) {
-                      final active = _page == i;
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: active ? 24 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: active ? const Color(0xFF16C784) : Colors.grey.shade400,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 24),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                  PageDots(count: _slides.length, current: _page),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
                     child: FilledButton(
                       onPressed: _next,
                       style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(52),
-                        backgroundColor: const Color(0xFF0B3D2E),
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadii.md),
+                        ),
                       ),
-                      child: Text(_page < 2 ? 'Next' : 'Start free'),
+                      child: Text(
+                        _slides[_page].ctaLabel,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Independent tool · Not affiliated with RBI/NPCI/banks',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textTertiaryLight,
+                      height: 1.4,
                     ),
                   ),
                 ],
-              ),
-            ),
-            const Positioned(
-              bottom: 8,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    'Independent tool · Not affiliated with RBI/NPCI/banks',
-                    style: TextStyle(fontSize: 10, color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
               ),
             ),
           ],
@@ -115,26 +146,64 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 }
 
-class _Slide extends StatelessWidget {
+class _SlideData {
+  final String emoji;
   final String title;
   final String desc;
-  final IconData icon;
-  const _Slide({required this.title, required this.desc, required this.icon});
+  final Color softColor;
+  final String ctaLabel;
+
+  const _SlideData({
+    required this.emoji,
+    required this.title,
+    required this.desc,
+    required this.softColor,
+    required this.ctaLabel,
+  });
+}
+
+class _SlideView extends StatelessWidget {
+  const _SlideView({required this.slide, required this.totalSlides});
+  final _SlideData slide;
+  final int totalSlides;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 96, color: const Color(0xFF16C784)),
-          const SizedBox(height: 24),
-          Text(title, textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, height: 1.2)),
-          const SizedBox(height: 16),
-          Text(desc, textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 15, color: Colors.grey)),
+          const Spacer(),
+          HeroEmojiCircle(emoji: slide.emoji, softColor: slide.softColor),
+          const SizedBox(height: 28),
+          Text(
+            slide.title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              height: 1.2,
+              color: AppColors.textPrimaryLight,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 310),
+            child: Text(
+              slide.desc,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+                height: 1.5,
+                color: AppColors.textSecondaryLight,
+              ),
+            ),
+          ),
+          const Spacer(),
         ],
       ),
     );

@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2m_npci_escalation",
+  "titleEn": "UPI P2M — NPCI portal escalation",
+  "titleHi": "UPI P2M — NPCI पोर्टल शिकायत",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "To: NPCI Dispute Redressal Portal (https://upihelp.npci.org.in)\n\nEscalating a UPI P2M dispute against {BANK_NAME}.\n\nUTR: {UTR}\nAmount: Rs. {AMOUNT}\nDate: {TXN_DATE}\nMerchant VPA: {VPA_PAYEE}\nPayer VPA: {VPA}\nBank complaint date: {COMPLAINT_DATE}\nBank ref: {TICKET_NO}\nDays elapsed: {DAYS_ELAPSED}\nCompensation claimed: Rs. {COMPENSATION_DUE}\n\nRelief: reverse Rs. {AMOUNT} + credit Rs. {COMPENSATION_DUE} as RBI TAT compensation.\n\nAttachments: bank statement, failed UPI screenshot, complaint acknowledgement.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "प्रति: NPCI विवाद निवारण पोर्टल (https://upihelp.npci.org.in)\n\n{BANK_NAME} के विरुद्ध UPI P2M विवाद बढ़ाता/बढ़ाती हूँ।\n\nUTR: {UTR}\nराशि: Rs. {AMOUNT}\nदिनांक: {TXN_DATE}\nव्यापारी VPA: {VPA_PAYEE}\nPayer VPA: {VPA}\nबैंक शिकायत दिनांक: {COMPLAINT_DATE}\nबैंक संदर्भ: {TICKET_NO}\nबीते दिन: {DAYS_ELAPSED}\nदावा किया मुआवज़ा: Rs. {COMPENSATION_DUE}\n\nराहत: Rs. {AMOUNT} रिवर्स + Rs. {COMPENSATION_DUE} RBI TAT मुआवज़ा जमा करें।\n\nसंलग्न: बैंक स्टेटमेंट, विफल UPI स्क्रीनशॉट, शिकायत स्वीकृति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

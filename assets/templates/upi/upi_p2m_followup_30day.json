@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2m_followup_30day",
+  "titleEn": "UPI P2M — 30-day follow-up reminder",
+  "titleHi": "UPI P2M — 30 दिन रिमाइंडर",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "Subject: Follow-up — Failed UPI P2M Transaction — 30 days elapsed — UTR {UTR}\n\nTo: {BANK_NAME} Nodal Officer,\n\nReference: complaint ref {TICKET_NO} dated {COMPLAINT_DATE} regarding failed UPI P2M transaction of Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE}.\n\n30 days have passed without resolution. Daily Rs. 100 compensation meter is active.\n\nTotal compensation due today: Rs. {COMPENSATION_DUE}.\n\nResolve within 48 hours, or I will approach NPCI and the RBI Ombudsman under RB-IOS 2026.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "विषय: फॉलो-अप — विफल UPI P2M लेनदेन — 30 दिन बीत गए — UTR {UTR}\n\nप्रति: {BANK_NAME} नोडल अधिकारी,\n\nसंदर्भ: शिकायत {TICKET_NO}, दिनांक {COMPLAINT_DATE}, विफल UPI P2M लेनदेन Rs. {AMOUNT} (UTR {UTR}), दिनांक {TXN_DATE}।\n\nबिना हल के 30 दिन बीत चुके हैं। Rs. 100/दिन मुआवज़ा मीटर सक्रिय है।\n\nआज कुल देय मुआवज़ा: Rs. {COMPENSATION_DUE}।\n\n48 घंटे के भीतर हल करें, अन्यथा मैं NPCI और RBI लोकपाल (RB-IOS 2026) के पास जाऊँगा/जाऊँगी।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}
