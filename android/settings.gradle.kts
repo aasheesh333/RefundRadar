@@ -21,6 +21,15 @@ plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
     id("com.android.application") version "9.0.1" apply false
     id("org.jetbrains.kotlin.android") version "2.3.20" apply false
+    // Native Firebase Crashlytics (B2 + B8).
+    // Required so that `id("com.google.firebase.crashlytics")` resolves in
+    // app/build.gradle.kts and so the native Crashlytics SDK gets the
+    // Firebase App ID + API key baked into the binary. Without these two
+    // plugins, `FirebaseCrashlytics.instance` calls throw `MissingPluginException`
+    // at runtime and the Crashlytics dashboard never sees crashes — even
+    // for hard native crashes that happen before any Dart code runs.
+    id("com.google.gms.google-services") version "4.4.2" apply false
+    id("com.google.firebase.crashlytics") version "3.0.2" apply false
 }
 
 include(":app")

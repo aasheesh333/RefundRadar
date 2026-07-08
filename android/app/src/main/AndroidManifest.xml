@@ -1,4 +1,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Firebase / RevenueCat / OneSignal / Firestore need network access.
+         Flutter plugins usually merge these via their own manifests, but we
+         declare them here explicitly so release builds are guaranteed to
+         retain them after resource shrinking. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- B6 reminders: scheduled local notifications. POST_NOTIFICATIONS is
+         required (runtime) on Android 13+. SCHEDULE_EXACT_ALARM is required
+         for exact `zonedSchedule` calls on Android 12+. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- B5 FCM: notification + data push delivery. -->
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <application
         android:label="Refund Radar"
         android:name="${applicationName}"

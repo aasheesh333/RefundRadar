@@ -27,6 +27,8 @@
 # Sensitive
 google-services.json
 GoogleService-Info.plist
+android/app/google-services.json
+android/google-services.json
 .env
 .env.local
 secrets/

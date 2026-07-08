@@ -2,7 +2,17 @@ plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    // Native Firebase plugins (B2 + B8).
+    //   google-services      → registers the native Firebase app metadata
+    //                           (App ID, API key) from google-services.json
+    //   firebase.crashlytics → maps obfuscated stack traces back to sources
+    //                           and uploads build symbols on assembleRelease.
+    // Order matters: google-services MUST be applied LAST (per Firebase docs).
+    id("com.google.firebase.crashlytics")
 }
+
+// google-services plugin must be applied at the very end of the file (after the
+// android {} block) — see `apply(plugin = ...)` at file bottom.
 
 android {
     namespace = "com.dhanuk.refundradar"
@@ -81,3 +91,10 @@ flutter {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
+
+// google-services plugin MUST be applied LAST — per Firebase docs it
+// requires the android {} block to already be evaluated so it can
+// resolve the applicationId. Applying via `apply(plugin = ...)` (rather
+// than adding it inside the `plugins {}` block above) lets us keep
+// ordering correct.
+apply(plugin = "com.google.gms.google-services")
