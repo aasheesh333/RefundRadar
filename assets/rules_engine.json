@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "disputeTypes": {
+    "upi_p2p": {"tatDays": 1, "tatBasis": "T+1", "compensationPerDay": 100, "chargebackWindowDays": 45, "escalationLevels": ["psp_app", "npci_portal", "rbi_ombudsman", "consumer_court"]},
+    "upi_p2m": {"tatDays": 5, "tatBasis": "T+5", "compensationPerDay": 100, "chargebackWindowDays": 45, "escalationLevels": ["psp_app", "npci_portal", "rbi_ombudsman", "consumer_court"]},
+    "atm": {"tatDays": 5, "tatBasis": "T+5", "compensationPerDay": 100, "escalationLevels": ["bank", "rbi_ombudsman"]},
+    "imps": {"tatDays": 1, "tatBasis": "T+1", "compensationPerDay": 100, "escalationLevels": ["bank", "npci_portal", "rbi_ombudsman"]},
+    "fastag": {"disputeWindowDays": 30, "typicalResolutionDays": 10, "escalationLevels": ["issuer_bank", "helpline_1033", "ihmcl_email", "npci_netc", "rbi_ombudsman"]},
+    "bank_charge": {"bankWindowDays": 30, "ombudsmanWindowDays": 90, "escalationLevels": ["bank", "rbi_ombudsman"]},
+    "wrong_transfer": {"guidanceOnly": true, "note": "No compensation right; depends on beneficiary consent. NPCI DRM within 3 days recommended.", "escalationLevels": ["beneficiary_bank", "npci_drm", "cyber_cell"]}
+  },
+  "escalationTargets": {
+    "npci_portal": {"url": "https://upihelp.npci.org.in"},
+    "rbi_ombudsman": {"scheme": "RB-IOS 2026 (effective 2026-07-01)", "url": "https://cms.rbi.org.in", "phone": "14448", "email": "cpc@rbi.org.in", "address": "Centralised Receipt and Processing Centre, 4th Floor, Sector 17, Chandigarh - 160017", "maxCompensationConsequentialLoss": 3000000, "maxCompensationHarassment": 300000, "fileWithinDaysAfterBankWindow": 90},
+    "helpline_1033": {"phone": "1033"},
+    "ihmcl_email": {"to": "falsededuction@ihmcl.com", "cc": "etc.nodal@ihmcl.com"},
+    "npci_netc": {"url": "https://www.npci.org.in/product/netc/netc-fastag-helpline"},
+    "consumer_court": {"url": "https://e-jagriti.gov.in"}
+  },
+  "fastagIssuers": [
+    {"id": "icici", "name": "ICICI Bank", "phone": "1800-2100-104", "channel": "ICICI eToll portal"},
+    {"id": "hdfc", "name": "HDFC Bank", "phone": "1800-120-1243", "email": "fastagdisputes@hdfcbank.com", "channel": "HDFC FASTag portal"},
+    {"id": "axis", "name": "Axis Bank", "phone": "1860-419-8585", "email": "etc.management@axis.bank.in", "channel": "Axis FASTag portal"},
+    {"id": "idfc", "name": "IDFC FIRST Bank", "phone": "1800-266-9970", "channel": "FIRSTforward app"},
+    {"id": "airtel", "name": "Airtel Payments Bank", "phone": "400 / 8800-688-006", "channel": "Airtel Thanks app"},
+    {"id": "sbi", "name": "SBI", "phone": "1800-110-018", "channel": "SBI FASTag portal"},
+    {"id": "bob", "name": "Bank of Baroda", "phone": "1800-103-4568", "channel": "BoB FASTag portal"},
+    {"id": "indusind", "name": "IndusInd Bank", "phone": "1860-500-5004", "channel": "IndusInd FASTag portal"},
+    {"id": "kotak", "name": "Kotak Mahindra", "phone": "1800-419-6606", "channel": "Kotak FASTag portal"},
+    {"id": "ausfb", "name": "AU Small Finance", "phone": "1800-1200-1200", "channel": "AU app/portal"},
+    {"id": "bajaj", "name": "Bajaj Finance", "phone": "1800-2100-260", "channel": "Bajaj Finserv app"},
+    {"id": "yes", "name": "Yes Bank", "phone": "1800-1200", "channel": "Yes Bank FASTag portal"},
+    {"id": "union", "name": "Union Bank", "phone": "1800-222-244", "channel": "Union FASTag portal"},
+    {"id": "federal", "name": "Federal Bank", "phone": "1800-266-9520", "channel": "Federal FASTag portal"},
+    {"id": "pnb", "name": "PNB", "phone": "080-67295310", "channel": "PNB FASTag portal"},
+    {"id": "canara", "name": "Canara Bank", "phone": "1800-103-3568", "channel": "Canara FASTag portal"},
+    {"id": "equitas", "name": "Equitas SFB", "phone": "1800-103-1222", "channel": "Equitas FASTag portal"},
+    {"id": "nhai", "name": "NHAI FASTag (bank-neutral)", "phone": "1033", "channel": "My FASTag App / 1033"}
+  ],
+  "fastagPaytmNote": "Paytm Payments Bank DISCONTINUED since 15 Mar 2024. NOT eligible for FASTag Annual Pass. Show migration flow.",
+  "fastagAnnualPass": {"amount": 3075, "validCrossings": 200, "validMonths": 12, "effectiveFrom": "2026-04-01", "activationChannel": "Rajmargyatra app / NHAI website"},
+  "officialLinks": {
+    "upi_complaints": "https://upihelp.npci.org.in",
+    "npci_main": "https://www.npci.org.in",
+    "npci_fastag_helpline": "https://www.npci.org.in/product/netc/netc-fastag-helpline",
+    "rbi_cms": "https://cms.rbi.org.in",
+    "rbi_complaints": "https://rbi.org.in/Scripts/Complaints.aspx",
+    "ihmcl": "https://ihmcl.co.in",
+    "nhai": "https://nhai.gov.in",
+    "consumer_court": "https://e-jagriti.gov.in"
+  },
+  "freeTemplateIds": ["upi_p2p_bank_complaint", "fastag_ihmcl_false_deduction_generic", "bank_charge_reversal_basic", "wrong_transfer_bank_request", "fastag_1033_call_script"],
+  "disclaimer": "Refund Radar is an independent informational tool. It is not affiliated with RBI, NPCI, NHAI, IHMCL, or any bank. We never ask for banking passwords, OTPs, or PINs. Complaints are filed by you on official portals. Compensation estimates are based on published RBI/NPCI rules and actual outcomes depend on your bank/regulator."
+}

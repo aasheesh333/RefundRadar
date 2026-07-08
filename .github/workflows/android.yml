@@ -1,0 +1,70 @@
+name: Build Debug APK
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate localization (if needed)
+        run: flutter gen-l10n || true
+
+      - name: Verify analysis
+        run: flutter analyze || true
+        continue-on-error: true
+
+      - name: Run tests
+        run: flutter test
+        continue-on-error: true
+
+      - name: Decode Firebase config (if secret set)
+        env:
+          FIREBASE_CONFIG_ANDROID: ${{ secrets.FIREBASE_CONFIG_ANDROID }}
+        run: |
+          if [ -n "$FIREBASE_CONFIG_ANDROID" ]; then
+            echo "$FIREBASE_CONFIG_ANDROID" | base64 -d > android/app/google-services.json
+            echo "google-services.json created"
+          else
+            echo "FIREBASE_CONFIG_ANDROID not set - using placeholder config"
+          fi
+
+      - name: Build debug APK
+        run: flutter build apk --debug --no-tree-shake-icons
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: refund-radar-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 30
+
+      - name: List build output
+        run: ls -lh build/app/outputs/flutter-apk/ || true

@@ -1,0 +1,846 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Refund Radar — AI Agent Build Spec (Production-Ready, Flutter + Firebase)</title><meta name="data-notion-page-icon" content="🤖"/><link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%A4%96%3C%2Ftext%3E%3C%2Fsvg%3E"/><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+/* For default-background callouts, render the border outline. */
+.callout.block-color-default_background {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+figure,
+aside,
+details {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+
+	table.collection-content {
+		width: 100%;
+		table-layout: fixed;
+	}
+
+	table.collection-content th,
+	table.collection-content td {
+		overflow-wrap: anywhere;
+	}
+
+	table.collection-content td > .user,
+	table.collection-content td > time {
+		white-space: pre-wrap;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content-wrapper {
+	overflow-x: auto;
+}
+
+@media only print {
+	.collection-content-wrapper {
+		overflow-x: visible;
+	}
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	gap: 46px;
+}
+
+.column {
+	min-width: 0;
+	overflow: hidden;
+}
+
+.column > *:first-child {
+	margin-top: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding-inline: 0.125rem;
+	padding-block: 0.375rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+table {
+	border-collapse: collapse;
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol.numbered-list.numbered-list-digits-2 {
+	padding-inline-start: 2em;
+}
+
+ol.numbered-list.numbered-list-digits-3plus {
+	padding-inline-start: 2.4em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+/*
+ * Render emoji icons using a ::before pseudo-element to keep the glyph
+ * out of the DOM textContent traversal. This avoids double-rendering icons
+ * in callouts and page titles.
+ * NOTE(slim/html-export-pseudo-icons): I can't tagref this because it will
+ * flag as a duplicate tag after codegen.
+ */
+.icon[data-emoji]::before {
+	content: attr(data-emoji);
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	margin-right: 0.4em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.tab {
+	margin: 1.25em 0;
+	padding-inline: 1rem;
+	border: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style><style>@import url('https://cdn.jsdelivr.net/npm/katex@0.16.25/dist/katex-swap.min.css')</style></head><body><article id="53d24860-db9b-4940-877c-f1dd2ee007b9" class="page sans" data-notion-page-icon="🤖"><header><div class="page-header-icon undefined"><span class="icon" data-emoji="🤖"></span></div><h1 class="page-title" dir="auto">Refund Radar — AI Agent Build Spec (Production-Ready, Flutter + Firebase)</h1><p class="page-description" dir="auto"></p></header><div class="page-body"><aside class="block-color-red_background callout" data-notion-callout="" data-notion-callout-icon="🤖" data-notion-callout-background="red_background" style="white-space:pre-wrap;display:flex" id="85da4caf-e26a-4df2-b250-31d1cf3b1bff" dir="ltr"><div style="font-size:1.5em"><span class="icon" data-emoji="🤖"></span></div><div style="width:100%"><p id="617b7a27-aa94-4cc7-a734-dd5e7377245c" class="" dir="auto"><strong>FOR THE AI AGENT — READ THIS ENTIRE PAGE BEFORE WRITING ANY CODE.</strong></p><p id="d48a50c5-01cc-4d3e-80f0-e0350ea26a74" class="" dir="auto">This page is a complete, self-contained specification to build the app &quot;Refund Radar&quot; to production quality. Follow these rules:</p><ol type="1" id="c01ff094-7209-4f13-b99f-1edbd8e9a8c5" class="numbered-list" start="1" dir="auto"><li>Work through the <strong>Build Checklist (Section 7)</strong> strictly in order. Check off each item as you complete it.</li></ol><ol type="1" id="7fb1a2ae-f461-4510-8253-ddf232d4ad1f" class="numbered-list" start="2" dir="auto"><li><strong>Never invent regulatory facts.</strong> All government rules, timelines, contacts, and URLs are in Section 2 — it is the single source of truth. If something is not specified there, use the fallback behavior defined in Section 5.</li></ol><ol type="1" id="3a8d486d-0aec-4b75-b5bc-1c613ec21d61" class="numbered-list" start="3" dir="auto"><li><strong>Ask the user ONLY at the &quot;🔑 ASK USER&quot; gates</strong> (credentials, paid accounts, store submissions). For everything else, decide yourself using this spec. Do not ask design or architecture questions — they are fully specified here.</li></ol><ol type="1" id="bb70ec6c-e8a2-47c0-b088-301bf2527df5" class="numbered-list" start="4" dir="auto"><li>Tech constraints: <strong>Flutter (Dart, latest stable), Firebase FREE Spark plan only (NO Cloud Functions, NO paid APIs), RevenueCat SDK for all monetization, flutter_local_notifications for reminders (no server-side push scheduling).</strong></li></ol><ol type="1" id="e2a16f4a-cc15-40b4-8165-da806e648253" class="numbered-list" start="5" dir="auto"><li>For UI/UX, use the <strong>OpenDesign MCP</strong> with the exact design system in Section 6. Do not improvise a different visual style.</li></ol><ol type="1" id="5fd8e5fd-1706-411e-979b-74138e0ed37c" class="numbered-list" start="6" dir="auto"><li>All user-facing text must be bilingual: English + Hindi (हिन्दी). String keys are defined in Section 6.5.</li></ol><ol type="1" id="b34b82a2-055b-408a-a0b4-213332946949" class="numbered-list" start="7" dir="auto"><li>The app is an <strong>information &amp; guidance tool only</strong>. It never handles money, never asks for banking credentials/OTP/PIN, and never files complaints on the user&#x27;s behalf. Section 11 disclaimers are mandatory in the UI.</li></ol></div></aside><h1 id="2a172ccf-6015-4036-8703-0e2370532e3f" style="display:inline-block" dir="auto">1. Product Definition</h1><ul id="6b16b9ad-c001-47b2-a435-ccfa2ddf8909" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Name:</strong> Refund Radar · <strong>Tagline:</strong> &quot;Bank owes you. We track it.&quot; / &quot;पैसा अटका है? हम वसूली का रास्ता दिखाएँगे।&quot;</li></ul><ul id="2c085b65-20da-4d9a-ab5d-21fa98a1a77b" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>What it does:</strong> Helps Indian users recover money stuck in (a) failed UPI transactions, (b) wrong/double FASTag toll deductions, (c) wrong bank charges — by calculating the compensation legally owed under RBI rules, generating ready-made complaints, tracking deadlines, and guiding escalation up to the RBI Ombudsman.</li></ul><ul id="fbd86e57-29ba-4149-8472-52b9fabbef3c" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>What it does NOT do:</strong> Handle payments, connect to bank accounts, read OTPs, file complaints automatically, give legal advice.</li></ul><ul id="b69aa95d-a646-443e-a7db-e4832cc2958d" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Platforms:</strong> Android + iOS from one Flutter codebase. Android first.</li></ul><ul id="888e94e5-54a2-405c-951a-e7c2b5aac477" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Monetization:</strong> Freemium via RevenueCat — Free: 1 active dispute + 5 starter templates only. Premium ₹99/month or ₹499/year: unlimited disputes + <strong>full 50+ complaint template library</strong> + Ombudsman letter generator + family disputes.</li></ul><ul id="d372938a-e27f-4d1e-9fee-dfbe41ca871e" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Success criteria:</strong> App builds with zero analyzer errors, all flows work offline-first, passes the QA checklist (Section 9), and is submitted to both stores (Section 10).</li></ul><h1 id="e67fc128-d204-4a75-bf92-f38ec2e2ed0e" style="display:inline-block" dir="auto">2. Verified Government System Knowledge Base (SOURCE OF TRUTH)</h1><aside class="block-color-yellow_background callout" data-notion-callout="" data-notion-callout-icon="⚠️" data-notion-callout-background="yellow_background" style="white-space:pre-wrap;display:flex" id="9e62012b-3f01-4878-bcd4-9923e4498783" dir="ltr"><div style="font-size:1.5em"><span class="icon" data-emoji="⚠️"></span></div><div style="width:100%"><p id="a06f8cea-6f7d-4368-a54d-2f7d6ea122bb" class="" dir="auto">Agent: hardcode nothing from this section directly into widgets. Load it from the bundled <code>rules_engine.json</code> asset (Section 5) so rules can be updated without code changes. The JSON content below IS this data.</p></div></aside><h2 id="00303063-de1a-440d-9bb5-b35ce6a58b47" style="display:inline-block" dir="auto">2.1 UPI failed transaction rules (RBI TAT Harmonisation Circular, 20 Sep 2019)</h2><table id="964d0795-ead8-4858-9f97-668fc964761f" class="simple-table" dir="ltr"><thead class="simple-table-header"><tr id="18b97e7d-1851-4769-b9d3-bdaa5a442bd1" dir="ltr"><th id=":GdF" class="simple-table-header-color simple-table-header">Scenario</th><th id="NfRz" class="simple-table-header-color simple-table-header">Bank&#x27;s deadline (auto-reversal)</th><th id="k[?o" class="simple-table-header-color simple-table-header">Compensation if delayed</th></tr></thead><tbody><tr id="ac256714-76f2-47a2-8aa8-ba654b4abdfb" dir="ltr"><td id=":GdF" class="">UPI P2P: account debited, beneficiary not credited</td><td id="NfRz" class="">T+1 day (T = transaction date)</td><td id="k[?o" class="">₹100/day beyond T+1</td></tr><tr id="931ea2d6-3b6a-4337-8ea7-c80ebcc5ecbb" dir="ltr"><td id=":GdF" class="">UPI P2M (merchant): debited, confirmation not received</td><td id="NfRz" class="">T+5 days</td><td id="k[?o" class="">₹100/day beyond T+5</td></tr><tr id="4ce2c27d-8868-4b17-91d9-20dc0780312b" dir="ltr"><td id=":GdF" class="">ATM: cash not dispensed but debited</td><td id="NfRz" class="">T+5 days</td><td id="k[?o" class="">₹100/day beyond T+5</td></tr><tr id="0008662e-ebb5-4098-aa8c-b93dbd1548dd" dir="ltr"><td id=":GdF" class="">IMPS: debited, beneficiary not credited</td><td id="NfRz" class="">T+1 day</td><td id="k[?o" class="">₹100/day beyond T+1</td></tr></tbody></table><ul id="7a6a1f37-9ea2-4e0c-bdb0-eaf0aec0ea78" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Compensation is automatic in principle — customer entitled without asking, but in practice must demand it. The counter in the app = days elapsed beyond deadline × ₹100.</li></ul><ul id="1e91bdfd-ae31-4f10-a3b8-ba74bc363d0e" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Important honest-UX rule:</strong> money sent to a WRONG UPI ID by the user&#x27;s own mistake is NOT covered — recovery depends on beneficiary consent via the bank/NPCI process. The app must set this expectation clearly and route these to a separate &quot;wrong transfer&quot; guidance flow.</li></ul><ul id="f51bfb4c-fcb8-4dcd-9baa-e2f11a9946f4" class="bulleted-list" dir="auto"><li style="list-style-type:disc">NPCI chargeback window: disputes must be raised within <strong>45 days</strong> of transaction (uniform across UPI categories since Jul 2024).</li></ul><ul id="c96f5584-f595-4711-abe6-c390452fa49b" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Update in force since 15 Jul 2025:</strong> NPCI simplified UPI chargeback processing — remitting banks can re-raise good-faith chargebacks that were earlier declined, without NPCI whitelisting. This is a bank-side change (faster resolution); the user-facing 45-day window and RBI TAT compensation rules above are UNCHANGED.</li></ul><h2 id="31542f03-d34c-4abb-ab94-fdb73104b6b4" style="display:inline-block" dir="auto">2.2 UPI escalation ladder (exact order — app&#x27;s Deadline Tracker follows this)</h2><ol type="1" id="b4700982-30b2-444e-80cd-8f502ea36196" class="numbered-list" start="1" dir="auto"><li><strong>Level 1 (mandatory first):</strong> Complaint in the UPI app (GPay/PhonePe/Paytm = TPAP) → it auto-routes to the PSP bank via NPCI&#x27;s UDIR system. Also/or complaint to user&#x27;s own bank. Note complaint/ticket number. Wait: bank has up to 30 days.</li></ol><ol type="1" id="a974521f-86d4-4b40-aa7a-8f3bbc628343" class="numbered-list" start="2" dir="auto"><li><strong>Level 2:</strong> NPCI Dispute Redressal portal: <code>https://upihelp.npci.org.in</code> — needs UTR/Transaction ID, amount, date, VPA, bank statement screenshot.</li></ol><ol type="1" id="fe697327-16a5-4c0a-9c4e-7a64903757de" class="numbered-list" start="3" dir="auto"><li><strong>Level 3 (after 30 days no resolution / unsatisfactory reply, within 90 days of that):</strong> RBI Ombudsman — portal <code>https://cms.rbi.org.in</code> (24×7, free), helpline <strong>14448</strong>, email <code>cpc@rbi.org.in</code>, physical: Centralised Receipt and Processing Centre, 4th Floor, Sector 17, Chandigarh - 160017. File under &quot;Deficiency in Service&quot;. Governed by <strong>RB-IOS 2026</strong> (in force since 1 July 2026, supersedes RB-IOS 2021): Ombudsman can award up to <strong>₹30 lakh</strong> for consequential loss PLUS up to <strong>₹3 lakh</strong> additionally for loss of time, expenses, harassment/mental anguish. There is NO cap on the disputed amount itself.</li></ol><ol type="1" id="47a9db0f-f610-4c51-abc5-941e2d42e55c" class="numbered-list" start="4" dir="auto"><li><strong>Level 4 (major loss):</strong> Consumer court online: <code>https://e-jagriti.gov.in</code>.</li></ol><h2 id="8e662212-34ec-46c3-8024-409acc7a0212" style="display:inline-block" dir="auto">2.3 FASTag rules + escalation</h2><ul id="538fe869-d5e0-45c0-976b-0540e39da118" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Dispute window: 30 days</strong> from transaction date (NPCI NETC rules) — app must show urgency countdown.</li></ul><ul id="1241b5c4-e62b-44f0-a88c-b7e76bb4b4e2" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Typical provider resolution timeline: 7–10 working days.</li></ul><ul id="d8198ecb-4346-43f3-9e45-f01df05475a5" class="bulleted-list" dir="auto"><li style="list-style-type:disc">If false deduction is established: <strong>chargeback issued to customer + ₹1 lakh penalty on the toll operator</strong> (IHMCL policy, confirmed by IHMCL officials).</li></ul><ul id="c9d2cd17-a496-4659-a464-a81ed4f45db8" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Blacklist rule: FASTag recharged within 10 minutes of an attempted transaction at plaza → user may be eligible for penalty refund.</li></ul><ul id="704b5b1c-ff79-4978-8641-a800b9a6598c" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>FASTag Annual Pass (live since 15 Aug 2025):</strong> private cars/jeeps/vans only — <strong>₹3,075 for FY 2026–27</strong> (revised from ₹3,000 w.e.f. 1 Apr 2026), valid 200 toll crossings or 1 year (whichever first), activation ONLY via Rajmargyatra app / NHAI website. Blacklisted and Paytm FASTags are not eligible. Annual-pass wrong deductions follow the same escalation ladder below — the app should detect &quot;annual pass active but toll still deducted&quot; as a dispute type.</li></ul><ul id="71e3dfcc-78fd-426c-a0f0-b4249d9bf92f" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>NPCI NETC rule effective 17 Feb 2026:</strong> FASTag transactions must be settled within a reasonable time of the vehicle crossing the plaza — late/delayed deductions long after crossing are disputable on this specific ground.</li></ul><ul id="52697182-1ac4-484e-ade0-475d594313cf" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Escalation ladder:</strong><ol type="1" id="34d6df2e-ef32-4de3-8607-964dc568b3d4" class="numbered-list" start="1" dir="auto"><li><strong>Issuer bank/app</strong> dispute section (bank-wise details in 2.4) against the exact transaction ID.</li></ol><ol type="1" id="dac0101f-0ca4-4659-80d3-7e3001463b21" class="numbered-list" start="2" dir="auto"><li><strong>NHAI Helpline 1033</strong> (24×7, multilingual, covers FASTag complaints, toll charge issues) — give plaza name, lane, timestamp, vehicle no., FASTag ID.</li></ol><ol type="1" id="5011879c-7c78-48de-9af8-f780edc48474" class="numbered-list" start="3" dir="auto"><li><strong>IHMCL email:</strong> <code>falsededuction@ihmcl.com</code> (false deductions — official chargeback channel) and <code>etc.nodal@ihmcl.com</code> (FASTag complaints nodal). Template in 2.6.</li></ol><ol type="1" id="7c05e563-294e-4d8a-a7a3-411b0215703b" class="numbered-list" start="4" dir="auto"><li><strong>NPCI NETC</strong> escalation: <code>netc.org.in</code> / NPCI NETC helpline page.</li></ol><ol type="1" id="4620b448-122c-491f-8bf2-517bb973484b" class="numbered-list" start="5" dir="auto"><li><strong>RBI Ombudsman</strong> <code>cms.rbi.org.in</code> (FASTag issuers are RBI-regulated payment participants).</li></ol></li></ul><h2 id="5882cc10-449c-499b-ba83-2cc1c38b0ea5" style="display:inline-block" dir="auto">2.4 FASTag issuer banks — dispute contacts (verified from NPCI/NHAI official lists)</h2><table id="67770aaf-f314-42dc-894a-3ca11548c65c" class="simple-table" dir="ltr"><thead class="simple-table-header"><tr id="84d8b42b-1024-4465-beb3-55e774b94abd" dir="ltr"><th id="MNgF" class="simple-table-header-color simple-table-header">Issuer</th><th id="\b\c" class="simple-table-header-color simple-table-header">Helpline</th><th id="LzGG" class="simple-table-header-color simple-table-header">Dispute channel</th></tr></thead><tbody><tr id="3fa67621-d47d-42b1-9712-077dcf27ed6d" dir="ltr"><td id="MNgF" class="">ICICI Bank</td><td id="\b\c" class="">1800-2100-104</td><td id="LzGG" class="">eToll portal → raise complaint on transaction</td></tr><tr id="600006de-d72d-4729-b0bf-d135e5cf4108" dir="ltr"><td id="MNgF" class="">HDFC Bank</td><td id="\b\c" class="">1800-120-1243</td><td id="LzGG" class=""><a href="mailto:fastagdisputes@hdfcbank.com">fastagdisputes@hdfcbank.com</a> (from registered email) or HDFC FASTag portal</td></tr><tr id="f6460004-b1e8-4c53-8b00-71d34771bdd9" dir="ltr"><td id="MNgF" class="">Axis Bank</td><td id="\b\c" class="">1860-419-8585</td><td id="LzGG" class=""><a href="mailto:etc.management@axis.bank.in">etc.management@axis.bank.in</a> or Axis FASTag portal</td></tr><tr id="dcb7916c-72ea-4abe-ad8c-2c3a1b8cfb3e" dir="ltr"><td id="MNgF" class="">IDFC FIRST Bank</td><td id="\b\c" class="">1800-266-9970</td><td id="LzGG" class="">FIRSTforward app/portal → My Dispute tab → select transaction</td></tr><tr id="ad9e5b27-563b-4dc2-85a9-92ab9990c23f" dir="ltr"><td id="MNgF" class="">Paytm Payments Bank ⚠️ DISCONTINUED</td><td id="\b\c" class="">1800-120-4210 (legacy support only)</td><td id="LzGG" class="">Shut by RBI action — no new tags/recharges since 15 Mar 2024; removed from NHAI authorized issuer list. App must NOT list Paytm as an active issuer. Show a migration flow instead: close old tag + claim balance/security-deposit refund via helpline, then get a new tag from another issuer. Paytm tags are also NOT eligible for the FASTag Annual Pass.</td></tr><tr id="fc9ae17f-18cf-4d39-b20a-66a0c10dffbe" dir="ltr"><td id="MNgF" class="">Airtel Payments Bank</td><td id="\b\c" class="">400 / 8800-688-006</td><td id="LzGG" class="">Airtel Thanks app → FASTag support</td></tr><tr id="3d40b3f3-4be5-4321-9940-6b74c13e7c5f" dir="ltr"><td id="MNgF" class="">SBI</td><td id="\b\c" class="">1800-110-018</td><td id="LzGG" class="">SBI FASTag portal → complaint</td></tr><tr id="ad42f466-4a2e-414e-9c28-5292168ef4c2" dir="ltr"><td id="MNgF" class="">Bank of Baroda</td><td id="\b\c" class="">1800-103-4568</td><td id="LzGG" class="">BoB FASTag portal</td></tr><tr id="8409d96e-a936-49a4-8c53-9a05a7c5ce37" dir="ltr"><td id="MNgF" class="">IndusInd Bank</td><td id="\b\c" class="">1860-500-5004</td><td id="LzGG" class="">IndusInd FASTag portal</td></tr><tr id="8cfd19bc-2b61-46a7-beba-05e4102d3ea3" dir="ltr"><td id="MNgF" class="">Kotak Mahindra</td><td id="\b\c" class="">1800-419-6606</td><td id="LzGG" class="">Kotak FASTag portal</td></tr><tr id="4cee747a-8e24-445a-ab3f-043a2564257c" dir="ltr"><td id="MNgF" class="">AU Small Finance</td><td id="\b\c" class="">1800-1200-1200</td><td id="LzGG" class="">AU app/portal</td></tr><tr id="de676499-c9a8-419a-9633-2be1a611ecbd" dir="ltr"><td id="MNgF" class="">Bajaj Finance</td><td id="\b\c" class="">1800-2100-260</td><td id="LzGG" class="">Bajaj Finserv app → transaction → RAISE A DISPUTE</td></tr><tr id="d6899af4-b6ac-4144-8128-cce78312762f" dir="ltr"><td id="MNgF" class="">Yes Bank</td><td id="\b\c" class="">1800-1200</td><td id="LzGG" class="">Yes Bank FASTag portal</td></tr><tr id="a3a17050-dde4-4a84-87ed-e8679a097629" dir="ltr"><td id="MNgF" class="">Union Bank</td><td id="\b\c" class="">1800-222-244</td><td id="LzGG" class="">Union FASTag portal</td></tr><tr id="1e8c1e2b-827b-4c06-a82a-24058b469b7d" dir="ltr"><td id="MNgF" class="">Federal Bank</td><td id="\b\c" class="">1800-266-9520</td><td id="LzGG" class="">Federal FASTag portal</td></tr><tr id="7d901952-8fbe-48a4-847c-1b7214690e22" dir="ltr"><td id="MNgF" class="">PNB</td><td id="\b\c" class="">080-67295310</td><td id="LzGG" class="">PNB FASTag portal</td></tr><tr id="062666b2-032d-459c-9352-4e5aa0b5cd1d" dir="ltr"><td id="MNgF" class="">Canara Bank</td><td id="\b\c" class="">1800-103-3568</td><td id="LzGG" class="">Canara FASTag portal</td></tr><tr id="0c9bfbd5-582d-4eef-91d0-c6d5448a49a2" dir="ltr"><td id="MNgF" class="">Equitas SFB</td><td id="\b\c" class="">1800-103-1222</td><td id="LzGG" class="">Equitas FASTag portal</td></tr><tr id="bebf9f13-ff7b-4eef-bff7-0baecdda638a" dir="ltr"><td id="MNgF" class="">NHAI FASTag (bank-neutral)</td><td id="\b\c" class="">1033</td><td id="LzGG" class="">My FASTag App / 1033</td></tr></tbody></table><ul id="e1598c21-94af-4e96-9f92-1e2ccc4ac583" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Agent: verify each helpline against <code>https://www.npci.org.in/product/netc/netc-fastag-helpline</code> during build (it paginates — capture all 4 pages) and keep the canonical copy in <code>rules_engine.json</code>. If a number conflicts, NPCI page wins.</li></ul><h2 id="c5524906-de8d-4067-811d-5a1022f4f0b2" style="display:inline-block" dir="auto">2.5 Bank charges / general banking complaints</h2><ol type="1" id="d55f1f9e-9992-4f11-b086-e3b8316d74bb" class="numbered-list" start="1" dir="auto"><li>Written complaint to the bank (app/email/branch), keep ticket number. Bank window: <strong>30 days</strong>.</li></ol><ol type="1" id="d48ec1d3-65b1-4c25-992a-181c630cb61f" class="numbered-list" start="2" dir="auto"><li>No reply in 30 days / rejected / unsatisfactory → <strong>RBI Ombudsman via CMS portal within 90 days</strong>: <code>cms.rbi.org.in</code>, helpline 14448. Free. Covers banks, NBFCs, payment participants. Compensation possible up to ₹30 lakh for consequential loss (+ up to ₹3 lakh for time/harassment) per <strong>RB-IOS 2026</strong>, in force since 1 July 2026.</li></ol><ol type="1" id="a5de80ca-f2f2-4280-8c48-4275e06235da" class="numbered-list" start="3" dir="auto"><li>RBI CMS also accepts complaints for wrong/excess charges, delayed refunds, delayed fund transfers.</li></ol><h2 id="c0af3609-3aac-4cb1-8734-d350afdbc334" style="display:inline-block" dir="auto">2.6 Complaint templates (bundle as assets; app fills {placeholders})</h2><p id="f01b143a-bea4-4376-9d15-37677e52ad8b" class="" dir="auto"><strong>Template A — IHMCL false deduction email (To: </strong><strong><a href="mailto:falsededuction@ihmcl.com">falsededuction@ihmcl.com</a></strong><strong>, CC: </strong><strong><a href="mailto:etc.nodal@ihmcl.com">etc.nodal@ihmcl.com</a></strong><strong>):</strong></p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-jsx.min.js" integrity="sha512-m3JYEI6gx5fh9jF10FjGoMzVKcV2N6nchcDcqPCdI1L3R2WQV7br2XVNR8iTLb2daOMRl3zldbcfT40xU2ntVw==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><pre id="06843a17-222b-4880-87b0-34d628158f06" class="code code-wrap" data-notion-code-syntax="jsx"><code class="language-jsx" style="white-space:pre-wrap;word-break:break-all">Subject: False FASTag Deduction — Chargeback Request — Vehicle {VEHICLE_NO}
+
+Dear IHMCL Team,
+
+I wish to report an incorrect FASTag deduction and request a chargeback.
+
+- Vehicle Number: {VEHICLE_NO}
+- FASTag ID / Tag Serial: {TAG_ID}
+- Issuer Bank: {ISSUER_BANK}
+- Transaction ID: {TXN_ID}
+- Date &amp; Time of deduction: {TXN_DATETIME}
+- Toll Plaza (as per SMS/statement): {PLAZA_NAME}
+- Amount deducted: Rs. {AMOUNT}
+- Issue type: {ISSUE_TYPE: double deduction / deduction without crossing / wrong vehicle class}
+- Evidence attached: bank/tag statement screenshot, {OTHER_EVIDENCE}
+
+My vehicle {DID_NOT_CROSS_TEXT}. I request investigation and immediate chargeback as per NETC guidelines. I have also raised complaint {BANK_TICKET_NO} with my issuer bank on {BANK_COMPLAINT_DATE} and reported on the 1033 helpline (ref: {HELPLINE_REF}).
+
+Regards,
+{USER_NAME}
+{MOBILE_NO} (FASTag registered)</code></pre><p id="48f4f786-b225-4281-bb71-922dbb9b3c94" class="" dir="auto"><strong>Template B — Bank UPI failed-transaction complaint (in-app/email):</strong></p><pre id="30987f46-6849-4023-9b1e-e497e62c58e1" class="code code-wrap" data-notion-code-syntax="jsx"><code class="language-jsx" style="white-space:pre-wrap;word-break:break-all">Subject: Failed UPI Transaction — Refund + RBI TAT Compensation Demand — {UTR}
+
+Dear {BANK_NAME} Team,
+
+On {TXN_DATE}, Rs. {AMOUNT} was debited from my account {ACCOUNT_LAST4} via UPI (UTR: {UTR}, VPA: {VPA}) but the beneficiary was not credited / the transaction failed.
+
+As per RBI&#x27;s Harmonisation of TAT circular (DPSS.CO.PD No.629/02.01.014/2019-20 dated 20.09.2019), the amount must be auto-reversed within {TAT_DEADLINE}, failing which compensation of Rs. 100 per day is payable to me without my asking.
+
+{DAYS_ELAPSED} days have passed. I request: (1) immediate reversal of Rs. {AMOUNT}, and (2) compensation of Rs. {COMPENSATION_DUE} for the delay.
+
+If this is not resolved within 30 days of this complaint, I will escalate to the RBI Ombudsman via cms.rbi.org.in.
+
+Complaint reference (if any): {TICKET_NO}
+
+{USER_NAME}, {MOBILE_NO}</code></pre><p id="21b11d45-bd7e-4907-b715-b72691242cc8" class="" dir="auto"><strong>Template C — RBI Ombudsman complaint summary (user pastes into </strong><strong><a href="http://cms.rbi.org.in">cms.rbi.org.in</a></strong><strong>):</strong></p><pre id="97c61f37-7c5b-466e-a9dc-20be502db5a1" class="code code-wrap" data-notion-code-syntax="jsx"><code class="language-jsx" style="white-space:pre-wrap;word-break:break-all">Complaint against: {ENTITY_NAME} ({ENTITY_TYPE: Bank / Payment System Participant})
+Category: Deficiency in Service — {SUBCATEGORY: failed transaction not reversed / wrong charges / FASTag wrong deduction}
+
+Facts:
+1. On {TXN_DATE}, {SHORT_FACTS}.
+2. I complained to the entity on {COMPLAINT_DATE} (ticket {TICKET_NO}).
+3. {OUTCOME: No reply for 30 days / Rejected on {DATE} / Unsatisfactory reply}.
+4. Under RBI&#x27;s TAT Harmonisation circular I am entitled to reversal + Rs.100/day compensation. Total due: Rs. {TOTAL}.
+
+Relief sought: Refund of Rs. {AMOUNT} + compensation Rs. {COMPENSATION_DUE} + Rs. {HARASSMENT_AMOUNT} for time and effort as per RB-IOS 2026.
+
+Documents: transaction proof, complaint acknowledgement, bank reply (if any).</code></pre><h2 id="3d66cc8c-8c60-441d-90a6-deb79532b47f" style="display:inline-block" dir="auto">2.6.1 Template Library — 50+ templates (the paid moat)</h2><aside class="block-color-purple_background callout" data-notion-callout="" data-notion-callout-icon="📚" data-notion-callout-background="purple_background" style="white-space:pre-wrap;display:flex" id="df401e6a-f287-4abe-a6d8-75a84c0b5155" dir="ltr"><div style="font-size:1.5em"><span class="icon" data-emoji="📚"></span></div><div style="width:100%"><p id="83956a66-b614-4f41-bc68-54aad1c3bac2" class="" dir="auto">Agent: Templates A–C above are the BASE bodies. Expand them into a library of <strong>50+ unique templates</strong> stored as JSON assets in <code>assets/templates/</code> — each file: <code>{ id, titleEn, titleHi, category, escalationLevel, isPremium, bodyEn, bodyHi }</code> with the same <code>{PLACEHOLDER}</code> convention. Every template must exist in BOTH English and Hindi.</p></div></aside><p id="d2bb36de-4fd4-4e12-ac73-4f8120a6191d" class="" dir="auto"><strong>Catalog to build (51 unique templates):</strong></p><table id="425e02fa-c593-40fc-adfe-7b4782d90c3f" class="simple-table" dir="ltr"><thead class="simple-table-header"><tr id="45e9ce82-30ff-4723-a7b8-b058ccd6f414" dir="ltr"><th id="^bLR" class="simple-table-header-color simple-table-header">Category</th><th id="DW;D" class="simple-table-header-color simple-table-header">Count</th><th id="fR[n" class="simple-table-header-color simple-table-header">Templates</th></tr></thead><tbody><tr id="2ee1045d-0ff5-40f0-86cf-a8ac379bbb6b" dir="ltr"><td id="^bLR" class="">UPI / IMPS / ATM</td><td id="DW;D" class="">16</td><td id="fR[n" class="">4 dispute types (upi_p2p, upi_p2m, atm, imps) × 4 letters each: Level-1 bank complaint (Template B base), 30-day follow-up reminder, NPCI portal escalation summary, pre-Ombudsman final notice</td></tr><tr id="091899bd-de13-47ae-9a83-c3619c14d70b" dir="ltr"><td id="^bLR" class="">FASTag</td><td id="DW;D" class="">17</td><td id="fR[n" class="">Issuer-specific dispute emails for top 10 issuers (merge contacts from 2.4 into greeting/recipient), IHMCL false-deduction email in 3 variants (double deduction / deduction without crossing / wrong vehicle class — Template A base), 1033 call script (what to say + info to keep ready), Annual Pass (Rajmargyatra) / plaza monthly-pass wrong charge, tag closure balance refund claim, acquirer-bank escalation</td></tr><tr id="36904758-f474-43e0-970c-be12dc1b7a3d" dir="ltr"><td id="^bLR" class="">Bank charges</td><td id="DW;D" class="">6</td><td id="fR[n" class="">Wrong/unknown charge reversal, hidden fee dispute, minimum-balance penalty waiver request, loan pre-closure charge dispute, 30-day follow-up, final notice before Ombudsman</td></tr><tr id="58152744-42d0-4962-97d9-0da27bf3c739" dir="ltr"><td id="^bLR" class="">Wrong transfer</td><td id="DW;D" class="">4</td><td id="fR[n" class="">Request to own bank to contact beneficiary bank, beneficiary-bank request letter, police cyber-cell complaint draft (fraud case), NPCI DRM wrong-transfer entry guide</td></tr><tr id="764be17a-af49-4fba-9a48-4769f2146a00" dir="ltr"><td id="^bLR" class="">Advanced / legal</td><td id="DW;D" class="">8</td><td id="fR[n" class="">RBI Ombudsman complaint for UPI / FASTag / bank charges (Template C variants), harassment + time-cost compensation demand (RB-IOS), RTI application draft (toll plaza deduction records), consumer court e-Jagriti complaint draft, legal notice draft, appeal against Ombudsman decision</td></tr></tbody></table><p id="c9aed102-7ad4-4c54-9fbe-411dc245d202" class="" dir="auto"><strong>Free vs Premium gating:</strong></p><ul id="d32cafcf-f261-482a-a8d6-f2cddc8a31bd" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Free (5 starter templates only):</strong> one basic Level-1 template per dispute type — upi_p2p bank complaint, fastag IHMCL false-deduction (generic), bank charge reversal, wrong transfer bank request, 1033 call script.</li></ul><ul id="a8725c62-2918-4792-8620-e6a804835446" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Premium (everything else — 46+ templates):</strong> all follow-ups, final notices, issuer-specific FASTag emails, all Ombudsman/legal drafts, and all Hindi versions of premium templates.</li></ul><ul id="64f28ac7-a620-4b78-b5a9-0bece38ab458" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Locked templates appear in the library list with a blurred body preview + 🔒 badge + &quot;Unlock 50+ templates&quot; CTA → opens paywall.</li></ul><ul id="0744f59e-3dd5-48af-a6ae-d6c58ffadd3d" class="bulleted-list" dir="auto"><li style="list-style-type:disc">The free-template ID list lives in <code>rules_engine.json</code> (key <code>freeTemplateIds</code>) so it can be tuned via Remote Config without an app update.</li></ul><ul id="51261007-8388-4bf5-8bf5-88861f24a0f9" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Template picker UI: searchable list grouped by category, chips for language EN/हिन्दी, each template opens pre-filled from the selected dispute&#x27;s data.</li></ul><h2 id="0cca8e0d-ea5d-42a1-b5ea-96a2cc2383bc" style="display:inline-block" dir="auto">2.7 Official links registry (the ONLY links the app may open)</h2><ul id="b5c9e850-0227-4e72-999c-cdd5a6e69f53" class="bulleted-list" dir="auto"><li style="list-style-type:disc">UPI complaints (NPCI): <a href="https://upihelp.npci.org.in">https://upihelp.npci.org.in</a></li></ul><ul id="27c1e17d-d0a7-4408-9c5c-6c19ad76aa74" class="bulleted-list" dir="auto"><li style="list-style-type:disc">NPCI main: <a href="https://www.npci.org.in">https://www.npci.org.in</a> · NETC FASTag helpline list: <a href="https://www.npci.org.in/product/netc/netc-fastag-helpline">https://www.npci.org.in/product/netc/netc-fastag-helpline</a></li></ul><ul id="bb5c087b-9d30-46a7-af85-4265c60cffdb" class="bulleted-list" dir="auto"><li style="list-style-type:disc">RBI Ombudsman CMS: <a href="https://cms.rbi.org.in">https://cms.rbi.org.in</a> · RBI complaints hub: <a href="https://rbi.org.in/Scripts/Complaints.aspx">https://rbi.org.in/Scripts/Complaints.aspx</a></li></ul><ul id="65b7f3b5-7230-4a37-bd82-e4aeb93fdfd4" class="bulleted-list" dir="auto"><li style="list-style-type:disc">IHMCL: <a href="https://ihmcl.co.in">https://ihmcl.co.in</a> (contact page has <a href="mailto:etc.nodal@ihmcl.com">etc.nodal@ihmcl.com</a>; 1033 helpline page)</li></ul><ul id="59a4d54a-274b-426f-bf9e-f608962b625c" class="bulleted-list" dir="auto"><li style="list-style-type:disc">NHAI: <a href="https://nhai.gov.in">https://nhai.gov.in</a> · Consumer court: <a href="https://e-jagriti.gov.in">https://e-jagriti.gov.in</a></li></ul><ul id="7fe91d2f-6195-43dd-a32e-8279ef9ad4ec" class="bulleted-list" dir="auto"><li style="list-style-type:disc">RBI TAT circular reference: <a href="http://rbi.org.in">rbi.org.in</a> → Notifications → &quot;Harmonisation of Turn Around Time (TAT)&quot; (20.09.2019)</li></ul><h1 id="0d4c842a-2333-4ada-8307-4fe967cf1909" style="display:inline-block" dir="auto">3. Architecture &amp; Tech Stack (ALL FREE)</h1><table id="0bda4bf0-82c5-4989-a88a-072d20df2f2c" class="simple-table" dir="ltr"><thead class="simple-table-header"><tr id="de3e0c10-313a-447f-9f68-8e165247b806" dir="ltr"><th id="BSt_" class="simple-table-header-color simple-table-header">Component</th><th id="E@~D" class="simple-table-header-color simple-table-header">Choice</th><th id="U_Bn" class="simple-table-header-color simple-table-header">Constraint / Note</th></tr></thead><tbody><tr id="af316f0b-4861-4672-b841-f2baa381d9dc" dir="ltr"><td id="BSt_" class="">App</td><td id="E@~D" class="">Flutter, latest stable, Material 3</td><td id="U_Bn" class="">One codebase → Android + iOS</td></tr><tr id="45c73fb4-3837-4fc7-9c7a-3af42f09bbeb" dir="ltr"><td id="BSt_" class="">State management</td><td id="E@~D" class="">Riverpod</td><td id="U_Bn" class="">No bloc/getx mixing</td></tr><tr id="39a90c16-070f-489b-bf52-24690ab88475" dir="ltr"><td id="BSt_" class="">Auth</td><td id="E@~D" class="">Firebase Auth — anonymous auth by default, optional Google sign-in for backup</td><td id="U_Bn" class="">Zero-friction onboarding; NO phone auth (costs money)</td></tr><tr id="14a267d8-48e4-4cb7-b8a5-1f44914ac05b" dir="ltr"><td id="BSt_" class="">Database</td><td id="E@~D" class="">Cloud Firestore (Spark free tier) + offline persistence ON</td><td id="U_Bn" class="">NO Cloud Functions (needs Blaze). All logic client-side.</td></tr><tr id="dc1d6a96-6f02-4a40-8ebd-26410a9d0c2f" dir="ltr"><td id="BSt_" class="">Reminders</td><td id="E@~D" class="">flutter_local_notifications + timezone pkg</td><td id="U_Bn" class="">Local scheduled notifications — no server needed</td></tr><tr id="81dff879-cbf2-47dd-94ec-201abb307d22" dir="ltr"><td id="BSt_" class="">Engagement push</td><td id="E@~D" class="">firebase_messaging (FCM) + topic subscriptions</td><td id="U_Bn" class="">Free on Spark plan. Campaigns sent from Firebase Console Notifications composer targeting topics/audiences — NO server needed. Per-user logic in Section 6.6. Deadline reminders stay local.</td></tr><tr id="788bfefb-8838-40ac-a1bc-e2531bed2dea" dir="ltr"><td id="BSt_" class="">Rules engine</td><td id="E@~D" class="">Bundled asset <code>assets/rules_engine.json</code>  • Firebase Remote Config override</td><td id="U_Bn" class="">Remote Config is free — lets us fix rules without app update</td></tr><tr id="a4ca5af8-3815-4bb1-90dd-81ed933f510f" dir="ltr"><td id="BSt_" class="">Monetization</td><td id="E@~D" class="">RevenueCat SDK (purchases_flutter)</td><td id="U_Bn" class="">Free up to $2.5K MTR; REQUIRED for Shipaton</td></tr><tr id="80c3bdb4-0a98-4dd6-b506-b0b92877ddf2" dir="ltr"><td id="BSt_" class="">Analytics</td><td id="E@~D" class="">Firebase Analytics (free)</td><td id="U_Bn" class="">Log: dispute_created, wizard_completed, paywall_view, purchase</td></tr><tr id="39e4a7e1-17cb-4cc0-a2c4-090b7e88111c" dir="ltr"><td id="BSt_" class="">Crash reporting</td><td id="E@~D" class="">Firebase Crashlytics (free)</td><td id="U_Bn" class="">Mandatory before release</td></tr><tr id="1d8f4d67-a106-4036-84c6-51e413f35256" dir="ltr"><td id="BSt_" class="">Screenshot parsing (optional, Phase 3)</td><td id="E@~D" class="">google_mlkit_text_recognition (on-device, free)</td><td id="U_Bn" class="">NO cloud LLM APIs — keep it free &amp; private. Regex-parse UTR/amount/date from OCR text.</td></tr></tbody></table><p id="9abe8aff-8b75-461f-aec7-7ca3596ad43b" class="" dir="auto"><strong>Project structure:</strong> <code>lib/</code> → <code>core/</code> (theme, router, l10n, utils), <code>data/</code> (models, repositories, rules_engine), <code>features/</code> (onboarding, home, dispute_create, dispute_detail, wizard, reminders, paywall, settings), <code>main.dart</code>. Use go_router for navigation.</p><h1 id="79003882-e954-4d27-8812-74a2c736ae20" style="display:inline-block" dir="auto">4. Firestore Data Model</h1><pre id="1311e859-a5d9-49b9-ae6d-10efd34fcede" class="code code-wrap" data-notion-code-syntax="jsx"><code class="language-jsx" style="white-space:pre-wrap;word-break:break-all">users/{uid}
+  createdAt, locale, isPremium(bool, mirror of RevenueCat), vehicleNumbers[], upiApps[]
+
+users/{uid}/disputes/{disputeId}
+  type: &quot;upi_p2p&quot; | &quot;upi_p2m&quot; | &quot;atm&quot; | &quot;imps&quot; | &quot;fastag&quot; | &quot;bank_charge&quot; | &quot;wrong_transfer&quot;
+  status: &quot;draft&quot; | &quot;filed_l1&quot; | &quot;filed_l2&quot; | &quot;ombudsman&quot; | &quot;resolved&quot; | &quot;expired&quot;
+  amount: number, txnDate: timestamp, txnId/utr: string
+  entityName: string (bank/issuer), entityId: string (key into rules_engine)
+  filedDates: { l1: ts?, l2: ts?, l3: ts? }, ticketNumbers: { l1: string?, ... }
+  resolvedAmount: number?, resolvedAt: ts?
+  evidence: [] (local file paths only — do NOT upload to Storage; keep free + private)
+  computed client-side: deadlineDate, compensationAccrued, nextActionDate
+
+users/{uid}/reminders/{id}
+  disputeId, fireAt, type: &quot;deadline&quot; | &quot;escalate&quot; | &quot;followup&quot;, localNotifId</code></pre><p id="aa9acacb-814c-4060-a9f9-3efa71deb61a" class="" dir="auto"><strong>Firestore security rules:</strong> users can read/write only <code>users/{their uid}/**</code>. Deny everything else. Write the rules file and include it in the repo.</p><h1 id="6943f8b4-8dbb-49e2-a320-6d1254b9cf20" style="display:inline-block" dir="auto">5. Rules Engine Spec (<code>assets/rules_engine.json</code>)</h1><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js" integrity="sha512-QXFMVAusM85vUYDaNgcYeU3rzSlc+bTV4JvkfJhjxSHlQEo+ig53BtnGkvFTiNJh8D+wv6uWAQ2vJaVmxe8d3w==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><pre id="255f1265-098a-4498-a105-82e650455b3c" class="code code-wrap" data-notion-code-syntax="json"><code class="language-json" style="white-space:pre-wrap;word-break:break-all">{
+  &quot;version&quot;: 1,
+  &quot;disputeTypes&quot;: {
+    &quot;upi_p2p&quot;:  { &quot;tatDays&quot;: 1, &quot;tatBasis&quot;: &quot;T+1&quot;, &quot;compensationPerDay&quot;: 100, &quot;chargebackWindowDays&quot;: 45, &quot;escalationLevels&quot;: [&quot;psp_app&quot;, &quot;npci_portal&quot;, &quot;rbi_ombudsman&quot;, &quot;consumer_court&quot;] },
+    &quot;upi_p2m&quot;:  { &quot;tatDays&quot;: 5, &quot;tatBasis&quot;: &quot;T+5&quot;, &quot;compensationPerDay&quot;: 100, &quot;chargebackWindowDays&quot;: 45, &quot;escalationLevels&quot;: [&quot;psp_app&quot;, &quot;npci_portal&quot;, &quot;rbi_ombudsman&quot;, &quot;consumer_court&quot;] },
+    &quot;atm&quot;:      { &quot;tatDays&quot;: 5, &quot;tatBasis&quot;: &quot;T+5&quot;, &quot;compensationPerDay&quot;: 100, &quot;escalationLevels&quot;: [&quot;bank&quot;, &quot;rbi_ombudsman&quot;] },
+    &quot;imps&quot;:     { &quot;tatDays&quot;: 1, &quot;tatBasis&quot;: &quot;T+1&quot;, &quot;compensationPerDay&quot;: 100, &quot;escalationLevels&quot;: [&quot;bank&quot;, &quot;npci_portal&quot;, &quot;rbi_ombudsman&quot;] },
+    &quot;fastag&quot;:   { &quot;disputeWindowDays&quot;: 30, &quot;typicalResolutionDays&quot;: 10, &quot;escalationLevels&quot;: [&quot;issuer_bank&quot;, &quot;helpline_1033&quot;, &quot;ihmcl_email&quot;, &quot;npci_netc&quot;, &quot;rbi_ombudsman&quot;] },
+    &quot;bank_charge&quot;: { &quot;bankWindowDays&quot;: 30, &quot;ombudsmanWindowDays&quot;: 90, &quot;escalationLevels&quot;: [&quot;bank&quot;, &quot;rbi_ombudsman&quot;] },
+    &quot;wrong_transfer&quot;: { &quot;guidanceOnly&quot;: true, &quot;note&quot;: &quot;No compensation right; depends on beneficiary consent. NPCI DRM within 3 days recommended.&quot; }
+  },
+  &quot;escalationTargets&quot;: {
+    &quot;npci_portal&quot;: { &quot;url&quot;: &quot;https://upihelp.npci.org.in&quot; },
+    &quot;rbi_ombudsman&quot;: { &quot;scheme&quot;: &quot;RB-IOS 2026 (effective 2026-07-01)&quot;, &quot;url&quot;: &quot;https://cms.rbi.org.in&quot;, &quot;phone&quot;: &quot;14448&quot;, &quot;email&quot;: &quot;cpc@rbi.org.in&quot;, &quot;maxCompensationConsequentialLoss&quot;: 3000000, &quot;maxCompensationHarassment&quot;: 300000, &quot;disputeAmountCap&quot;: null, &quot;fileWithinDaysAfterBankWindow&quot;: 90 },
+    &quot;helpline_1033&quot;: { &quot;phone&quot;: &quot;1033&quot; },
+    &quot;ihmcl_email&quot;: { &quot;to&quot;: &quot;falsededuction@ihmcl.com&quot;, &quot;cc&quot;: &quot;etc.nodal@ihmcl.com&quot; },
+    &quot;consumer_court&quot;: { &quot;url&quot;: &quot;https://e-jagriti.gov.in&quot; }
+  },
+  &quot;fastagIssuers&quot;: [ { &quot;id&quot;: &quot;hdfc&quot;, &quot;name&quot;: &quot;HDFC Bank&quot;, &quot;phone&quot;: &quot;1800-120-1243&quot;, &quot;email&quot;: &quot;fastagdisputes@hdfcbank.com&quot;, &quot;channel&quot;: &quot;HDFC FASTag portal&quot; } /* ... all rows from Section 2.4 ... */ ]
+}</code></pre><ul id="213e72aa-3db7-4ce4-aa76-f4de69dc538d" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Compensation calculator: <code>max(0, today − (txnDate + tatDays)) × compensationPerDay</code>, capped display at 90 days with a &quot;escalate now&quot; warning.</li></ul><ul id="9c121a18-9b61-4bff-863d-b7e6ae277cd8" class="bulleted-list" dir="auto"><li style="list-style-type:disc">On app start: load bundled JSON → overlay Remote Config value <code>rules_engine_json</code> if present and <code>version</code> is higher.</li></ul><ul id="2f4449b3-8058-478e-aed8-64f2f8c69daf" class="bulleted-list" dir="auto"><li style="list-style-type:disc">If a dispute type/entity is missing from rules: show generic flow + &quot;verify with your bank&quot; notice. Never crash, never guess numbers.</li></ul><h1 id="3a2fc09b-08ed-48fb-843c-a2608236371a" style="display:inline-block" dir="auto">6. UI/UX Design System (for OpenDesign MCP — follow exactly)</h1><h2 id="93db1a93-b278-48a5-84da-3364177b4a9e" style="display:inline-block" dir="auto">6.1 Brand &amp; tokens</h2><ul id="96f3bc94-235f-4c71-84fb-e38679e82eb3" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Vibe:</strong> Trustworthy fintech + righteous consumer-rights energy. Clean, spacious, serious but warm. NOT playful/cartoonish.</li></ul><ul id="e2b1463f-c576-49c8-904f-2716a34d3758" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Colors:</strong> Primary <code>#0B3D2E</code> (deep trust green) · Accent/Money <code>#16C784</code> (emerald) · Alert/Counter <code>#F5A623</code> (amber) · Error <code>#E5484D</code> · Background light <code>#FAFAF7</code>, dark <code>#0E1513</code> · Surface cards white / <code>#1A2420</code> · Text <code>#12211C</code> / <code>#E8F0EC</code>.</li></ul><ul id="67837fbf-6823-4165-90f1-12932e1c86b1" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Typography:</strong> Manrope (Google Fonts) — Display 32/bold, H1 24/bold, H2 18/semibold, body 15/regular, caption 12. Numbers (counter) use tabular figures, 40/extrabold.</li></ul><ul id="5e2f9576-6b64-45cb-a79f-4df4270cdc80" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Shape:</strong> 16px radius cards, 12px buttons, full-width primary CTA at bottom. 8pt spacing grid. Material 3, both light &amp; dark themes.</li></ul><ul id="d0930196-80eb-4642-bf44-a832ea589c51" class="bulleted-list" dir="auto"><li style="list-style-type:disc"><strong>Iconography:</strong> rounded outline icons; rupee ₹ symbol prominent.</li></ul><h2 id="6df771d8-565d-4645-a682-adf67eafa608" style="display:inline-block" dir="auto">6.2 Screens (10 total — build in this order)</h2><ol type="1" id="ecba8a78-9444-4405-8a28-bec72711fb59" class="numbered-list" start="1" dir="auto"><li><strong>Onboarding (3 slides):</strong> (1) &quot;₹100/day — banks owe YOU for failed UPI&quot; with animated counter; (2) &quot;FASTag double-cut? 30 din ka window&quot; with countdown ring; (3) &quot;We guide, you claim — RBI-rule backed&quot; → CTA &quot;Start free&quot;. Skip button top-right. Anonymous auth happens silently on CTA.</li></ol><ol type="1" id="e9e3947b-2677-4d08-9ea7-125a3998b870" class="numbered-list" start="2" dir="auto"><li><strong>Home dashboard:</strong> Hero card = <strong>Total Owed Counter</strong> (amber, huge tabular number, subtitle &quot;across {n} disputes, growing ₹{x}/day&quot;). Below: dispute cards list (status chip, next-action date, mini progress stepper). FAB &quot;+ New dispute&quot;. Empty state: illustration + &quot;Add your first stuck transaction&quot;.</li></ol><ol type="1" id="61c6ab0f-4176-4fb1-805c-9fee26362ff3" class="numbered-list" start="3" dir="auto"><li><strong>New Dispute — type picker:</strong> 2×3 grid of cards (Failed UPI, FASTag, ATM, Bank charge, Wrong transfer, Other) each with icon + one-line Hindi/English description.</li></ol><ol type="1" id="784f6245-12ef-4ab4-8fdc-6f789d033a1c" class="numbered-list" start="4" dir="auto"><li><strong>New Dispute — details form:</strong> amount (big ₹ input), date picker, transaction ID/UTR field (+ &quot;paste from SMS&quot; helper that regex-extracts), entity picker (searchable bank/issuer list from rules engine). Live preview chip: &quot;Deadline was {date} → Bank already owes you ₹{x}&quot;.</li></ol><ol type="1" id="e5c3ddf6-b978-4e0d-ab89-d1870136fcc7" class="numbered-list" start="5" dir="auto"><li><strong>Dispute detail:</strong> timeline stepper (vertical): Level 1 → 2 → 3 with dates, each step expandable with exact instructions + &quot;Mark as filed&quot; + ticket number field. Compensation counter card on top. Danger banner if chargeback/dispute window closing (&lt;7 days).</li></ol><ol type="1" id="4d2d02b3-eb64-47f2-b30b-6073a9ccf700" class="numbered-list" start="6" dir="auto"><li><strong>Wizard (per escalation step):</strong> full-screen step cards: what to do, where (deep link/URL/phone dial button/email compose button with prefilled template from Section 2.6), copy-to-clipboard complaint text, checklist of documents. Big &quot;Done — set reminder&quot; CTA.</li></ol><ol type="1" id="47243d3d-29a4-4168-856c-383700849296" class="numbered-list" start="7" dir="auto"><li><strong>Paywall (RevenueCat):</strong> headline &quot;Recover more. Unlimited disputes + 50+ templates.&quot; — comparison table Free vs Premium (rows: active disputes 1 vs unlimited, templates 5 vs 50+, Ombudsman letter generator, Hindi premium templates), monthly ₹99 / yearly ₹499 toggle (yearly badge &quot;Save 58%&quot;), restore purchases link, terms/privacy links. Triggers: adding 2nd active dispute, tapping a 🔒 locked template, or tapping Ombudsman letter generator.</li></ol><ol type="1" id="9cf796b9-ac12-4b11-afcb-d8ff7b00ace1" class="numbered-list" start="8" dir="auto"><li><strong>Ombudsman letter generator (Premium):</strong> form pre-filled from dispute → generates Template C text → copy/share buttons + &quot;Open <a href="http://cms.rbi.org.in">cms.rbi.org.in</a>&quot; button.</li></ol><ol type="1" id="1ee1ab94-3f67-45b7-8028-8606a4b95155" class="numbered-list" start="9" dir="auto"><li><strong>Reminders list:</strong> upcoming nudges, toggle per dispute.</li></ol><ol type="1" id="98838de9-16ed-4542-878d-4447ecf97de0" class="numbered-list numbered-list-digits-2" start="10" dir="auto"><li><strong>Settings:</strong> language (EN/हिन्दी), theme, notification permissions, manage subscription (RevenueCat), privacy policy, disclaimers, &quot;Delete my data&quot; (deletes Firestore doc + local data).</li></ol><h2 id="df6c019e-554d-443c-96cc-d93a799a14e8" style="display:inline-block" dir="auto">6.3 Key interaction rules</h2><ul id="9d036e15-3d97-46d2-b016-d181d1b67aab" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Counter animations: count-up on load (600ms, easeOut). Never block UI on network; Firestore offline-first.</li></ul><ul id="87ee32eb-6c22-4b98-88f7-795098e55ad0" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Every external action (call/URL/email) uses url_launcher with the EXACT targets from the rules engine — no hand-typed URLs in widgets.</li></ul><ul id="8756e06a-a93a-4759-8c01-6942f0da28ad" class="bulleted-list" dir="auto"><li style="list-style-type:disc">All destructive actions confirm. All forms validate before save. Currency formatted as ₹1,23,456 (Indian grouping).</li></ul><h2 id="5c0fb2a5-b41b-4c00-aa6d-88da27dedf63" style="display:inline-block" dir="auto">6.4 Accessibility</h2><ul id="4e53f97d-ea5c-4d05-ac61-57f8fb05c0e9" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Min touch target 48dp, contrast AA, all images have semantics labels, supports font scaling to 1.3× without overflow.</li></ul><h2 id="f68de7f3-cdc4-4427-90e4-0c00379b4022" style="display:inline-block" dir="auto">6.5 Localization</h2><ul id="9657ee95-421a-41a6-8e06-1137ad56b447" class="bulleted-list" dir="auto"><li style="list-style-type:disc">flutter_localizations + intl, ARB files <code>app_en.arb</code>, <code>app_hi.arb</code>. Every string keyed (e.g. <code>homeOwedTitle</code>, <code>wizardCopyComplaint</code>). Hindi = Devanagari, conversational not sarkari (e.g. &quot;पैसा कटा पर पहुँचा नहीं?&quot;).</li></ul><h2 id="6443da37-2fba-4f17-8210-8d91b9bc7aa1" style="display:inline-block" dir="auto">6.6 Engagement Notifications (FCM — per-user logic, free tier)</h2><p id="4772e896-86e2-4bcc-b572-f646e470cbeb" class="" dir="auto"><strong>Two-channel strategy:</strong> dispute deadlines/escalations → LOCAL notifications (exact timing, works offline). Re-engagement &amp; growth → FCM (free on Spark; campaigns composed in Firebase Console Notifications composer — no backend server, no Cloud Functions).</p><p id="efa88935-bacb-45ee-a9dd-36ee25fae61e" class="" dir="auto"><strong>Client-side per-user logic:</strong> the app auto-subscribes/unsubscribes FCM <strong>topics</strong> whenever user state changes, so console campaigns can target precisely:</p><table id="8c9d6005-1a5a-40e8-8e84-00bcf8831fa3" class="simple-table" dir="ltr"><thead class="simple-table-header"><tr id="4a919f6f-8cd3-4601-89a8-9cdc2d66745a" dir="ltr"><th id=":J}]" class="simple-table-header-color simple-table-header">Topic</th><th id="}AjQ" class="simple-table-header-color simple-table-header">Subscribe condition (client evaluates)</th><th id="R;zR" class="simple-table-header-color simple-table-header">Example campaign</th></tr></thead><tbody><tr id="22a0e2f0-4a22-45d3-a5f8-01bd224ec8aa" dir="ltr"><td id=":J}]" class="">dormant_no_dispute</td><td id="}AjQ" class="">Installed 48h+ ago, 0 disputes created</td><td id="R;zR" class="">&quot;2 min में पहला dispute add करो — बैंक आपको ₹100/day owe कर सकता है&quot;</td></tr><tr id="a19a6f3a-d0cb-4a98-802b-d1be8b831e8e" dir="ltr"><td id=":J}]" class="">active_dispute</td><td id="}AjQ" class="">≥1 dispute not resolved/expired</td><td id="R;zR" class="">&quot;आपका compensation counter बढ़ रहा है — next step देखो&quot;</td></tr><tr id="53ce5ca1-1058-4486-aa84-d8538fc847ab" dir="ltr"><td id=":J}]" class="">deadline_missed</td><td id="}AjQ" class="">nextActionDate passed without action for 3+ days</td><td id="R;zR" class="">&quot;Escalation window निकल रहा है — आज file करो&quot;</td></tr><tr id="fe759fe1-85fb-4fe8-a897-2a40570f19e5" dir="ltr"><td id=":J}]" class="">free_limit_hit</td><td id="}AjQ" class="">Free user attempted 2nd dispute or tapped locked template</td><td id="R;zR" class="">Premium offer / discount campaign</td></tr><tr id="0263793d-9a2f-4983-8ea1-feeb53eb509b" dir="ltr"><td id=":J}]" class="">premium</td><td id="}AjQ" class="">Entitlement active</td><td id="R;zR" class="">EXCLUDE from all upsell campaigns; feature-education only</td></tr><tr id="6512a96f-8f5d-4261-b0ba-06f701ed1376" dir="ltr"><td id=":J}]" class="">fastag_user / upi_user</td><td id="}AjQ" class="">Has ≥1 dispute of that vertical</td><td id="R;zR" class="">Vertical tips (&quot;FASTag blacklist 10-min rule…&quot;)</td></tr><tr id="c8ef6ebb-32ad-45a6-9c2f-bc983ae530ab" dir="ltr"><td id=":J}]" class="">lang_hi / lang_en</td><td id="}AjQ" class="">App locale</td><td id="R;zR" class="">Language-correct copy for every campaign</td></tr></tbody></table><p id="33ea48e2-119e-40f7-92bd-c35f90e77376" class="" dir="auto"><strong>Rules (mandatory):</strong></p><ul id="9b9a3170-0fbb-44d7-8d4b-8ef7956cea57" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Max 2 engagement pushes/week per user; schedule console campaigns outside quiet hours 21:00–09:00 IST.</li></ul><ul id="18c60de0-06a9-4613-9996-fbf02eea7992" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Every push carries a deep link (go_router path, e.g. <code>/dispute/{id}</code> or <code>/paywall</code>) — handle taps from terminated/background/foreground states.</li></ul><ul id="02a12c65-8381-4ac7-b1d7-45ac18b5dbbf" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Ask notification permission contextually (after first dispute is created, with a value explainer) — never on first launch.</li></ul><ul id="bf159f04-4e23-4c7e-b2d8-f484665500f0" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Log <code>notification_open</code> with campaign name to Analytics; also set user properties <code>disputes_count</code>, <code>is_premium</code>, <code>last_active_days</code> so Firebase Audiences can be used alongside topics.</li></ul><ul id="653c38e0-3195-4d88-b94f-d9fe5e864eb3" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Topic re-evaluation runs on every app start and after every dispute/purchase state change.</li></ul><h1 id="37af75de-d038-49e2-a6ef-9730ac2d47a6" style="display:inline-block" dir="auto">7. BUILD CHECKLIST (agent: execute in order, check off each)</h1><h2 id="33cc023c-f59a-4440-ab2d-abd0c58fb6fd" style="display:inline-block" dir="auto">Phase 0 — Setup 🔑</h2><ul id="5d155ffd-7fea-48d0-842e-c50144a5d44c" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">🔑 ASK USER: Google account access for Firebase Console project creation (or ask them to create project &quot;refund-radar&quot; and share config). Needed: <code>google-services.json</code> (Android), <code>GoogleService-Info.plist</code> (iOS).</span><div class="indented"></div></li></ul><ul id="03a1274a-408b-40e8-be18-2cb5dce39709" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">🔑 ASK USER: RevenueCat account → create project, get <strong>public SDK keys</strong> (Android + iOS separately).</span><div class="indented"></div></li></ul><ul id="caa3fb8d-6289-417d-92ff-9be8742f91cf" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">🔑 ASK USER: confirm app ID (suggest <code>com.aasheesh.refundradar</code>) and app display name.</span><div class="indented"></div></li></ul><ul id="97479a95-1ec1-4e51-94d3-55d9f44fee60" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Create Flutter project, set up folder structure (Section 3), add dependencies: firebase_core, firebase_auth, cloud_firestore, firebase_analytics, firebase_crashlytics, firebase_remote_config, flutter_riverpod, go_router, purchases_flutter, flutter_local_notifications, timezone, url_launcher, intl, google_fonts, flutter_localizations.</span><div class="indented"></div></li></ul><ul id="23a9b1e2-697a-4d1d-9d27-ac1996d6f192" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Wire Firebase init + anonymous auth + Crashlytics. Verify app boots on Android emulator.</span><div class="indented"></div></li></ul><h2 id="e5734f5b-c582-43c2-8d33-d00498befde5" style="display:inline-block" dir="auto">Phase 1 — Data &amp; rules</h2><ul id="a644ec2b-00c9-4ed3-a463-56162a231c6c" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Implement <code>rules_engine.json</code> asset with ALL data from Sections 2.1–2.5 &amp; 5 (every FASTag issuer row from 2.4).</span><div class="indented"></div></li></ul><ul id="2da8e310-c3c4-42b2-9a35-c324b793ebd7" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Rules repository: bundled JSON + Remote Config overlay + version check.</span><div class="indented"></div></li></ul><ul id="b5c6e043-bee9-4703-bcaf-b156d83fc046" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Firestore models + repositories + security rules file. Offline persistence enabled.</span><div class="indented"></div></li></ul><ul id="88f97d4c-9640-4eae-8880-37ca02695721" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Compensation calculator with unit tests: T+1, T+5, window expiry, cap logic, timezone edge (IST).</span><div class="indented"></div></li></ul><h2 id="9a896b92-1e1f-463a-8962-a46145c8a28f" style="display:inline-block" dir="auto">Phase 2 — UI (use OpenDesign MCP with Section 6 tokens)</h2><ul id="355bbef0-34c6-4359-8609-e85f6f6d101a" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Theme (light+dark), typography, reusable components: OwedCounterCard, DisputeCard, StepperTimeline, WizardStepCard, DangerBanner, PrimaryCTA.</span><div class="indented"></div></li></ul><ul id="00f6a4b6-6796-4bf1-9bc7-8f17d16217ab" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Screens 1–5 (onboarding → dispute detail) with navigation.</span><div class="indented"></div></li></ul><ul id="69b5e05a-86ef-46fa-8515-472143cfcdce" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Screens 6, 9, 10 (wizard, reminders, settings). Wire local notifications (request permission contextually, not on first launch).</span><div class="indented"></div></li></ul><ul id="7a1161b6-04ed-483f-9937-18bd6245d7aa" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Localization EN + HI for all strings.</span><div class="indented"></div></li></ul><h2 id="77ad6a7c-22c4-4fdf-9e05-bb7a2f150d35" style="display:inline-block" dir="auto">Phase 3 — Monetization &amp; polish</h2><ul id="8c6bdc83-7fcf-477a-b49f-6354499e25dd" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">RevenueCat: configure Offerings (monthly ₹99, yearly ₹499), entitlement <code>premium</code>. Paywall screen + gates (2nd dispute, letter generator). 🔑 ASK USER: products must also be created in Play Console/App Store Connect — guide the user through it.</span><div class="indented"></div></li></ul><ul id="47a415e8-3733-4cbc-b0fa-c1f8da905cb1" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Ombudsman letter generator (Template C fill + share).</span><div class="indented"></div></li></ul><ul id="99647958-b4b8-4db9-9b7d-f36ec217e1a2" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">SMS-paste parser (regex for UTR 12 digits, amount, date). OCR optional — only if time permits.</span><div class="indented"></div></li></ul><ul id="8ea6b50f-8570-4825-a884-43d03e8eaef8" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Template library: implement ALL 50+ templates from Section 2.6.1 as JSON assets (EN + HI both), library screen with category groups + search, <code>freeTemplateIds</code> gating from rules engine, blurred preview + 🔒 → paywall for locked ones.</span><div class="indented"></div></li></ul><ul id="165f3af7-e6e4-4c00-bcb9-803a8e2e5094" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">FCM engagement: add firebase_messaging, implement topic auto-subscribe/unsubscribe logic per Section 6.6, deep-link handling from all app states, <code>notification_open</code> logging, user properties. (No extra credentials — same Firebase project.)</span><div class="indented"></div></li></ul><ul id="979ede40-f9e2-423a-a12c-ba7ed03e4c6e" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Analytics events, empty states, error states, loading skeletons.</span><div class="indented"></div></li></ul><h2 id="be71dcaa-e09c-41ea-8151-640412650727" style="display:inline-block" dir="auto">Phase 4 — QA &amp; release 🔑</h2><ul id="778131b2-da8b-4b2c-a197-b1248cc95e9d" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Run full QA checklist (Section 9). Fix all analyzer warnings. <code>flutter test</code> green.</span><div class="indented"></div></li></ul><ul id="5749f2dd-de0a-4fdf-b546-b42e38422974" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">🔑 ASK USER: Play Console account ($25) — upload AAB, listing content from the ASO plan (see the companion page &quot;Refund Radar — Shipaton 2026 Master Plan&quot;).</span><div class="indented"></div></li></ul><ul id="d3b10719-e926-44e1-881b-4611b8a7279e" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">🔑 ASK USER: Apple Developer account ($99) — iOS build via codemagic free tier or user&#x27;s Mac; TestFlight → review.</span><div class="indented"></div></li></ul><ul id="b2c137ad-c7b6-4137-ae2b-54f16621902a" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Store listings: EN + HI, screenshots of counter/wizard/tracker. Privacy policy URL (generate a simple static page; 🔑 ASK USER for hosting choice — GitHub Pages free).</span><div class="indented"></div></li></ul><h1 id="04866892-4bcf-44c9-901d-9f4fdc126973" style="display:inline-block" dir="auto">8. Credentials the agent must request (ONLY these, ONLY when reached)</h1><ol type="1" id="1a637142-f9d6-477b-95dc-e122e67e731b" class="numbered-list" start="1" dir="auto"><li>Firebase project config files (Phase 0)</li></ol><ol type="1" id="acc65aa2-a3a5-4e56-ac78-a7f2111385a9" class="numbered-list" start="2" dir="auto"><li>RevenueCat public SDK keys (Phase 0)</li></ol><ol type="1" id="48a92bff-601a-4c5c-a03a-a25595d8395f" class="numbered-list" start="3" dir="auto"><li>Play Console access / AAB upload (Phase 4)</li></ol><ol type="1" id="9203fe7b-bc18-48a1-9658-0314290ec618" class="numbered-list" start="4" dir="auto"><li>Apple Developer access (Phase 4)</li></ol><ol type="1" id="78d9c455-a44a-4264-9c6b-c8de087beff6" class="numbered-list" start="5" dir="auto"><li>GitHub repo (if user wants code hosted) — optional</li></ol><h1 id="ee2c852a-c65f-4c24-9d72-143fe659d2c8" style="display:inline-block" dir="auto">9. QA Checklist (must ALL pass before release)</h1><ul id="54e470e2-0edb-408d-89fe-31ba4d3cdd3b" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Create each dispute type → correct deadline &amp; compensation math (cross-check 3 cases by hand against Section 2.1)</span><div class="indented"></div></li></ul><ul id="81502e79-9a09-46cd-9a74-09034dcdbd1d" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">FASTag dispute for HDFC/ICICI/Paytm shows correct contacts from rules engine</span><div class="indented"></div></li></ul><ul id="fdfde3e9-4adb-44a5-90d6-d673b12ac163" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Airplane mode: create/edit dispute works offline, syncs later</span><div class="indented"></div></li></ul><ul id="2ef481ee-dcc1-4ba9-af60-196537e1b3f0" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Notification fires at scheduled time (test with 2-min reminder)</span><div class="indented"></div></li></ul><ul id="1625c1f4-b928-4dc6-8091-e31d7443c1de" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Paywall: purchase sandbox flow + restore purchases works on both platforms</span><div class="indented"></div></li></ul><ul id="df3358c2-c028-4756-a655-f260842946f4" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">All URLs open, all phone numbers dial, email compose prefills correctly</span><div class="indented"></div></li></ul><ul id="2e2108fb-635f-4e6f-9c56-b4e78112af6a" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Hindi locale: no overflow, all screens translated</span><div class="indented"></div></li></ul><ul id="b134ea6f-b8e5-434a-8ecd-1ef3b49ef77b" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Dark mode: all screens legible</span><div class="indented"></div></li></ul><ul id="fdb6280b-6516-419c-9e51-896e39f3a482" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Delete my data removes Firestore doc + cancels notifications</span><div class="indented"></div></li></ul><ul id="148b11a3-86a7-4abc-b86b-4d633c1debeb" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">Free user sees exactly 5 unlocked templates; locked ones show blurred preview → paywall; after sandbox purchase all 50+ unlock (EN + HI)</span><div class="indented"></div></li></ul><ul id="5c62db36-d352-4eae-ac34-fd3c7b28e96f" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">FCM: test message from Firebase Console reaches device on correct topic, deep-links to the right screen from killed/background state; premium user is unsubscribed from free_limit_hit/upsell topics</span><div class="indented"></div></li></ul><ul id="f468cfcc-7340-40c1-9f98-d790ab70bfe1" class="to-do-list" dir="auto"><li><input type="checkbox" class="checkbox checkbox-off" disabled=""/> <span class="to-do-children-unchecked">No crash in Crashlytics across full manual test pass</span><div class="indented"></div></li></ul><h1 id="e9a486dd-49f1-4793-8ca8-a4c870b16c29" style="display:inline-block" dir="auto">10. Store Submission Notes</h1><ul id="615e3c3d-ec8e-4a69-8ddd-7070c42dcef9" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Play Store category: Finance. Content rating questionnaire: no user-generated content, no financial transactions handled.</li></ul><ul id="a8aec586-6b50-41cf-ae6a-52e9bdc3e806" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Data safety form: account data (anonymous UID), no location, no financial account numbers stored. Evidence images stay on-device.</li></ul><ul id="f296bd19-8315-46c5-82ed-df403cd1dd79" class="bulleted-list" dir="auto"><li style="list-style-type:disc">App Store: category Finance; review notes must explain &quot;informational consumer-rights tool, does not process payments; complaint filing happens on official government portals in browser&quot;.</li></ul><ul id="924b6770-8876-4af8-8ae5-0685b91df16f" class="bulleted-list" dir="auto"><li style="list-style-type:disc">Shipaton (Devpost): RevenueCat SDK live + ≥1 purchasable product; demo video ≤2 min screen recording; submit by Sep 25, 2026.</li></ul><h1 id="7793462b-3f12-473e-82e8-e7e8110666fb" style="display:inline-block" dir="auto">11. Mandatory Legal Disclaimers (show in onboarding footer + settings + every wizard)</h1><blockquote id="7730d1c3-a420-4bf4-8aeb-da1361542869" class="" dir="auto">Refund Radar is an independent informational tool. It is not affiliated with RBI, NPCI, NHAI, IHMCL, or any bank. We never ask for banking passwords, OTPs, or PINs. Complaints are filed by you on official portals. Compensation estimates are based on published RBI/NPCI rules and actual outcomes depend on your bank/regulator.</blockquote><h1 id="a8bcbd7d-e4c0-4575-969f-87f5b0c27481" style="display:inline-block" dir="auto">12. Sources (for maintainers)</h1><ul id="dc0e8688-08f1-4906-a613-f81bf22e398e" class="bulleted-list" dir="auto"><li style="list-style-type:disc">RBI TAT Harmonisation circular (20.09.2019) — compensation table</li></ul><ul id="5c5a58a5-4a42-41ca-a585-502171541135" class="bulleted-list" dir="auto"><li style="list-style-type:disc">NPCI UPI Dispute Redressal (<a href="http://upihelp.npci.org.in">upihelp.npci.org.in</a>) + UDIR + 45-day chargeback revision (Jul 2024)</li></ul><ul id="1f5b6ddb-41b0-4bb2-b8c7-2354241c7408" class="bulleted-list" dir="auto"><li style="list-style-type:disc">RB-IOS 2026 (RBI, Jan 2026; effective 1 Jul 2026 — supersedes RB-IOS 2021) — <a href="http://cms.rbi.org.in">cms.rbi.org.in</a>, 14448, ₹30 lakh consequential + ₹3 lakh harassment limits, no dispute cap, 30/90-day windows, CRPC Chandigarh</li></ul><ul id="7019a5e7-cd0d-46d5-9850-7c3189297c24" class="bulleted-list" dir="auto"><li style="list-style-type:disc">NHAI/PIB: FASTag Annual Pass (launched 15 Aug 2025; ₹3,075 from 1 Apr 2026), Rajmargyatra app</li></ul><ul id="19036860-8766-4f0f-b0fb-d7e04ed1a2bd" class="bulleted-list" dir="auto"><li style="list-style-type:disc">PIB/NHAI advisory: Paytm Payments Bank FASTag discontinued w.e.f. 15 Mar 2024</li></ul><ul id="167ab365-1e25-49ff-8f80-b88751fb4fc8" class="bulleted-list" dir="auto"><li style="list-style-type:disc">NPCI: UPI chargeback simplification (15 Jul 2025); NETC settlement-time circular (17 Feb 2026)</li></ul><ul id="5902b468-9827-4a5b-9c96-9f2ebc9d41ee" class="bulleted-list" dir="auto"><li style="list-style-type:disc">NPCI NETC FASTag helpline list + NETC Procedural Guidelines (<a href="http://ihmcl.co.in">ihmcl.co.in</a>)</li></ul><ul id="0b797ee4-9690-4b01-a97a-5f5bf9c83aa6" class="bulleted-list" dir="auto"><li style="list-style-type:disc">IHMCL/NHAI: 1033 helpline, <a href="mailto:falsededuction@ihmcl.com">falsededuction@ihmcl.com</a>, <a href="mailto:etc.nodal@ihmcl.com">etc.nodal@ihmcl.com</a>, ₹1 lakh toll-operator penalty (TOI/IHMCL)</li></ul><ul id="728e2918-201a-495d-a902-a127b59e7626" class="bulleted-list" dir="auto"><li style="list-style-type:disc">NHAI FASTag Recharge FAQ (issuer helpline numbers)</li></ul><p id="396fa0f0-8879-804c-8c9e-c60f726741d7" class="" dir="auto">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
