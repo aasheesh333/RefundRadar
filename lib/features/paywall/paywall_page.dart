@@ -202,20 +202,68 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
     }
     final packages = _offerings?.current?.availablePackages;
     if (packages == null || packages.isEmpty) {
-      // SDK not configured OR no offering attached in dashboard.
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: tc.alertSoft,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.alert.withValues(alpha: 0.4)),
-        ),
-        child: Text(
-          "Plans aren't available in this build. Premium unlocks "
-          'automatically once a real Google Play purchase completes.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: tc.textPrimary),
-        ),
+      // SDK not configured OR no offering attached in dashboard. Show the
+      // Notion-plan INR prices (spec §6.2: monthly ₹99 / yearly ₹499) so
+      // the page is informative even before the live products are wired in
+      // RevenueCat/Play Console. Taps surface a "setup pending" SnackBar —
+      // we never silently swallow the tap.
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _PlanCard(
+                  title: 'Monthly',
+                  price: '₹99',
+                  highlighted: false,
+                  onTap: _purchasingPackageId == null
+                      ? () => scaffoldMessenger.showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  'Purchase unavailable in this build. Once Play Store products are configured, tapping here will start the ₹99/month purchase.'),
+                              duration: Duration(seconds: 4),
+                            ),
+                          )
+                      : null,
+                  loading: false,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _PlanCard(
+                  title: 'Yearly',
+                  price: '₹499',
+                  highlighted: true,
+                  badge: 'Save 58%',
+                  onTap: _purchasingPackageId == null
+                      ? () => scaffoldMessenger.showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  'Purchase unavailable in this build. Once Play Store products are configured, tapping here will start the ₹499/year purchase.'),
+                              duration: Duration(seconds: 4),
+                            ),
+                          )
+                      : null,
+                  loading: false,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              'Pricing in INR. Live purchases unlock once Google Play products are linked to RevenueCat.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 11,
+                color: tc.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
       );
     }
     // Order: Monthly, Yearly first (Yearly highlighted), Lifetime last.

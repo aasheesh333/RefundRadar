@@ -51,3 +51,8 @@ flutter:
   assets:
     - assets/rules_engine.json
     - assets/templates/
+    - assets/templates/upi/
+    - assets/templates/fastag/
+    - assets/templates/bank_charges/
+    - assets/templates/wrong_transfer/
+    - assets/templates/advanced/
