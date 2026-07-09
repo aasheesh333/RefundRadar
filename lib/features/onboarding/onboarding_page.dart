@@ -129,6 +129,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       onPressed: _next,
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppRadii.md),
                         ),

@@ -5,6 +5,7 @@ import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
@@ -160,10 +161,13 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
                 ),
               ],
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Refund Radar is an independent informational tool. '
                 'It is not affiliated with RBI, NPCI, NHAI, IHMCL, or any bank.',
-                style: TextStyle(fontSize: 11, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppThemeColors.of(context).textTertiary,
+                ),
                 textAlign: TextAlign.center,
               ),
             ],

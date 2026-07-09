@@ -258,6 +258,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                             },
                             style: FilledButton.styleFrom(
                               backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
                             ),
                             child: Text(AppLocalizations.of(context)?.wizardDoneSetReminder ??
                                 'Done — set reminder'),

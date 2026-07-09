@@ -121,7 +121,9 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                                 '/disputes/form?type=${_selected!.id}'),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
                         disabledBackgroundColor: tc.surfaceAlt,
+                        disabledForegroundColor: tc.textTertiary,
                         minimumSize: const Size(0, 52),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppRadii.md),

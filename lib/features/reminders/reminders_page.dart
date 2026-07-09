@@ -278,6 +278,7 @@ class _EmptyState extends StatelessWidget {
               onPressed: () => context.push('/disputes/create'),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
