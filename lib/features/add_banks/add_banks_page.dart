@@ -142,12 +142,12 @@ class _AddBanksPageState extends State<AddBanksPage> {
                           height: 64,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: const RadialGradient(
+                            gradient: RadialGradient(
                               colors: [
-                                Colors.white,
-                                AppColors.premiumGoldSoft,
+                                tc.surface,
+                                tc.premiumGoldSoft,
                               ],
-                              stops: [0.0, 1.0],
+                              stops: const [0.0, 1.0],
                             ),
                             border: Border.all(
                                 color: tc.divider, width: 1),

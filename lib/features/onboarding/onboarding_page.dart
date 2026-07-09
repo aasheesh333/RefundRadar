@@ -23,7 +23,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   void _next() {
-    final slides = _slidesFor(AppLocalizations.of(context));
+    final tc = AppThemeColors.of(context);
+    final slides = _slidesFor(AppLocalizations.of(context), tc);
     if (_page < slides.length - 1) {
       _pc.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -34,14 +35,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
     }
   }
 
-  List<_SlideData> _slidesFor(AppLocalizations? l10n) => [
+  List<_SlideData> _slidesFor(AppLocalizations? l10n, AppThemeColors tc) => [
         _SlideData(
           emoji: '💸',
           title: l10n?.onboardSlide1Title ??
               '₹100/day — banks owe YOU\nfor failed UPI',
           desc: l10n?.onboardSlide1Desc ??
               'RBI rules make banks pay compensation for delayed refunds on failed UPI, IMPS, ATM, and FASTag transactions.',
-          softColor: AppColors.accentSoft,
+          softColor: tc.accentSoft,
           ctaLabel: l10n?.onboardCta ?? 'Start free',
         ),
         _SlideData(
@@ -50,7 +51,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               "FASTag double-cut?\nYou're owed ₹100/day",
           desc: l10n?.onboardSlide2Desc ??
               'NPCI rules say banks must refund FASTag double-debits within 5 days. We track the deadline and escalate.',
-          softColor: AppColors.alertSoft,
+          softColor: tc.alertSoft,
           ctaLabel: l10n?.disputeTypeContinue ?? 'Continue',
         ),
         _SlideData(
@@ -59,7 +60,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               'Banks ignoring you?\nTake them to the Ombudsman',
           desc: l10n?.onboardSlide3Desc ??
               "If a bank doesn't refund within 10 days, we auto-draft a Banking Ombudsman complaint citing the exact RBI circular.",
-          softColor: AppColors.premiumGoldSoft,
+          softColor: tc.premiumGoldSoft,
           ctaLabel: l10n?.onboardCta ?? 'Get started',
         ),
       ];
@@ -68,7 +69,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
-    final slides = _slidesFor(l10n);
+    final slides = _slidesFor(l10n, tc);
     return Scaffold(
       backgroundColor: tc.bg,
       body: Column(

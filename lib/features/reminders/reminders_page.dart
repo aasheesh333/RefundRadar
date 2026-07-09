@@ -122,7 +122,7 @@ class _ReminderCard extends ConsumerWidget {
             height: 44,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: type.softColor.withValues(alpha: 0.20),
+              color: type.softColorFor(tc).withValues(alpha: 0.20),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(type.emoji, style: const TextStyle(fontSize: 22)),

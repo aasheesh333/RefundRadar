@@ -139,8 +139,8 @@ class SettingsPage extends ConsumerWidget {
                       ),
                       decoration: BoxDecoration(
                         color: isPremium
-                            ? AppColors.premiumGoldSoft
-                            : AppColors.accentSoft,
+                            ? tc.premiumGoldSoft
+                            : tc.accentSoft,
                         borderRadius: BorderRadius.circular(AppRadii.pill),
                       ),
                       child: Text(
@@ -380,7 +380,7 @@ class SettingsPage extends ConsumerWidget {
                           );
                         },
                         style: TextButton.styleFrom(
-                          backgroundColor: AppColors.errorSoft,
+                          backgroundColor: tc.errorSoft,
                           foregroundColor: AppColors.error,
                           shape: RoundedRectangleBorder(
                             borderRadius:

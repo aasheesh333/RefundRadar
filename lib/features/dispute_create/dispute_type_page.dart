@@ -176,7 +176,7 @@ class _Row extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: type.softColor,
+                color: type.softColorFor(tc),
                 borderRadius: BorderRadius.circular(AppRadii.sm),
               ),
               child: Center(child: Text(type.emoji, style: const TextStyle(fontSize: 22))),

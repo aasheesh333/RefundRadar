@@ -252,29 +252,29 @@ class _HistoryCard extends StatelessWidget {
       partial
     )) {
       (true, _, true) => (
-          AppColors.alertSoft,
-          AppColors.alertSoft,
+          tc.alertSoft,
+          tc.alertSoft,
           AppColors.alert,
           AppColors.alert,
           'PARTIAL'
         ),
       (true, _, _) => (
           tc.divider,
-          AppColors.accentSoft,
+          tc.accentSoft,
           AppColors.accent,
           AppColors.accent,
           'WON'
         ),
       (_, true, _) => (
-          AppColors.errorSoft,
-          AppColors.errorSoft,
+          tc.errorSoft,
+          tc.errorSoft,
           AppColors.error,
           AppColors.error,
           'LOST'
         ),
       _ => (
           tc.divider,
-          AppColors.premiumGoldSoft,
+          tc.premiumGoldSoft,
           tc.textPrimary,
           AppColors.premiumGold,
           'FILED'

@@ -317,8 +317,8 @@ class _EmptyState extends StatelessWidget {
             Container(
               width: 80,
               height: 80,
-              decoration: const BoxDecoration(
-                color: AppColors.accentSoft,
+              decoration: BoxDecoration(
+                color: tc.accentSoft,
                 shape: BoxShape.circle,
               ),
               child: const Center(

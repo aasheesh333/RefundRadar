@@ -132,7 +132,7 @@ class _DisputeBody extends ConsumerWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: dispute.type.softColor,
+                      color: dispute.type.softColorFor(tc),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
@@ -147,13 +147,15 @@ class _DisputeBody extends ConsumerWidget {
                       children: [
                         Text(
                           CompensationCalculator.formatIndian(dispute.amount),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: AppTypography.family,
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.primary,
+                            color: tc.isDark
+                                ? AppColors.accent
+                                : AppColors.primary,
                             letterSpacing: -0.5,
-                            fontFeatures: [FontFeature.tabularFigures()],
+                            fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -165,7 +167,7 @@ class _DisputeBody extends ConsumerWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: AppColors.alertSoft,
+                                  color: tc.alertSoft,
                                   borderRadius:
                                       BorderRadius.circular(AppRadii.pill),
                                 ),
@@ -183,7 +185,7 @@ class _DisputeBody extends ConsumerWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: AppColors.errorSoft,
+                                  color: tc.errorSoft,
                                   borderRadius:
                                       BorderRadius.circular(AppRadii.pill),
                                 ),
@@ -201,7 +203,7 @@ class _DisputeBody extends ConsumerWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: AppColors.accentSoft,
+                                  color: tc.accentSoft,
                                   borderRadius:
                                       BorderRadius.circular(AppRadii.pill),
                                 ),

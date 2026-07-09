@@ -230,14 +230,14 @@ class _TemplateCard extends StatelessWidget {
         ? StatusPill(
             label: l10n?.templateProBadge ?? 'Pro',
             fg: AppColors.premiumGold,
-            bg: AppColors.premiumGoldSoft,
+            bg: tc.premiumGoldSoft,
             prefix: '🔒',
           )
         : StatusPill(
             label: l10n?.templateLevelLabel(template.escalationLevel) ??
                 'Level ${template.escalationLevel}',
             fg: AppColors.accent,
-            bg: AppColors.accentSoft,
+            bg: tc.accentSoft,
           );
 
     // Body preview: locked templates get a blur-style masked preview. We use
@@ -353,9 +353,9 @@ class _TemplateCard extends StatelessWidget {
   }
 
   Color _softColorFor(String category, AppThemeColors tc) => switch (category) {
-        'UPI / IMPS / ATM' => AppColors.alertSoft,
-        'FASTag' => AppColors.accentSoft,
-        'Advanced / legal' => AppColors.premiumGoldSoft,
+        'UPI / IMPS / ATM' => tc.alertSoft,
+        'FASTag' => tc.accentSoft,
+        'Advanced / legal' => tc.premiumGoldSoft,
         _ => tc.surfaceAlt,
       };
 
