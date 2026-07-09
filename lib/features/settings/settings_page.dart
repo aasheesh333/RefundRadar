@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/providers/app_state_provider.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/theme_provider.dart';
+import '../../core/theme/app_theme_colors.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/notification_service.dart';
@@ -16,11 +17,12 @@ class SettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
     final isPremium = ref.watch(isPremiumProvider);
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: tc.bg,
       body: SafeArea(
         child: Column(
           children: [

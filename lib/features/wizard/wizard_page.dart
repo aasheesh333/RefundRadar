@@ -5,11 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
+import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/widgets/stepper_timeline.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 
@@ -23,11 +25,66 @@ class WizardPage extends ConsumerStatefulWidget {
 class _WizardPageState extends ConsumerState<WizardPage> {
   final _ticketController = TextEditingController();
   int _currentLevel = 0;
+  bool _saving = false;
 
   @override
   void dispose() {
     _ticketController.dispose();
     super.dispose();
+  }
+
+  DisputeStatus _statusForLevel(int level) {
+    if (level >= 2) return DisputeStatus.ombudsman;
+    if (level == 1) return DisputeStatus.filedL2;
+    return DisputeStatus.filedL1;
+  }
+
+  String _ticketKeyForLevel(int level) {
+    if (level >= 2) return 'l3';
+    if (level == 1) return 'l2';
+    return 'l1';
+  }
+
+  Future<void> _persistMarkFiled() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      final uid = await ref.read(userIdProvider.future);
+      if (uid == null) return;
+      final disputes = await ref.read(disputesProvider(uid).future);
+      final existing =
+          disputes.where((e) => e.id == widget.disputeId).firstOrNull;
+      if (existing == null) return;
+
+      final key = _ticketKeyForLevel(_currentLevel);
+      final ticket = _ticketController.text.trim();
+      final nextTickets = Map<String, String?>.from(existing.ticketNumbers);
+      final nextFiled = Map<String, DateTime?>.from(existing.filedDates);
+      if (ticket.isNotEmpty) nextTickets[key] = ticket;
+      nextFiled[key] = DateTime.now();
+
+      final updated = existing.copyWith(
+        status: _statusForLevel(_currentLevel),
+        ticketNumbers: nextTickets,
+        filedDates: nextFiled,
+      );
+      await ref.read(disputeRepositoryProvider).saveDispute(uid, updated);
+      ref.invalidate(disputesProvider(uid));
+      if (mounted) {
+        setState(() {
+          if (_currentLevel < 2) _currentLevel++;
+          _ticketController.clear();
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not save ticket. Try again.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -116,9 +173,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                       children: [
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: () => setState(() {
-                              if (_currentLevel < steps.length - 1) _currentLevel++;
-                            }),
+                            onPressed: _saving ? null : _persistMarkFiled,
                             child: Text(AppLocalizations.of(context)?.wizardMarkFiled ??
                                 'Mark as filed'),
                           ),
@@ -181,7 +236,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
             }),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const SkeletonList(itemCount: 4),
         error: (e, _) => BrandedErrorBanner(
           message: e.toString(),
           onRetry: () => ref.invalidate(rulesEngineProvider),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/extensions/dispute_type_display.dart';
 import 'package:refund_radar/data/models/dispute.dart';
@@ -34,8 +35,9 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       (id: 'Lost', label: l10n?.historyFilterLost ?? 'Lost'),
       (id: 'Escalated', label: l10n?.historyFilterEscalated ?? 'Escalated'),
     ];
+    final tc = AppThemeColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: tc.bg,
       body: SafeArea(
         child: uidAsync.when(
           data: (uid) {
@@ -81,6 +83,7 @@ class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
     final past = disputes
         .where((d) =>
             d.status == DisputeStatus.resolved ||
@@ -120,11 +123,11 @@ class _Body extends StatelessWidget {
             children: [
               Text(
                 l10n?.historyTitle ?? 'History',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: AppTypography.family,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimaryLight,
+                  color: tc.textPrimary,
                 ),
               ),
             ],

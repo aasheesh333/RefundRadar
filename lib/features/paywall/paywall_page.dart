@@ -8,6 +8,7 @@ import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/services/revenue_cat_service.dart';
+import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 
 /// Premium upsell page (Backlog B3).
 ///
@@ -87,18 +88,31 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
       if (!mounted) return;
       if (ok) {
         scaffoldMessenger.showSnackBar(
-          const SnackBar(content: Text('Premium unlocked 🎉')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.paywallTitle ?? 'Premium unlocked',
+            ),
+          ),
         );
         context.go(widget.returnPath);
       } else {
         scaffoldMessenger.showSnackBar(
-          const SnackBar(content: Text('Purchase did not complete.')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.errorGeneric ??
+                  'Purchase did not complete.',
+            ),
+          ),
         );
       }
     } catch (e) {
       if (!mounted) return;
       scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text('Purchase failed: $e')),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)?.errorGeneric ?? 'Purchase failed',
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _purchasingPackageId = null);
@@ -136,10 +150,11 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
           const Icon(Icons.workspace_premium,
               size: 72, color: AppColors.alert),
           const SizedBox(height: 16),
-          const Text(
-            'Recover more. Unlimited disputes + 50+ templates.',
+          Text(
+            AppLocalizations.of(context)?.paywallHeadline ??
+                'Recover more. Unlimited disputes + 50+ templates.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 24),
           _buildPlansArea(),
@@ -150,13 +165,9 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
             onPressed: _purchasingPackageId == null ? _restore : null,
             child: Text(AppLocalizations.of(context)?.paywallRestore ?? 'Restore purchases'),
           ),
-          const SizedBox(height: 24),
-          FilledButton(
+          const SizedBox(height: 8),
+          TextButton(
             onPressed: () => context.go(widget.returnPath),
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(52),
-              backgroundColor: AppColors.primary,
-            ),
             child: Text(AppLocalizations.of(context)?.paywallMaybeLater ?? 'Maybe later'),
           ),
         ],
@@ -172,12 +183,9 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
       );
     }
     if (_error != null) {
-      return Column(
-        children: [
-          Text(_error!, textAlign: TextAlign.center),
-          const SizedBox(height: 12),
-          OutlinedButton(onPressed: _fetchOfferings, child: const Text('Retry')),
-        ],
+      return BrandedErrorBanner(
+        message: _error!,
+        onRetry: _fetchOfferings,
       );
     }
     final packages = _offerings?.current?.availablePackages;
@@ -186,9 +194,9 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.amber.shade50,
+          color: AppColors.alertSoft,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.amber.shade200),
+          border: Border.all(color: AppColors.alert.withValues(alpha: 0.4)),
         ),
         child: const Text(
           "Plans aren't available in this build. Premium unlocks "
@@ -318,8 +326,10 @@ class _PlanCard extends StatelessWidget {
                   color: AppColors.accent.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text('Save 58%',
-                    style: TextStyle(fontSize: 11, color: AppColors.accent)),
+                child: Text(
+                    AppLocalizations.of(context)?.paywallSave ?? 'Save 58%',
+                    style: const TextStyle(
+                        fontSize: 11, color: AppColors.accent)),
               ),
               const SizedBox(height: 8),
             ],
@@ -346,58 +356,68 @@ class _ComparisonTable extends StatelessWidget {
   const _ComparisonTable();
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Table(
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       border: TableBorder.symmetric(
-        inside: BorderSide(color: Colors.grey.shade200),
+        inside: BorderSide(color: AppColors.dividerLight),
       ),
-      children: const [
+      children: [
         TableRow(children: [
-          Padding(padding: EdgeInsets.all(12), child: Text('')),
+          const Padding(padding: EdgeInsets.all(12), child: Text('')),
           Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('Free',
+              padding: const EdgeInsets.all(12),
+              child: Text(l10n?.paywallFreeRow ?? 'Free',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.w600))),
+                  style: const TextStyle(fontWeight: FontWeight.w600))),
           Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('Premium',
+              padding: const EdgeInsets.all(12),
+              child: Text(l10n?.paywallPremiumRow ?? 'Premium',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.w600))),
+                  style: const TextStyle(fontWeight: FontWeight.w600))),
         ]),
         TableRow(children: [
-          Padding(padding: EdgeInsets.all(12), child: Text('Active disputes')),
           Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(l10n?.paywallActiveDisputes ?? 'Active disputes')),
+          const Padding(
               padding: EdgeInsets.all(12),
               child: Text('1', textAlign: TextAlign.center)),
-          Padding(
+          const Padding(
               padding: EdgeInsets.all(12),
               child: Text('Unlimited', textAlign: TextAlign.center)),
         ]),
         TableRow(children: [
-          Padding(padding: EdgeInsets.all(12), child: Text('Templates')),
           Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(l10n?.paywallTemplates ?? 'Templates')),
+          const Padding(
               padding: EdgeInsets.all(12),
               child: Text('5', textAlign: TextAlign.center)),
-          Padding(
+          const Padding(
               padding: EdgeInsets.all(12),
               child: Text('50+', textAlign: TextAlign.center)),
         ]),
         TableRow(children: [
-          Padding(padding: EdgeInsets.all(12), child: Text('Ombudsman letter generator')),
           Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(
+                  l10n?.paywallOmbudsmanLetter ?? 'Ombudsman letter generator')),
+          const Padding(
               padding: EdgeInsets.all(12),
-              child: Icon(Icons.close, color: Colors.grey)),
-          Padding(
+              child: Icon(Icons.close, color: AppColors.textTertiaryLight)),
+          const Padding(
               padding: EdgeInsets.all(12),
               child: Icon(Icons.check, color: AppColors.accent)),
         ]),
         TableRow(children: [
-          Padding(padding: EdgeInsets.all(12), child: Text('Hindi premium templates')),
-          Padding(
+          const Padding(
               padding: EdgeInsets.all(12),
-              child: Icon(Icons.close, color: Colors.grey)),
-          Padding(
+              child: Text('Hindi premium templates')),
+          const Padding(
+              padding: EdgeInsets.all(12),
+              child: Icon(Icons.close, color: AppColors.textTertiaryLight)),
+          const Padding(
               padding: EdgeInsets.all(12),
               child: Icon(Icons.check, color: AppColors.accent)),
         ]),

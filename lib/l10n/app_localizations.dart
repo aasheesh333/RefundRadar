@@ -295,6 +295,11 @@ class AppLocalizations {
   String get paywallSave => _t('paywallSave');
   String get paywallRestore => _t('paywallRestore');
   String get paywallMaybeLater => _t('paywallMaybeLater');
+  String get paywallFreeRow => _t('paywallFreeRow');
+  String get paywallPremiumRow => _t('paywallPremiumRow');
+  String get paywallActiveDisputes => _t('paywallActiveDisputes');
+  String get paywallTemplates => _t('paywallTemplates');
+  String get paywallOmbudsmanLetter => _t('paywallOmbudsmanLetter');
   String get remindersTitle => _t('remindersTitle');
   String get remindersEmpty => _t('remindersEmpty');
   String get settingsLanguage => _t('settingsLanguage');
