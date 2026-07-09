@@ -16,6 +16,13 @@ on:
           - debug
           - release
 
+# Private repo free tier = 1 concurrent job. Queue runs instead of racing
+# (which caused GitHub to send a shutdown signal mid-build, cancelling the
+# release AAB/APK). cancel-in-progress:false lets a running release finish.
+concurrency:
+  group: android-build
+  cancel-in-progress: false
+
 jobs:
   # ---------------------------------------------------------------------------
   # Debug build — works with placeholder Firebase / placeholder RevenueCat.
