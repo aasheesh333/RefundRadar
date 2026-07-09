@@ -177,29 +177,53 @@ class _ReminderCard extends ConsumerWidget {
                     ),
                     const Spacer(),
                     GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onTap: () async {
                         await ref
                             .read(reminderRepositoryProvider)
                             .dismiss(reminder.uid, reminder.id);
                         ref.invalidate(remindersProvider(reminder.uid));
                       },
-                      child: Text(
-                        'Dismiss',
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              color: AppColors.accent,
-                              fontWeight: FontWeight.w600,
-                            ),
+                      child: Semantics(
+                        button: true,
+                        label: 'Dismiss reminder',
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 14),
+                          child: Text(
+                            'Dismiss',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                  color: AppColors.accent,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 12),
                     GestureDetector(
-                      onTap: () => context.go('/disputes/${reminder.disputeId}'),
-                      child: Text(
-                        'Open',
-                        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              color: AppColors.accent,
-                              fontWeight: FontWeight.w600,
-                            ),
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () =>
+                          context.go('/disputes/${reminder.disputeId}'),
+                      child: Semantics(
+                        button: true,
+                        label: 'Open dispute',
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 14),
+                          child: Text(
+                            'Open',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                  color: AppColors.accent,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ),
                       ),
                     ),
                   ],

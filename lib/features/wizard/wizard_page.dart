@@ -34,9 +34,13 @@ class _WizardPageState extends ConsumerState<WizardPage> {
   Widget build(BuildContext context) {
     final rulesAsync = ref.watch(rulesEngineProvider);
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
           title: Text(AppLocalizations.of(context)?.wizardTitle ?? 'Escalation steps')),
-      body: rulesAsync.when(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: rulesAsync.when(
         data: (rules) {
           final steps = _buildSteps(rules);
           return StepperTimeline(
@@ -182,6 +186,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
           message: e.toString(),
           onRetry: () => ref.invalidate(rulesEngineProvider),
         ),
+      ),
       ),
     );
   }

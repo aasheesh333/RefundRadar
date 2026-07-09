@@ -85,11 +85,11 @@ class RulesEngineRepository {
           // Only apply if strictly newer — protects against stale RC values
           // being served after a fresh bundle ships with a higher version.
           if (overrideEngine.version > engine.version) {
-            // Shallow-merge top-level keys — Remote Config wins for any
-            // key it specifies; missing keys fall through to bundle.
-            final merged = Map<String, dynamic>.from(json)
-              ..addAll(overrideJson);
-            json = merged;
+            // Deep-merge: RC overlay wins for keys it specifies, but nested
+            // maps (e.g. disputeTypes.upi_p2p) keep bundled fields that the
+            // override didn't re-declare. Prevents a partial RC payload from
+            // wiping entire dispute-type rules.
+            json = deepMerge(json, overrideJson);
             engine = RulesEngine.fromJson(json);
           }
         }
@@ -114,6 +114,28 @@ class RulesEngineRepository {
         minimumFetchInterval: Duration.zero, // bypass interval next load
       ));
     } catch (_) {/* not initialised in dev/test — fine */}
+  }
+
+  /// Recursively merge [overlay] into [base]. Overlay values win; when both
+  /// sides have a Map at the same key, recurse instead of replacing the
+  /// whole map. Lists and scalars are replaced wholesale.
+  static Map<String, dynamic> deepMerge(
+    Map<String, dynamic> base,
+    Map<String, dynamic> overlay,
+  ) {
+    final out = Map<String, dynamic>.from(base);
+    overlay.forEach((key, value) {
+      final existing = out[key];
+      if (existing is Map && value is Map) {
+        out[key] = deepMerge(
+          Map<String, dynamic>.from(existing),
+          Map<String, dynamic>.from(value),
+        );
+      } else {
+        out[key] = value;
+      }
+    });
+    return out;
   }
 }
 

@@ -23,6 +23,7 @@
 # Local
 *.log
 *.local
+android/local.properties
 
 # Sensitive
 google-services.json

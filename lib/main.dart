@@ -37,6 +37,10 @@ Future<void> _initFirebase() async {
     // 1. Catch Flutter framework errors (rendering, async widget errors) and
     //    forward them to Crashlytics in addition to the default console.
     FlutterError.onError = (FlutterErrorDetails details) {
+      // Always surface in debug (console + red screen). In release the
+      // Crashlytics report is the user-facing signal — presentError is a
+      // no-op there so this is safe on both paths.
+      FlutterError.presentError(details);
       FirebaseCrashlytics.instance.recordFlutterFatalError(details);
     };
 

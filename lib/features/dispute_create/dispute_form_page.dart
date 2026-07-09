@@ -193,7 +193,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     final rulesAsync = ref.watch(rulesEngineProvider);
     return Scaffold(
       backgroundColor: AppColors.bgLight,
-      body: SafeArea(
+      resizeToAvoidBottomInset: true,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
         child: Column(
           children: [
             // header
@@ -201,7 +205,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
               child: Row(
                 children: [
-                  AppBackButton(size: 36, onTap: () => context.pop()),
+                  AppBackButton(onTap: () => context.pop()),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -523,10 +527,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                     ),
                   ),
                 ],
-              ),
-            ),
-          ],
-        ),
+               ),
+             ),
+           ],
+         ),
+       ),
       ),
     );
   }

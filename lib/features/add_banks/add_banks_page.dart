@@ -74,6 +74,7 @@ class _AddBanksPageState extends State<AddBanksPage> {
   Widget build(BuildContext context) {
     final banks = _filteredBanks;
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: AppColors.bgLight,
       body: SafeArea(
         child: Column(

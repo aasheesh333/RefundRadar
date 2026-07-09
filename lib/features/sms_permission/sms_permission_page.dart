@@ -27,15 +27,22 @@ class SmsPermissionPage extends StatelessWidget {
                       side: BorderSide(
                           color: AppColors.dividerLight, width: 1),
                     ),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      onTap: () => context.go('/onboard'),
-                      child: const SizedBox(
-                        width: 36,
-                        height: 36,
-                        child: Center(
-                          child: Icon(Icons.arrow_back,
-                              size: 18, color: AppColors.textPrimaryLight),
+                    child: Tooltip(
+                      message: 'Back',
+                      child: Semantics(
+                        button: true,
+                        label: 'Back',
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => context.go('/onboard'),
+                          child: const SizedBox(
+                            width: 48,
+                            height: 48,
+                            child: Center(
+                              child: Icon(Icons.arrow_back,
+                                  size: 22, color: AppColors.textPrimaryLight),
+                            ),
+                          ),
                         ),
                       ),
                     ),

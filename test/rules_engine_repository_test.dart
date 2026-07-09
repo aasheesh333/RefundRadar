@@ -120,24 +120,28 @@ void main() {
     });
   });
 
-  group('Shallow merge semantics (B7 overlay)', () {
+  group('Deep merge semantics (B7 overlay)', () {
     // Document the expected behaviour for the Remote Config overlay path:
-    // top-level keys not present in the override fall through to the
-    // bundled baseline. (Implementation in `RulesEngineRepository.load`;
-    // we mirror the same merge here.)
-    test('override merges top-level keys; missing ones fall through', () {
+    // nested maps keep bundled fields that the override didn't re-declare.
+    test('override deep-merges nested maps; missing nested fields fall through', () {
       final baseline = Map<String, dynamic>.from(sampleJson);
       final override = <String, dynamic>{
         'version': 3,
         'officialLinks': {'rbi_cms': 'https://OVERRIDDEN'},
+        // Partial disputeTypes.upi_p2p — only tatDays overridden; other
+        // fields (compensationPerDay, escalationLevels) must survive.
+        'disputeTypes': {
+          'upi_p2p': {'tatDays': 2},
+        },
       };
-      final merged = Map<String, dynamic>.from(baseline)..addAll(override);
+      final merged = RulesEngineRepository.deepMerge(baseline, override);
       final e = RulesEngine.fromJson(merged);
 
       expect(e.version, 3); // overridden
       expect(e.officialLinks['rbi_cms'], 'https://OVERRIDDEN'); // overridden
-      // Falling through:
-      expect(e.disputeTypes['upi_p2p']!['tatDays'], 1);
+      expect(e.disputeTypes['upi_p2p']!['tatDays'], 2); // overridden
+      expect(e.disputeTypes['upi_p2p']!['compensationPerDay'], 100); // preserved
+      expect(e.disputeTypes['atm']!['tatDays'], 5); // sibling preserved
       expect(e.fastagIssuers, hasLength(2));
       expect(e.freeTemplateIds, ['tpl_upi_l1', 'tpl_chargeback']);
     });

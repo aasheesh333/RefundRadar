@@ -5,6 +5,7 @@ import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/owed_counter_card.dart';
 import 'package:refund_radar/shared/widgets/dispute_card.dart';
@@ -57,35 +58,49 @@ class HomePage extends ConsumerWidget {
         ),
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 0, 16, 16),
-        child: Container(
-          height: 52,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(AppRadii.pill),
-            boxShadow: AppShadows.fab,
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(AppRadii.pill),
-              onTap: () => context.push('/disputes/create'),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add, color: Colors.white, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'New dispute',
-                    style: TextStyle(
-                      fontFamily: AppTypography.family,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
+        // SafeArea-aware: honour system inset (notch / gesture nav) on the
+        // right + bottom so the FAB doesn't get clipped on landscape or
+        // ROM-gesture phones. Manual 16dp fallback when inset is 0.
+        padding: EdgeInsets.only(
+          right: 16 + MediaQuery.of(context).padding.right,
+          bottom: 16 + MediaQuery.of(context).padding.bottom,
+        ),
+        child: Tooltip(
+          message: AppLocalizations.of(context)?.homeNewDispute ?? 'New dispute',
+          child: Semantics(
+            button: true,
+            label: AppLocalizations.of(context)?.homeNewDispute ?? 'New dispute',
+            child: Container(
+              height: 52,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(AppRadii.pill),
+                boxShadow: AppShadows.fab,
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
+                  onTap: () => context.push('/disputes/create'),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.add, color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppLocalizations.of(context)?.homeNewDispute ??
+                            'New dispute',
+                        style: const TextStyle(
+                          fontFamily: AppTypography.family,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -198,13 +213,23 @@ class _Body extends StatelessWidget {
               ),
             ),
             GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: () => context.push('/history'),
-              child: const Text(
-                'View all →',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.accent,
+              child: Semantics(
+                button: true,
+                label: 'View all disputes',
+                child: Container(
+                  // 48dp minimum tap target; text stays 12px visually.
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 4, vertical: 14),
+                  child: const Text(
+                    'View all →',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.accent,
+                    ),
+                  ),
                 ),
               ),
             ),

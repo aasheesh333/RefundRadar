@@ -14,6 +14,11 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- B5 FCM: notification + data push delivery. -->
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <!-- SMS auto-parse (optional): declared for Play Store Permissions
+         Declaration form. Runtime request is gated behind a user opt-in
+         screen; if Play rejects the declaration we fall back to manual paste. -->
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.READ_SMS"/>
     <application
         android:label="Refund Radar"
         android:name="${applicationName}"

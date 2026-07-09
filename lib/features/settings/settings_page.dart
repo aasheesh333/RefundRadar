@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/notification_service.dart';
 import '../../shared/widgets/radio_row.dart';
 import '../../shared/widgets/toggle_switch.dart';
@@ -33,24 +34,31 @@ class SettingsPage extends ConsumerWidget {
                       color: AppColors.textPrimaryLight,
                     ),
                   ),
-                  InkWell(
-                    onTap: () => Navigator.of(context).maybePop(),
-                    borderRadius: BorderRadius.circular(17),
-                    child: Container(
-                      width: 34,
-                      height: 34,
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        border: Border.all(
-                          color: AppColors.dividerLight,
-                          width: 1,
+                  Tooltip(
+                    message: AppLocalizations.of(context)?.commonClose ?? 'Close',
+                    child: Semantics(
+                      button: true,
+                      label: AppLocalizations.of(context)?.commonClose ?? 'Close',
+                      child: InkWell(
+                        onTap: () => Navigator.of(context).maybePop(),
+                        borderRadius: BorderRadius.circular(24),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceLight,
+                            border: Border.all(
+                              color: AppColors.dividerLight,
+                              width: 1,
+                            ),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.close,
+                            size: 18,
+                            color: AppColors.textSecondaryLight,
+                          ),
                         ),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.close,
-                        size: 15,
-                        color: AppColors.textSecondaryLight,
                       ),
                     ),
                   ),
