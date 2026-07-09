@@ -115,11 +115,12 @@ class _HeroPhone extends StatelessWidget {
   const _HeroPhone();
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Container(
       width: 72,
       height: 72,
-      decoration: const BoxDecoration(
-        color: AppColors.accentSoft,
+      decoration: BoxDecoration(
+        color: tc.accentSoft,
         shape: BoxShape.circle,
       ),
       child: const Center(
@@ -167,8 +168,8 @@ class _HowItWorksCard extends StatelessWidget {
                 Container(
                   width: 22,
                   height: 22,
-                  decoration: const BoxDecoration(
-                    color: AppColors.accentSoft,
+                  decoration: BoxDecoration(
+                    color: tc.accentSoft,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -212,7 +213,7 @@ class _PrivacyNote extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.premiumGoldSoft,
+        color: tc.premiumGoldSoft,
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
@@ -246,6 +247,7 @@ class _SampleSmsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
+    final labelColor = tc.isDark ? AppColors.accent : AppColors.primary;
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -267,12 +269,12 @@ class _SampleSmsCard extends StatelessWidget {
                   color: tc.textPrimary,
                 ),
               ),
-              const Text(
+              Text(
                 'SMS detected',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.accent,
+                  color: labelColor,
                 ),
               ),
             ],
@@ -295,16 +297,21 @@ class _SampleSmsCard extends StatelessWidget {
                 ),
                 children: [
                   const TextSpan(text: 'From: '),
-                  const TextSpan(
+                  TextSpan(
                     text: 'HD-HDFCBK',
-                    style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, color: labelColor),
                   ),
-                  const TextSpan(text: ' · 08 Jul 2026\nBody: ₹400 debited from A/c ✱✱✱✱1234 for UPI txn. UTR '),
                   const TextSpan(
+                      text:
+                          ' · 08 Jul 2026\nBody: ₹400 debited from A/c ✱✱✱✱1234 for UPI txn. UTR '),
+                  TextSpan(
                     text: '412981901234',
-                    style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, color: labelColor),
                   ),
-                  const TextSpan(text: '. If failed, complain within 5 days.'),
+                  const TextSpan(
+                      text: '. If failed, complain within 5 days.'),
                 ],
               ),
             ),
@@ -385,18 +392,21 @@ class _SmsFooter extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: () => context.go('/onboard/banks'),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.primary, width: 1.5),
+                  side: BorderSide(
+                    color: tc.isDark ? AppColors.accent : AppColors.primary,
+                    width: 1.5,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadii.sm),
                   ),
                 ),
-                child: const Text(
+                child: Text(
                   'Maybe later',
                   style: TextStyle(
                     fontFamily: AppTypography.family,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    color: tc.isDark ? AppColors.accent : AppColors.primary,
                   ),
                 ),
               ),

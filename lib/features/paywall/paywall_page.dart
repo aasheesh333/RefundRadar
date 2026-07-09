@@ -177,6 +177,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
   }
 
   Widget _buildPlansArea() {
+    final tc = AppThemeColors.of(context);
     if (_loading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 32),
@@ -195,14 +196,15 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
       return Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.alertSoft,
+          color: tc.alertSoft,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.alert.withValues(alpha: 0.4)),
         ),
-        child: const Text(
+        child: Text(
           "Plans aren't available in this build. Premium unlocks "
           'automatically once a real Google Play purchase completes.',
           textAlign: TextAlign.center,
+          style: TextStyle(color: tc.textPrimary),
         ),
       );
     }
@@ -303,6 +305,7 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return InkWell(
       onTap: loading ? null : onTap,
       borderRadius: BorderRadius.circular(12),
@@ -311,8 +314,7 @@ class _PlanCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color:
-                highlighted ? AppColors.accent : Colors.grey.shade300,
+            color: highlighted ? AppColors.accent : tc.divider,
             width: highlighted ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),

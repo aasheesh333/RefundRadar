@@ -134,7 +134,7 @@ class _Body extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.alertSoft,
+                    color: tc.alertSoft,
                     borderRadius: BorderRadius.circular(AppRadii.pill),
                   ),
                   child: const Text(
@@ -186,11 +186,14 @@ class _Body extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      l10n?.escalateRefundPlusComp(
-                          CompensationCalculator.formatIndian(refund),
-                          CompensationCalculator.formatIndian(comp.compensationDue),
-                          comp.daysElapsed) ??
-                          '${CompensationCalculator.formatIndian(refund)} refund + ${CompensationCalculator.formatIndian(comp.compensationDue)} comp (${comp.daysElapsed} days × ₹100/day)',
+                      refund == 0
+                          ? 'No transaction amount on this dispute'
+                          : (l10n?.escalateRefundPlusComp(
+                                  CompensationCalculator.formatIndian(refund),
+                                  CompensationCalculator.formatIndian(
+                                      comp.compensationDue),
+                                  comp.daysElapsed) ??
+                              '${CompensationCalculator.formatIndian(refund)} refund + ${CompensationCalculator.formatIndian(comp.compensationDue)} comp (${comp.daysElapsed} days × ₹100/day)'),
                       style: const TextStyle(
                         fontSize: 11,
                         color: Color(0xB3FFFFFF),
@@ -207,7 +210,7 @@ class _Body extends StatelessWidget {
                 children: [
                   _RecipientRow(
                     emojiTile: '🎯',
-                    bgTileColor: AppColors.alertSoft,
+                    bgTileColor: tc.alertSoft,
                     title: l10n?.escalateNodalOfficer ?? 'Nodal Officer',
                     detail: l10n?.escalateSlaDays(_nodalEmail(dispute)) ??
                         '${_nodalEmail(dispute)} · SLA 10d',
@@ -274,6 +277,23 @@ class _Body extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'TO: ${_nodalEmail(dispute)}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: tc.textPrimary,
+                    ),
+                  ),
+                  if (ccOmbudsman)
+                    Text(
+                      'CC: crpc@rbi.org.in',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: tc.textSecondary,
+                      ),
+                    ),
                   const SizedBox(height: 10),
                   Text(
                     l10n?.escalateEmailGreeting ?? 'Dear Nodal Officer,',
@@ -328,7 +348,7 @@ class _Body extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppColors.alertSoft,
+                    color: tc.alertSoft,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
@@ -383,7 +403,8 @@ class _Body extends StatelessWidget {
               _FooterButton(
                 label: l10n?.escalateEdit ?? 'Edit',
                 color: tc.surfaceAlt,
-                textColor: AppColors.primary,
+                textColor:
+                    tc.isDark ? AppColors.accent : AppColors.primary,
                 onTap: () => _copyEmail(context),
               ),
               const SizedBox(width: 10),
