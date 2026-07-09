@@ -251,6 +251,23 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
             ],
           ),
           const SizedBox(height: 12),
+          _PlanCard(
+            title: 'Lifetime',
+            price: '₹1,999',
+            highlighted: false,
+            fullWidth: true,
+            onTap: _purchasingPackageId == null
+                ? () => scaffoldMessenger.showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'Purchase unavailable in this build. Once Play Store products are configured, tapping here will start the ₹1,999 one-time lifetime purchase.'),
+                        duration: Duration(seconds: 4),
+                      ),
+                    )
+                : null,
+            loading: false,
+          ),
+          const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
