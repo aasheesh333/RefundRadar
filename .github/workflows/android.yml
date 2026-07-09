@@ -68,11 +68,9 @@ jobs:
 
       - name: Verify analysis
         run: flutter analyze
-        continue-on-error: true
 
       - name: Run tests
         run: flutter test
-        continue-on-error: true
 
       - name: Build debug APK
         run: flutter build apk --debug --no-tree-shake-icons
@@ -161,7 +159,6 @@ jobs:
 
       - name: Run tests
         run: flutter test
-        continue-on-error: true
 
       - name: Decode release keystore
         env:

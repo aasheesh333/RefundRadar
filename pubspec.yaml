@@ -33,7 +33,6 @@ dependencies:
   http: ^1.2.0
   path_provider: ^2.1.4
   shared_preferences: ^2.3.3
-  flutter_native_splash: ^2.4.2
 
 dev_dependencies:
   flutter_test:
@@ -41,6 +40,10 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   integration_test:
     sdk: flutter
+  # Test-only: deterministic non-Firebase unit tests for repositories +
+  # parser/generator/services. mocktail avoids the build_runner dependency
+  # of mockito; we don't want to gate Phase 2 on a codegen roundtrip.
+  mocktail: ^1.0.4
 
 flutter:
   uses-material-design: true

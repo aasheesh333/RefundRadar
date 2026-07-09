@@ -337,3 +337,67 @@ RevenueCat — it doesn't change between sandbox and live.
   Store" app in RevenueCat (requires a Play Console service-account JSON).
   The resulting public SDK key becomes the new `REVENUECAT_SDK_KEY`
   GitHub secret value. (Phase 4 gate.)
+
+---
+
+## 10. Production-readiness sweep (2026-07-09) — Phase 1 + Phase 2 + Phase 4-B1
+
+> Driven by three parallel audit reports cataloguing ~70 items across UI/UX,
+> data/state, and platform. Order of execution: Phase 1 (data correctness) →
+> Phase 2 (test infra) → Phase 4 B-P1 (CI gate) → Phase 3 (UI/UX) →
+> Phase 4 (platform/release) → Phase 5 (observability).
+
+### Phase 1 — Data correctness (commit `de41371`) ✅ DONE
+
+10 fixes committed and pushed; `flutter analyze` 0 issues; CI run `29008212593` green.
+
+| ID   | Fix                                                                                                                                                       |
+|------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| B-D1 | `deleteDispute` cascades to reminder subcollection + cancels notifications via provider-injected hooks                                                    |
+| B-D2 | `deleteAllUserData` also deletes all reminders + `cancelAll` notifications                                                                                |
+| B-D3 | Auth-race retry ported to `FirestoreReminderRepository` (`_ensureAuthToken` + `_withAuthRetry` for every op)                                               |
+| B-D4 | `syncRemindersForDispute` schedules notifications per-reminder with try/catch (atomic Firestore batch, best-effort notifications)                          |
+| B-D5 | `FcmReevaluator._reeval` wrapped in try/catch; errors recorded as non-fatal Crashlytics                                                                    |
+| B-D6 | `firestore.rules` reminder `update` requires `resource.data.uid == uid && request.resource.data.uid == uid`                                                 |
+| B-D7 | `free_limit_hit` FCM topic predicate fix: `!isPremium && freeDisputesUsed >= 1` (was just `!isPremium` — spammed new users)                                |
+| B-D8 | `_saving` re-entrancy guard in `DisputeFormPage._save` (no duplicate disputes; submit button shows spinner + disables)                                    |
+| B-D9 | Rollback on partial save failure — if reminders/analytics throw after `saveDispute`, dispute is deleted best-effort                                        |
+| B-D10| `remindersProvider(uid)` invalidated on save (was only `disputesProvider`)                                                                                |
+| —    | Stale-closure fix: isPremium/locale/freeDisputesUsed listeners moved inside `uid != null` block in `FcmReevaluator`                                        |
+| —    | `OneSignal.syncTags` learned optional `freeLimitActive` flag + Crashlytics breadcrumb on failure                                                            |
+
+### Phase 2 — Test infrastructure ✅ DONE (this commit)
+
+- Added `mocktail: ^1.0.4` to dev_dependencies (no build_runner needed).
+- Made `ReminderGenerator.forDispute` injectable via optional `now:` parameter (production default unchanged).
+- Fixed the SMS parser `dd-MMM-yy` date bug (`m6`): `_tryParseFlexible` was reaching the 3rd format branch but `int.parse('Jan')` threw and was swallowed, silently returning null even though the regex had matched `10-Jan-25`. Now handled via a month-name lookup. Also pivots 2-digit years (`5/6/25` → 2025) in the dash/slash branch (same family of bug).
+- Swapped `\u00A0` nbsp → space before regex matching (some bank SMSs send nbsp).
+- 88 new tests across 4 files (95 total, up from 7):
+  - `test/sms_parser_test.dart` — UTR/amount/date/VPA + the m6 bug regression
+  - `test/dispute_model_test.dart` — toJson/fromJson round-trip, defensive parsing, copyWith, enum invariants
+  - `test/reminder_generator_test.dart` — deterministic `now`-pinned coverage of L1/L2/ombudsman/draft branches + idempotency + entity-name fallbacks
+  - `test/rules_engine_repository_test.dart` — defensive parsing + B7 shallow-merge semantics (Remote Config overlay path requires Firebase → integration test boundary)
+  - `test/fcm_topics_test.dart` — mocktail-backed `_FakeFcm` coverage of every topic predicate incl. `free_limit_hit` gating + `DisputeStats.fromList`
+- `flutter analyze`: 0 issues. `flutter test`: 95/95 pass.
+
+### Phase 4 — B-P1 CI gate ✅ DONE (this commit)
+
+`.github/workflows/android.yml` — both `continue-on-error: true` flags removed
+from the `flutter analyze` and `flutter test` steps in the `debug` job, plus
+the `continue-on-error: true` on `flutter test` in the `release` job. The CI
+gate is now strict: any analyze error or test failure fails the build.
+
+### Next (queued)
+
+- Phase 3 (UI/UX): replace 5 raw `Center(child: Text('Error: $e'))` screens
+  with `BrandedErrorBanner`; add skeletons everywhere; wire
+  `AppLocalizations.of(context)` for the ~120 hardcoded strings; dark-mode
+  token sweep; accessibility (Semantics/Tooltip/48dp); keyboard handling;
+  fix dead UI affordances; FAB safe-area.
+- Phase 4 (platform/release): `--split-per-abi`; `--obfuscate --split-debug-info`;
+  version source of truth; ProGuard narrow keeps; pin dependency versions; SMS
+  permission in AndroidManifest (with Play Store Permissions Declaration form);
+  artifact retention 90 days.
+- Phase 5 (observability): shallow-vs-deep merge in `RulesEngineRepository`;
+  Crashlytics breadcrumbs for swallowed Analytics/FCM errors; `main.dart`
+  `FlutterError.onError` silent-branch fix; release smoke test in CI.
