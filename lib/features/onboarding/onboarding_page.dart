@@ -62,12 +62,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgLight,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // top bar with skip
-            Padding(
-              padding: const EdgeInsets.only(top: 16, right: 16),
+      body: Column(
+        children: [
+          // top bar with skip — safe top only
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, right: 16),
               child: Align(
                 alignment: Alignment.topRight,
                 child: TextButton(
@@ -87,25 +88,30 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 ),
               ),
             ),
-            // slides
-            Expanded(
-              child: PageView.builder(
-                controller: _pc,
-                itemCount: _slides.length,
-                onPageChanged: (i) => setState(() => _page = i),
-                itemBuilder: (context, i) => _SlideView(
-              slide: _slides[i],
-              totalSlides: _slides.length,
-            ),
+          ),
+          // slides
+          Expanded(
+            child: PageView.builder(
+              controller: _pc,
+              itemCount: _slides.length,
+              onPageChanged: (i) => setState(() => _page = i),
+              itemBuilder: (context, i) => _SlideView(
+                slide: _slides[i],
+                totalSlides: _slides.length,
               ),
             ),
-            // bottom stack: dots + CTA + disclaimer
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
+          ),
+          // bottom stack: dots + CTA + disclaimer — safe bottom so CTA
+          // never clips under the system nav / gesture bar
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   PageDots(count: _slides.length, current: _page),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 14),
                   SizedBox(
                     width: double.infinity,
                     height: 54,
@@ -126,7 +132,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   const Text(
                     'Independent tool · Not affiliated with RBI/NPCI/banks',
                     textAlign: TextAlign.center,
@@ -139,8 +145,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -169,43 +175,56 @@ class _SlideView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(),
-          HeroEmojiCircle(emoji: slide.emoji, softColor: slide.softColor),
-          const SizedBox(height: 28),
-          Text(
-            slide.title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontFamily: AppTypography.family,
-              fontSize: 28,
-              fontWeight: FontWeight.w700,
-              height: 1.2,
-              color: AppColors.textPrimaryLight,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 420;
+        return Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: compact ? 8 : 16,
           ),
-          const SizedBox(height: 12),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 310),
-            child: Text(
-              slide.desc,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontFamily: AppTypography.family,
-                fontSize: 15,
-                fontWeight: FontWeight.w400,
-                height: 1.5,
-                color: AppColors.textSecondaryLight,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(flex: 2),
+              HeroEmojiCircle(
+                emoji: slide.emoji,
+                softColor: slide.softColor,
               ),
-            ),
+              SizedBox(height: compact ? 16 : 24),
+              Text(
+                slide.title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: compact ? 24 : 28,
+                  fontWeight: FontWeight.w700,
+                  height: 1.2,
+                  color: AppColors.textPrimaryLight,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 310),
+                child: Text(
+                  slide.desc,
+                  textAlign: TextAlign.center,
+                  maxLines: compact ? 4 : 6,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                    height: 1.45,
+                    color: AppColors.textSecondaryLight,
+                  ),
+                ),
+              ),
+              const Spacer(flex: 3),
+            ],
           ),
-          const Spacer(),
-        ],
-      ),
+        );
+      },
     );
   }
 }

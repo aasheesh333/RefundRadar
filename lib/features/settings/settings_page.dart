@@ -245,17 +245,14 @@ class SettingsPage extends ConsumerWidget {
                               .read(localeProvider.notifier).state =
                               const Locale('hi'),
                         ),
-                        const SizedBox(height: 10),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Appearance',
-                            style: AppTypography.overline(
-                              color: AppColors.textSecondaryLight,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  _Card(
+                    label: 'Appearance',
+                    child: Column(
+                      children: [
                         RadioRow(
                           label: 'Light',
                           selected: themeMode == ThemeMode.light,
