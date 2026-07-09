@@ -429,11 +429,19 @@ gate is now strict: any analyze error or test failure fails the build.
 - Paywall i18n + BrandedErrorBanner + CTA hierarchy
 - `AppThemeColors` helper; home/settings/history scaffolds theme-aware
 
-### Remaining polish — completed (this commit)
+### Remaining polish — completed (commits 79d3896, d0fbfa7)
 
 - Full dark-mode sweep: features + shared widgets → `AppThemeColors`
 - Status pills + dispute type names/subtitles i18n (en/hi)
 - Settings notification toggles persisted (SharedPreferences)
 - Wizard level titles/bodies + Copy/Open/Call/Documents i18n
 - FASTag / wrong-transfer timeline strings i18n
-- CI release job builds signed APK + AAB with smoke tests
+- CI release job split into AAB + APK jobs (runner ~16m reclamation workaround)
+
+### Release build — green (run 29033649006, commit d0fbfa7)
+
+- `flutter analyze` 0 issues, `flutter test` 95/95
+- Release AAB (Play Store): ✓ 56 MB, signed, obfuscated
+- Release APK (sideload): ✓ 28 MB, signed, obfuscated
+- Debug symbols: ✓ 2 MB
+- Artifacts retained 90 days; download from Actions tab
