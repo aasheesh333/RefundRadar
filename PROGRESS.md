@@ -411,10 +411,10 @@ gate is now strict: any analyze error or test failure fails the build.
 - RulesEngineRepository deep-merge (nested maps preserve bundled fields) + unit test
 - `FlutterError.onError` always `presentError` before Crashlytics
 
-### Remaining (low priority)
+### Remaining polish (low priority)
 
-- Pin dependency versions in pubspec.yaml
-- ProGuard narrow keeps (rules already comprehensive)
-- Release smoke test step in CI
-- Fastag/wrong-transfer timeline strings (detail page) still English-only
-- Onboarding page residual strings (mostly already i18n'd via onboard* keys)
+- Fastag / wrong-transfer timeline strings on detail page (English-only)
+- ProGuard already comprehensive — no change needed
+- Dependency versions pinned (commit b21812f)
+- Onboarding fully i18n'd (commit a81926f)
+- CI smoke tests for debug + release APKs (commit a81926f)
