@@ -445,3 +445,30 @@ gate is now strict: any analyze error or test failure fails the build.
 - Release APK (sideload): ✓ 28 MB, signed, obfuscated
 - Debug symbols: ✓ 2 MB
 - Artifacts retained 90 days; download from Actions tab
+
+### Production UI/UX bugfix pass — 2026-07-09 ✅ DONE
+
+Tasks 1–8 from `docs/superpowers/plans/2026-07-09-production-uiux-bugfix.md`.
+
+**What was fixed**
+- Dark-safe soft surfaces: `AppThemeColors` softs + `StatusKind.bgFor` / `DisputeType.softColorFor`; feature UI no longer paints light pastels in dark mode
+- Shared soft widgets (InfoBanner, BrandedErrorBanner, HeroEmojiCircle, RadioRow, StatusPill, StepperTimeline)
+- Create dispute: non-silent auth SnackBar; bank picker fallback; `formSelectBank` / `formAuthRequired` i18n
+- Wizard mark-filed: SnackBar on invalid uid (no silent return)
+- Escalate TO/softs, SMS/paywall dark softs
+- Primary CTA foreground white; ombudsman greys → tertiary
+- History/reminders empty CTAs → create dispute
+- Residual i18n: ombudsman premium blurb, paywall Unlimited/Hindi templates/restore messages, settings session refreshed
+
+**Commits (this pass)**
+- Task foundation soft tokens + tests
+- `34c9c39` create auth + bank picker + form softs
+- `d360af8` escalate/sms/paywall softs
+- `7f22fd5` home/history/settings/templates/detail softs
+- `f08ae10` primary CTA white + ombudsman tertiary
+- `38fc8cb` history/reminders empty CTAs
+- Task 8: residual i18n + soft-token sweep + gate
+
+**Gate (Task 8)**
+- `flutter analyze`: 0 issues
+- `flutter test`: 115/115 pass (95 base + theme soft + shared soft + primary CTA + create-auth tests)

@@ -33,7 +33,7 @@ class DisputeCard extends StatelessWidget {
         !isBankCharge && !isWrongTransfer && daysLeft <= 0 && dispute.status != DisputeStatus.resolved;
 
     final borderColor =
-        deadlineMissed ? AppColors.errorSoft : tc.divider;
+        deadlineMissed ? tc.errorSoft : tc.divider;
 
     return InkWell(
       onTap: onTap,

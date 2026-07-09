@@ -328,7 +328,33 @@ class AppLocalizations {
       'en': 'Could not sign in. Please restart the app and try again.',
       'hi': 'साइन इन नहीं हो सका। ऐप रीस्टार्ट करके फिर कोशिश करें।'
     },
+    'formSelectBank': {'en': 'Select a bank', 'hi': 'बैंक चुनें'},
     'formLabelDescription': {'en': 'DESCRIPTION (optional)', 'hi': 'विवरण (वैकल्पिक)'},
+    'ombudsmanPremiumFeature': {'en': 'Premium feature', 'hi': 'प्रीमियम सुविधा'},
+    'ombudsmanPremiumBlurb': {
+      'en':
+          'Generate a pre-filled Template C complaint summary that you can paste into cms.rbi.org.in.',
+      'hi':
+          'cms.rbi.org.in में पेस्ट करने के लिए पहले से भरा Template C शिकायत सारांश बनाएं।'
+    },
+    'paywallUnlimited': {'en': 'Unlimited', 'hi': 'असीमित'},
+    'paywallHindiTemplates': {
+      'en': 'Hindi premium templates',
+      'hi': 'हिंदी प्रीमियम टेम्पलेट'
+    },
+    'paywallRestored': {'en': 'Premium restored 🎉', 'hi': 'प्रीमियम बहाल 🎉'},
+    'paywallNoPurchases': {
+      'en': 'No purchases found.',
+      'hi': 'कोई खरीद नहीं मिली।'
+    },
+    'paywallRestoreFailed': {
+      'en': 'Restore failed: {error}',
+      'hi': 'बहाली विफल: {error}'
+    },
+    'settingsSessionRefreshed': {
+      'en': 'Session refreshed.',
+      'hi': 'सत्र रीफ़्रेश हो गया।'
+    },
     // Home page remaining.
     'homeViewAllDisputes': {'en': 'View all disputes', 'hi': 'सभी विवाद देखें'},
     // History page.
@@ -539,7 +565,17 @@ class AppLocalizations {
   String get formLabelTxnDate => _t('formLabelTxnDate');
   String get formSelectDate => _t('formSelectDate');
   String get formAuthRequired => _t('formAuthRequired');
+  String get formSelectBank => _t('formSelectBank');
   String get formLabelDescription => _t('formLabelDescription');
+  String get ombudsmanPremiumFeature => _t('ombudsmanPremiumFeature');
+  String get ombudsmanPremiumBlurb => _t('ombudsmanPremiumBlurb');
+  String get paywallUnlimited => _t('paywallUnlimited');
+  String get paywallHindiTemplates => _t('paywallHindiTemplates');
+  String get paywallRestored => _t('paywallRestored');
+  String get paywallNoPurchases => _t('paywallNoPurchases');
+  String paywallRestoreFailed(String error) =>
+      _t('paywallRestoreFailed', args: {'error': error});
+  String get settingsSessionRefreshed => _t('settingsSessionRefreshed');
 
   // Home page remaining strings.
   String get homeViewAllDisputes => _t('homeViewAllDisputes');

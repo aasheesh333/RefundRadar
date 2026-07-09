@@ -374,8 +374,11 @@ class SettingsPage extends ConsumerWidget {
                           ref.invalidate(userIdProvider);
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Session refreshed.'),
+                            SnackBar(
+                              content: Text(
+                                l10n?.settingsSessionRefreshed ??
+                                    'Session refreshed.',
+                              ),
                             ),
                           );
                         },

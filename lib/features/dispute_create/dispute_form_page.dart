@@ -86,9 +86,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context)?.formLabelBank != null
-                  ? 'Select a bank'
-                  : 'Select a bank',
+              AppLocalizations.of(context)?.formSelectBank ?? 'Select a bank',
             ),
           ),
         );

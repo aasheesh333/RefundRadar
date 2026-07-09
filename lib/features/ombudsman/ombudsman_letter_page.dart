@@ -101,13 +101,20 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.primary),
                 ),
-                child: const Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Premium feature',
-                        style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primary)),
-                    SizedBox(height: 4),
-                    Text('Generate a pre-filled Template C complaint summary that you can paste into cms.rbi.org.in.'),
+                    Text(
+                      AppLocalizations.of(context)?.ombudsmanPremiumFeature ??
+                          'Premium feature',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, color: AppColors.primary),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      AppLocalizations.of(context)?.ombudsmanPremiumBlurb ??
+                          'Generate a pre-filled Template C complaint summary that you can paste into cms.rbi.org.in.',
+                    ),
                   ],
                 ),
               ),

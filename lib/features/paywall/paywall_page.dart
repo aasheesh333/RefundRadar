@@ -126,16 +126,26 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
       final svc = ref.read(revenueCatServiceProvider);
       final ok = await svc.restorePurchases();
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context);
       scaffoldMessenger.showSnackBar(
         SnackBar(
-          content: Text(ok ? 'Premium restored 🎉' : 'No purchases found.'),
+          content: Text(
+            ok
+                ? (l10n?.paywallRestored ?? 'Premium restored 🎉')
+                : (l10n?.paywallNoPurchases ?? 'No purchases found.'),
+          ),
         ),
       );
       if (ok) context.go(widget.returnPath);
     } catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context);
       scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text('Restore failed: $e')),
+        SnackBar(
+          content: Text(
+            l10n?.paywallRestoreFailed('$e') ?? 'Restore failed: $e',
+          ),
+        ),
       );
     }
   }
@@ -387,9 +397,10 @@ class _ComparisonTable extends StatelessWidget {
           const Padding(
               padding: EdgeInsets.all(12),
               child: Text('1', textAlign: TextAlign.center)),
-          const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('Unlimited', textAlign: TextAlign.center)),
+          Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(l10n?.paywallUnlimited ?? 'Unlimited',
+                  textAlign: TextAlign.center)),
         ]),
         TableRow(children: [
           Padding(
@@ -415,9 +426,10 @@ class _ComparisonTable extends StatelessWidget {
               child: Icon(Icons.check, color: AppColors.accent)),
         ]),
         TableRow(children: [
-          const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('Hindi premium templates')),
+          Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(l10n?.paywallHindiTemplates ??
+                  'Hindi premium templates')),
           Padding(
               padding: const EdgeInsets.all(12),
               child: Icon(Icons.close, color: tc.textTertiary)),
