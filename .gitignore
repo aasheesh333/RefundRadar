@@ -43,3 +43,6 @@ android/build/
 
 # Mockup HTML + screenshots (kept locally only)
 ss/
+
+# Bug screenshots (untracked working artifacts)
+bugs/
