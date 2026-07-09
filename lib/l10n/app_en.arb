@@ -178,6 +178,7 @@
   "formLabelAmountDebited": "AMOUNT DEBITED",
   "formLabelTxnDate": "TXN DATE",
   "formSelectDate": "Select date",
+  "formAuthRequired": "Could not sign in. Please restart the app and try again.",
   "formLabelDescription": "DESCRIPTION (optional)",
   "homeViewAllDisputes": "View all disputes",
   "historyTitle": "History",

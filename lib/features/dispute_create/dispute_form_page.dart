@@ -15,6 +15,8 @@ import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/services/sms_parser.dart';
+import 'package:refund_radar/features/dispute_create/create_dispute_auth_guard.dart';
+import 'package:refund_radar/features/dispute_create/fallback_banks.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/form_field_box.dart';
 import 'package:refund_radar/shared/widgets/bank_picker_tile.dart';
@@ -102,8 +104,25 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         );
         return;
       }
-      final uid = ref.read(userIdProvider).asData?.value;
-      if (uid == null) return;
+      String? resolvedUid;
+      try {
+        resolvedUid = await ref.read(userIdProvider.future);
+      } catch (_) {
+        resolvedUid = null;
+      }
+      if (!isValidAuthUid(resolvedUid)) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.formAuthRequired ??
+                  'Could not sign in. Please restart the app and try again.',
+            ),
+          ),
+        );
+        return;
+      }
+      final uid = resolvedUid!;
 
       // B3 free-tier gate: free users limited to 1 active dispute (spec §4.3).
       // Active = status in {draft, filed_l1, filed_l2, ombudsman}.
@@ -263,7 +282,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: AppColors.accentSoft,
+                      color: tc.accentSoft,
                       borderRadius: BorderRadius.circular(AppRadii.pill),
                     ),
                     child: Text(
@@ -307,7 +326,8 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                 child: LinearProgressIndicator()),
                             error: (_, _) => BankPickerTile(
                               bankName: _bankName,
-                              onTap: () {},
+                              onTap: () =>
+                                  _showBankPicker(context, kFallbackBanks),
                             ),
                           ),
                         ),
@@ -570,7 +590,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       return Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: AppColors.alertSoft,
+          color: tc.alertSoft,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -597,7 +617,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.accentSoft,
+        color: tc.accentSoft,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -667,7 +687,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   }
 
   Future<void> _pickBank(BuildContext context, RulesEngine rules) async {
-    final tc = AppThemeColors.of(context);
     final isFastag = widget.type == 'fastag';
     final list = <({String name, String id})>[];
     if (isFastag) {
@@ -676,13 +695,16 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         list.add((name: i['name'] as String, id: i['id'] as String));
       }
     } else {
-      list
-        ..add((name: 'HDFC Bank', id: 'hdfc'))
-        ..add((name: 'ICICI Bank', id: 'icici'))
-        ..add((name: 'Axis Bank', id: 'axis'))
-        ..add((name: 'SBI', id: 'sbi'))
-        ..add((name: 'Other bank', id: 'other'));
+      list.addAll(kFallbackBanks);
     }
+    await _showBankPicker(context, list);
+  }
+
+  Future<void> _showBankPicker(
+    BuildContext context,
+    List<({String name, String id})> list,
+  ) async {
+    final tc = AppThemeColors.of(context);
     ({String name, String id})? picked;
     await showModalBottomSheet(
       context: context,

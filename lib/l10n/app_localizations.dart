@@ -324,6 +324,10 @@ class AppLocalizations {
     'formLabelAmountDebited': {'en': 'AMOUNT DEBITED', 'hi': 'कटी राशि'},
     'formLabelTxnDate': {'en': 'TXN DATE', 'hi': 'लेन-देन तिथि'},
     'formSelectDate': {'en': 'Select date', 'hi': 'तिथि चुनें'},
+    'formAuthRequired': {
+      'en': 'Could not sign in. Please restart the app and try again.',
+      'hi': 'साइन इन नहीं हो सका। ऐप रीस्टार्ट करके फिर कोशिश करें।'
+    },
     'formLabelDescription': {'en': 'DESCRIPTION (optional)', 'hi': 'विवरण (वैकल्पिक)'},
     // Home page remaining.
     'homeViewAllDisputes': {'en': 'View all disputes', 'hi': 'सभी विवाद देखें'},
@@ -534,6 +538,7 @@ class AppLocalizations {
   String get formLabelAmountDebited => _t('formLabelAmountDebited');
   String get formLabelTxnDate => _t('formLabelTxnDate');
   String get formSelectDate => _t('formSelectDate');
+  String get formAuthRequired => _t('formAuthRequired');
   String get formLabelDescription => _t('formLabelDescription');
 
   // Home page remaining strings.

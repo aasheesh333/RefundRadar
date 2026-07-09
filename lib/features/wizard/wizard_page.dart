@@ -8,6 +8,7 @@ import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
+import 'package:refund_radar/features/dispute_create/create_dispute_auth_guard.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
@@ -49,8 +50,25 @@ class _WizardPageState extends ConsumerState<WizardPage> {
     if (_saving) return;
     setState(() => _saving = true);
     try {
-      final uid = await ref.read(userIdProvider.future);
-      if (uid == null) return;
+      String? resolvedUid;
+      try {
+        resolvedUid = await ref.read(userIdProvider.future);
+      } catch (_) {
+        resolvedUid = null;
+      }
+      if (!isValidAuthUid(resolvedUid)) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.formAuthRequired ??
+                  'Could not sign in. Please restart the app and try again.',
+            ),
+          ),
+        );
+        return;
+      }
+      final uid = resolvedUid!;
       final disputes = await ref.read(disputesProvider(uid).future);
       final existing =
           disputes.where((e) => e.id == widget.disputeId).firstOrNull;

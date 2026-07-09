@@ -178,6 +178,7 @@
   "formLabelAmountDebited": "कटी राशि",
   "formLabelTxnDate": "लेन-देन तिथि",
   "formSelectDate": "तिथि चुनें",
+  "formAuthRequired": "साइन इन नहीं हो सका। ऐप रीस्टार्ट करके फिर कोशिश करें।",
   "formLabelDescription": "विवरण (वैकल्पिक)",
   "homeViewAllDisputes": "सभी विवाद देखें",
   "historyTitle": "इतिहास",
