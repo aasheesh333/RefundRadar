@@ -29,10 +29,10 @@ class InfoBanner extends StatelessWidget {
       InfoKind.info => AppColors.success,
     };
     final bg = switch (kind) {
-      InfoKind.success => AppColors.accentSoft,
-      InfoKind.warn => AppColors.premiumGoldSoft,
-      InfoKind.danger => AppColors.errorSoft,
-      InfoKind.info => AppColors.accentSoft,
+      InfoKind.success => tc.accentSoft,
+      InfoKind.warn => tc.premiumGoldSoft,
+      InfoKind.danger => tc.errorSoft,
+      InfoKind.info => tc.accentSoft,
     };
     final prefix = switch (kind) {
       InfoKind.success => '✓',

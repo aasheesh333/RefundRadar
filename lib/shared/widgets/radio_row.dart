@@ -26,8 +26,7 @@ class RadioRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          color:
-              selected ? AppColors.accentSoft : Colors.transparent,
+          color: selected ? tc.accentSoft : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(

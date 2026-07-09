@@ -54,7 +54,7 @@ class DisputeCard extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: dispute.type.softColor,
+                color: dispute.type.softColorFor(tc),
                 borderRadius: BorderRadius.circular(AppRadii.sm),
               ),
               child: Center(
@@ -92,7 +92,9 @@ class DisputeCard extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           color: deadlineMissed
                               ? AppColors.error
-                              : AppColors.primary,
+                              : (tc.isDark
+                                  ? AppColors.accent
+                                  : AppColors.primary),
                         ),
                       ),
                     ],
@@ -177,10 +179,12 @@ class DisputeCard extends StatelessWidget {
                       ),
                       Text(
                         deadlineMissed ? 'Escalate →' : 'View →',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.primary,
+                          color: tc.isDark
+                              ? AppColors.accent
+                              : AppColors.primary,
                         ),
                       ),
                     ],
@@ -200,12 +204,13 @@ class DisputeCard extends StatelessWidget {
   Widget _rightPill(
       BuildContext context, bool missed, int dayN, int windowDays) {
     final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
     if (dispute.status == DisputeStatus.resolved) {
       return StatusPill(
         label: l10n?.statusResolved ?? 'Resolved',
         prefix: '✓',
         fg: AppColors.success,
-        bg: AppColors.accentSoft,
+        bg: tc.accentSoft,
       );
     }
     if (missed) {
@@ -213,14 +218,14 @@ class DisputeCard extends StatelessWidget {
         label: l10n?.statusMissed ?? 'Missed',
         prefix: '⚠',
         fg: AppColors.error,
-        bg: AppColors.errorSoft,
+        bg: tc.errorSoft,
       );
     }
     return StatusPill(
       label: l10n?.statusDayOf(dayN, windowDays) ?? 'Day $dayN of $windowDays',
       prefix: '⏰',
       fg: AppColors.alert,
-      bg: AppColors.alertSoft,
+      bg: tc.alertSoft,
     );
   }
 

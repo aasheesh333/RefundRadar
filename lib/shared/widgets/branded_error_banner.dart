@@ -41,7 +41,7 @@ class BrandedErrorBanner extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: AppColors.errorSoft,
+            color: tc.errorSoft,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
           ),

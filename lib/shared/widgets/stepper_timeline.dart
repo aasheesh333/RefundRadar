@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 
 class StepperTimeline extends StatelessWidget {
   final List<StepperItem> items;
@@ -8,6 +9,7 @@ class StepperTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Column(
       children: List.generate(items.length, (i) {
         final item = items[i];
@@ -27,14 +29,16 @@ class StepperTimeline extends StatelessWidget {
                           ? AppColors.accent
                           : item.isCurrent
                               ? AppColors.primary
-                              : Colors.grey.shade300,
+                              : tc.surfaceAlt,
                     ),
                     child: Center(
                       child: item.isDone
                           ? const Icon(Icons.check, color: Colors.white, size: 18)
                           : Text('${i + 1}',
                               style: TextStyle(
-                                  color: item.isCurrent ? Colors.white : Colors.grey.shade600,
+                                  color: item.isCurrent
+                                      ? Colors.white
+                                      : tc.textTertiary,
                                   fontWeight: FontWeight.w600)),
                     ),
                   ),
@@ -42,7 +46,7 @@ class StepperTimeline extends StatelessWidget {
                     Container(
                       width: 2,
                       height: 60,
-                      color: item.isDone ? AppColors.accent : Colors.grey.shade300,
+                      color: item.isDone ? AppColors.accent : tc.divider,
                     ),
                 ],
               ),
