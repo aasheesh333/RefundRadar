@@ -50,11 +50,15 @@ class _WizardPageState extends ConsumerState<WizardPage> {
     if (_saving) return;
     setState(() => _saving = true);
     try {
-      String? resolvedUid;
-      try {
-        resolvedUid = await ref.read(userIdProvider.future);
-      } catch (_) {
-        resolvedUid = null;
+      String? resolvedUid = ref.read(userIdProvider).asData?.value;
+      if (!isValidAuthUid(resolvedUid)) {
+        try {
+          resolvedUid = await ref
+              .read(userIdProvider.future)
+              .timeout(const Duration(seconds: 10));
+        } catch (_) {
+          resolvedUid = null;
+        }
       }
       if (!isValidAuthUid(resolvedUid)) {
         if (!mounted) return;
@@ -69,10 +73,29 @@ class _WizardPageState extends ConsumerState<WizardPage> {
         return;
       }
       final uid = resolvedUid!;
-      final disputes = await ref.read(disputesProvider(uid).future);
+      List<Dispute> disputes;
+      try {
+        disputes = await ref
+            .read(disputesProvider(uid).future)
+            .timeout(const Duration(seconds: 12));
+      } catch (_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not load dispute. Check connection and try again.'),
+          ),
+        );
+        return;
+      }
       final existing =
           disputes.where((e) => e.id == widget.disputeId).firstOrNull;
-      if (existing == null) return;
+      if (existing == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Dispute not found.')),
+        );
+        return;
+      }
 
       final key = _ticketKeyForLevel(_currentLevel);
       final ticket = _ticketController.text.trim();

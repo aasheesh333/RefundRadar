@@ -11,14 +11,16 @@ final firebaseAuthProvider =
 /// even though Anonymous sign-in is enabled.
 Future<User?> ensureAnonymousUser(FirebaseAuth auth) async {
   try {
-    var user = auth.currentUser;
-    if (user == null) {
-      final cred = await auth.signInAnonymously();
-      user = cred.user;
-    }
-    // Force a token so subsequent Firestore requests carry request.auth.
-    await user?.getIdToken(true);
-    return user;
+    return await Future(() async {
+      var user = auth.currentUser;
+      if (user == null) {
+        final cred = await auth.signInAnonymously();
+        user = cred.user;
+      }
+      // Force a token so subsequent Firestore requests carry request.auth.
+      await user?.getIdToken(true);
+      return user;
+    }).timeout(const Duration(seconds: 12));
   } catch (e, st) {
     debugPrint('ensureAnonymousUser failed: $e\n$st');
     return null;

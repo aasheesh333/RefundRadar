@@ -28,11 +28,11 @@ class AppThemeColors {
 
   // Soft status surfaces need dark variants so pastel chips don't glow.
   Color get accentSoft =>
-      isDark ? const Color(0xFF163B2C) : AppColors.accentSoft;
+      isDark ? const Color(0xFF1A3A5C) : AppColors.accentSoft;
   Color get alertSoft =>
-      isDark ? const Color(0xFF3B2E14) : AppColors.alertSoft;
+      isDark ? const Color(0xFF3E2A12) : AppColors.alertSoft;
   Color get errorSoft =>
-      isDark ? const Color(0xFF3B1A1C) : AppColors.errorSoft;
+      isDark ? const Color(0xFF3E1A1A) : AppColors.errorSoft;
   Color get premiumGoldSoft =>
-      isDark ? const Color(0xFF3B3218) : AppColors.premiumGoldSoft;
+      isDark ? const Color(0xFF3A3018) : AppColors.premiumGoldSoft;
 }

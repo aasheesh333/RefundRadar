@@ -7,40 +7,40 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Brand
-  static const primary = Color(0xFF0B3D2E);     // deep trust green
-  static const primaryDark = Color(0xFF072518);
-  static const accent = Color(0xFF16C784);      // emerald — money green
-  static const accentSoft = Color(0xFFD7F5E7); // emerald @ 12% perceptual
+  // Brand — simple Material blue (not heavy green)
+  static const primary = Color(0xFF1565C0); // blue 800
+  static const primaryDark = Color(0xFF0D47A1); // blue 900
+  static const accent = Color(0xFF42A5F5); // blue 400
+  static const accentSoft = Color(0xFFE3F2FD); // blue 50
 
   // Status / counter
-  static const alert = Color(0xFFF5A623);       // amber — counter
-  static const alertSoft = Color(0xFFFCEFD3);
-  static const error = Color(0xFFE5484D);
-  static const errorSoft = Color(0xFFFCE4E5);
-  static const success = Color(0xFF16A34A);
+  static const alert = Color(0xFFED6C02); // Material orange
+  static const alertSoft = Color(0xFFFFF3E0);
+  static const error = Color(0xFFD32F2F);
+  static const errorSoft = Color(0xFFFFEBEE);
+  static const success = Color(0xFF2E7D32);
 
-  // Surfaces — light
-  static const bgLight = Color(0xFFFAFAF7);
+  // Surfaces — light (neutral grey, Material default-ish)
+  static const bgLight = Color(0xFFF5F5F5);
   static const surfaceLight = Color(0xFFFFFFFF);
-  static const surfaceAltLight = Color(0xFFF2F4F1);
-  static const dividerLight = Color(0xFFE5E7E2);
-  static const textPrimaryLight = Color(0xFF12211C);
-  static const textSecondaryLight = Color(0xFF5A6560);
-  static const textTertiaryLight = Color(0xFF8A918D);
+  static const surfaceAltLight = Color(0xFFEEEEEE);
+  static const dividerLight = Color(0xFFE0E0E0);
+  static const textPrimaryLight = Color(0xFF212121);
+  static const textSecondaryLight = Color(0xFF616161);
+  static const textTertiaryLight = Color(0xFF9E9E9E);
 
-  // Surfaces — dark
-  static const bgDark = Color(0xFF0E1513);
-  static const surfaceDark = Color(0xFF1A2420);
-  static const surfaceAltDark = Color(0xFF22302B);
-  static const dividerDark = Color(0xFF2A3833);
-  static const textPrimaryDark = Color(0xFFE8F0EC);
-  static const textSecondaryDark = Color(0xFFA6B5AE);
-  static const textTertiaryDark = Color(0xFF6B7772);
+  // Surfaces — dark (neutral Material dark)
+  static const bgDark = Color(0xFF121212);
+  static const surfaceDark = Color(0xFF1E1E1E);
+  static const surfaceAltDark = Color(0xFF2C2C2C);
+  static const dividerDark = Color(0xFF3A3A3A);
+  static const textPrimaryDark = Color(0xFFECECEC);
+  static const textSecondaryDark = Color(0xFFB0B0B0);
+  static const textTertiaryDark = Color(0xFF8A8A8A);
 
   // Premium indicator
-  static const premiumGold = Color(0xFFE0B657);
-  static const premiumGoldSoft = Color(0xFFFBF0D6);
+  static const premiumGold = Color(0xFFF9A825);
+  static const premiumGoldSoft = Color(0xFFFFF8E1);
 
   // Shared
   static const shadow = Color(0x14000000);
@@ -223,7 +223,7 @@ extension StatusKindX on StatusKind {
         StatusKind.info => AppColors.accentSoft,
         StatusKind.warn => AppColors.alertSoft,
         StatusKind.danger => AppColors.errorSoft,
-        StatusKind.success => const Color(0xFFD7F5E7),
-        StatusKind.premium => const Color(0xFFFBF0D6),
+        StatusKind.success => const Color(0xFFE8F5E9),
+        StatusKind.premium => AppColors.premiumGoldSoft,
       };
 }

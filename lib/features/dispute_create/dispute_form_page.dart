@@ -102,11 +102,17 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         );
         return;
       }
-      String? resolvedUid;
-      try {
-        resolvedUid = await ref.read(userIdProvider.future);
-      } catch (_) {
-        resolvedUid = null;
+      // Prefer already-resolved uid; only await if still loading. Always
+      // bound with a timeout so _saving never sticks forever.
+      String? resolvedUid = ref.read(userIdProvider).asData?.value;
+      if (!isValidAuthUid(resolvedUid)) {
+        try {
+          resolvedUid = await ref
+              .read(userIdProvider.future)
+              .timeout(const Duration(seconds: 10));
+        } catch (_) {
+          resolvedUid = null;
+        }
       }
       if (!isValidAuthUid(resolvedUid)) {
         if (!mounted) return;
@@ -126,22 +132,37 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       // Active = status in {draft, filed_l1, filed_l2, ombudsman}.
       final isPremium = ref.read(isPremiumProvider);
       if (!isPremium) {
-        final disputesAsync = await ref.read(disputesProvider(uid).future);
+        List<Dispute> existing;
+        try {
+          existing = await ref
+              .read(disputesProvider(uid).future)
+              .timeout(const Duration(seconds: 12));
+        } catch (e) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                e.toString().toLowerCase().contains('permission')
+                    ? 'Could not verify free plan limit. Tap Retry on Home, then try again.'
+                    : 'Could not check existing disputes. Check connection and try again.',
+              ),
+            ),
+          );
+          return;
+        }
         const terminal = {
           DisputeStatus.resolved,
           DisputeStatus.expired,
         };
         final activeCount =
-            disputesAsync.where((d) => !terminal.contains(d.status)).length;
+            existing.where((d) => !terminal.contains(d.status)).length;
         if (activeCount >= 1) {
-          // Bump the counter for analytics + send to the paywall.
-          await ref.read(freeDisputesUsedProvider.notifier).increment();
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
                   'Free plan allows 1 active dispute. Upgrade for unlimited.'),
-              duration: Duration(seconds: 2),
+              duration: Duration(seconds: 3),
             ),
           );
           context.push('/paywall?return=/home&trigger=free_second_dispute');

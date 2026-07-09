@@ -116,7 +116,7 @@ class HomePage extends ConsumerWidget {
   static String _friendlyError(Object e) {
     final s = e.toString().toLowerCase();
     if (s.contains('permission-denied') || s.contains('permission_denied')) {
-      return 'Could not load your disputes. Pull to retry — if this keeps happening, sign out and back in from Settings.';
+      return 'Could not load your disputes. Tap Retry. If this keeps happening, sign out from Settings and reopen the app.';
     }
     if (s.contains('unavailable') ||
         s.contains('network') ||

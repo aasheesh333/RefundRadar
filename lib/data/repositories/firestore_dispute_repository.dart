@@ -73,12 +73,15 @@ class FirestoreDisputeRepository implements DisputeRepository {
   /// lets the token propagate (typically <1.5 s) and the read succeeds.
   Future<List<Dispute>> _loadDisputesWithRetry(String uid) async {
     const maxAttempts = 4;
-    const delays = [Duration(milliseconds: 500),
-                    Duration(milliseconds: 1200),
-                    Duration(seconds: 3)];
+    const delays = [
+      Duration(milliseconds: 500),
+      Duration(milliseconds: 1200),
+      Duration(seconds: 3),
+    ];
     Object? lastError;
     for (var attempt = 0; attempt < maxAttempts; attempt++) {
       try {
+        await _ensureAuthToken(uid);
         await _ensureUserDoc(uid);
         final snap =
             await _col(uid).orderBy('createdAt', descending: true).get();
@@ -89,13 +92,8 @@ class FirestoreDisputeRepository implements DisputeRepository {
         lastError = e;
         debugPrint('loadDisputes attempt ${attempt + 1} failed: '
             '${e.code} ${e.message}');
-        // Only retry the auth/token race (`permission-denied` /
-        // `unauthenticated`). Other errors surface immediately.
-        final retriable = e.code == 'permission-denied' ||
-            e.code == 'unauthenticated';
-        // Fallback: retry without orderBy (failed-precondition ≈ missing
-        // index / empty-collection edge). Fire-and-forget correction, then
-        // return the cleaned list.
+        final retriable =
+            e.code == 'permission-denied' || e.code == 'unauthenticated';
         if (e.code == 'failed-precondition') {
           final snap = await _col(uid).get();
           final list = snap.docs
@@ -105,8 +103,6 @@ class FirestoreDisputeRepository implements DisputeRepository {
           return list;
         }
         if (!retriable || attempt == maxAttempts - 1) rethrow;
-        // Force a fresh token before the next attempt to refresh
-        // `request.auth` on the server.
         try {
           await FirebaseAuth.instance.currentUser?.getIdToken(true);
         } catch (_) {/* ignore */}
@@ -118,21 +114,51 @@ class FirestoreDisputeRepository implements DisputeRepository {
 
   @override
   Future<List<Dispute>> loadDisputes(String uid) async {
-    await _ensureAuthToken(uid);
+    // Auth token check lives inside the retry loop so a cold-boot race
+    // (uid known, request.auth still null) gets the same backoff as reads.
     return _loadDisputesWithRetry(uid);
+  }
+
+  Future<T> _withAuthRetry<T>(String uid, Future<T> Function() action) async {
+    const maxAttempts = 4;
+    const delays = [
+      Duration(milliseconds: 500),
+      Duration(milliseconds: 1200),
+      Duration(seconds: 3),
+    ];
+    Object? lastError;
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        await _ensureAuthToken(uid);
+        await _ensureUserDoc(uid);
+        return await action();
+      } on FirebaseException catch (e) {
+        lastError = e;
+        debugPrint(
+            'withAuthRetry attempt ${attempt + 1} failed: ${e.code} ${e.message}');
+        final retriable =
+            e.code == 'permission-denied' || e.code == 'unauthenticated';
+        if (!retriable || attempt == maxAttempts - 1) rethrow;
+        try {
+          await FirebaseAuth.instance.currentUser?.getIdToken(true);
+        } catch (_) {/* ignore */}
+        await Future.delayed(delays[attempt]);
+      }
+    }
+    throw lastError ?? StateError('withAuthRetry exhausted for $uid');
   }
 
   @override
   Future<Dispute> saveDispute(String uid, Dispute dispute) async {
-    await _ensureAuthToken(uid);
-    await _ensureUserDoc(uid);
-    final data = dispute.toJson()..['uid'] = uid;
-    if (dispute.id.isEmpty) {
-      final ref = await _col(uid).add(data);
-      return dispute.copyWith(id: ref.id, uid: uid);
-    }
-    await _col(uid).doc(dispute.id).set(data, SetOptions(merge: true));
-    return dispute.copyWith(uid: uid);
+    return _withAuthRetry(uid, () async {
+      final data = dispute.toJson()..['uid'] = uid;
+      if (dispute.id.isEmpty) {
+        final ref = await _col(uid).add(data);
+        return dispute.copyWith(id: ref.id, uid: uid);
+      }
+      await _col(uid).doc(dispute.id).set(data, SetOptions(merge: true));
+      return dispute.copyWith(uid: uid);
+    });
   }
 
   @override

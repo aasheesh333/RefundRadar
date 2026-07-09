@@ -37,11 +37,11 @@ class DefaultFirebaseOptions {
     );
     final projectId = const String.fromEnvironment(
       'FB_PROJECT_ID',
-      defaultValue: 'refund-radar',
+      defaultValue: 'refund-radar-9eb75',
     );
     final storageBucket = const String.fromEnvironment(
       'FB_STORAGE_BUCKET',
-      defaultValue: 'refund-radar.appspot.com',
+      defaultValue: 'refund-radar-9eb75.firebasestorage.app',
     );
     return FirebaseOptions(
       apiKey: apiKey,
@@ -67,11 +67,11 @@ class DefaultFirebaseOptions {
     );
     final projectId = const String.fromEnvironment(
       'FB_PROJECT_ID',
-      defaultValue: 'refund-radar',
+      defaultValue: 'refund-radar-9eb75',
     );
     final storageBucket = const String.fromEnvironment(
       'FB_STORAGE_BUCKET',
-      defaultValue: 'refund-radar.appspot.com',
+      defaultValue: 'refund-radar-9eb75.firebasestorage.app',
     );
     final iosBundleId = const String.fromEnvironment(
       'FB_IOS_BUNDLE_ID',
