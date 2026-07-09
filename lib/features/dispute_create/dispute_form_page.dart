@@ -106,21 +106,32 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       createdAt: DateTime.now(),
     );
     final repo = ref.read(disputeRepositoryProvider);
-    final saved = await repo.saveDispute(uid, dispute);
-    // B3: increment free-tier counter (no-op for premium, but cheap).
-    if (!isPremium) {
-      await ref.read(freeDisputesUsedProvider.notifier).increment();
+    try {
+      final saved = await repo.saveDispute(uid, dispute);
+      // B3: increment free-tier counter (no-op for premium, but cheap).
+      if (!isPremium) {
+        await ref.read(freeDisputesUsedProvider.notifier).increment();
+      }
+      // B4 analytics: dispute_created event (spec §10).
+      ref.read(analyticsServiceProvider).logDisputeCreated(
+            disputeType: dispute.type.id,
+            isPremium: isPremium,
+          );
+      // B6: generate / sync reminders + schedule local notifications.
+      //    Safe no-op if Firestore isn't reachable; failures are caught by
+      //    the outer zone and reported to Crashlytics.
+      await syncRemindersForDispute(ref, uid, saved);
+      // Home uses a FutureProvider — must invalidate or the new dispute
+      // won't appear until process restart.
+      ref.invalidate(disputesProvider(uid));
+      if (mounted) context.go('/home');
+    } catch (e) {
+      if (!mounted) return;
+      final msg = e.toString().toLowerCase().contains('permission')
+          ? 'Could not save — sign-in expired. Go Home and tap Retry.'
+          : 'Could not save dispute. Check connection and try again.';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
-    // B4 analytics: dispute_created event (spec §10).
-    ref.read(analyticsServiceProvider).logDisputeCreated(
-          disputeType: dispute.type.id,
-          isPremium: isPremium,
-        );
-    // B6: generate / sync reminders + schedule local notifications.
-    //    Safe no-op if Firestore isn't reachable; failures are caught by
-    //    the outer zone and reported to Crashlytics.
-    await syncRemindersForDispute(ref, uid, saved);
-    if (mounted) context.go('/home');
   }
 
   @override

@@ -8,30 +8,39 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
     // users/{uid}
     match /users/{uid} {
-      allow read: if isAuth() && request.auth.uid == uid;
-      allow create: if isAuth() && request.auth.uid == uid;
-      allow update: if isAuth() && request.auth.uid == uid;
-      allow delete: if isAuth() && request.auth.uid == uid;
+      allow read: if isOwner(uid);
+      // Allow create/update of the user root doc (profile + timestamps).
+      // Clients call this on first launch to ensure the parent path exists.
+      allow create: if isOwner(uid)
+                    && request.resource.data.uid == uid;
+      allow update: if isOwner(uid);
+      allow delete: if isOwner(uid);
 
       // users/{uid}/disputes/{disputeId}
+      // `read` covers both get + list (collection queries on Home).
       match /disputes/{disputeId} {
-        allow read: if isAuth() && request.auth.uid == uid;
-        allow create: if isAuth() && request.auth.uid == uid
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid)
                       && request.resource.data.uid == uid;
-        allow update: if isAuth() && request.auth.uid == uid
-                      && resource.data.uid == uid;
-        allow delete: if isAuth() && request.auth.uid == uid;
+        allow update: if isOwner(uid)
+                      && resource.data.uid == uid
+                      && request.resource.data.uid == uid;
+        allow delete: if isOwner(uid);
       }
 
       // users/{uid}/reminders/{reminderId}
       match /reminders/{reminderId} {
-        allow read: if isAuth() && request.auth.uid == uid;
-        allow create: if isAuth() && request.auth.uid == uid
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid)
                       && request.resource.data.uid == uid;
-        allow update: if isAuth() && request.auth.uid == uid;
-        allow delete: if isAuth() && request.auth.uid == uid;
+        allow update: if isOwner(uid);
+        allow delete: if isOwner(uid);
       }
     }
 

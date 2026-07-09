@@ -78,13 +78,16 @@ class AppTheme {
           side: BorderSide(color: AppColors.dividerLight, width: 1),
         ),
       ),
+      // NOTE: Do NOT use Size.fromHeight(h) here — that is Size(infinity, h)
+      // and starves siblings in a Row (text wraps one-char-wide / vertical).
+      // Full-width CTAs should wrap the button in SizedBox(width: double.infinity).
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           disabledBackgroundColor: AppColors.dividerLight,
           disabledForegroundColor: AppColors.textSecondaryLight,
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size(64, 52),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           textStyle: AppTypography.h3(color: Colors.white).copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(
@@ -97,7 +100,7 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 0,
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size(64, 52),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           textStyle: AppTypography.h3(color: Colors.white).copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(
@@ -108,7 +111,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
-          minimumSize: const Size.fromHeight(48),
+          minimumSize: const Size(64, 48),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           side: const BorderSide(color: AppColors.primary, width: 1.5),
           textStyle: AppTypography.h3(color: AppColors.primary).copyWith(fontWeight: FontWeight.w600),
@@ -253,7 +256,7 @@ class AppTheme {
           foregroundColor: AppColors.primaryDark,
           disabledBackgroundColor: AppColors.surfaceAltDark,
           disabledForegroundColor: AppColors.textTertiaryDark,
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size(64, 52),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           textStyle: AppTypography.h3(color: AppColors.primaryDark).copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
@@ -264,7 +267,7 @@ class AppTheme {
           backgroundColor: AppColors.accent,
           foregroundColor: AppColors.primaryDark,
           elevation: 0,
-          minimumSize: const Size.fromHeight(52),
+          minimumSize: const Size(64, 52),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           textStyle: AppTypography.h3(color: AppColors.primaryDark).copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
@@ -273,7 +276,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.accent,
-          minimumSize: const Size.fromHeight(48),
+          minimumSize: const Size(64, 48),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           side: const BorderSide(color: AppColors.accent, width: 1.5),
           textStyle: AppTypography.h3(color: AppColors.accent).copyWith(fontWeight: FontWeight.w600),

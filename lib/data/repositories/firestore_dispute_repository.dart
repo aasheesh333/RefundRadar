@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 
 abstract class DisputeRepository {
@@ -14,14 +16,67 @@ class FirestoreDisputeRepository implements DisputeRepository {
   CollectionReference<Map<String, dynamic>> _col(String uid) =>
       _db.collection('users').doc(uid).collection('disputes');
 
+  /// Make sure Auth has a current user + ID token before any Firestore call.
+  /// Prevents the classic race where the UI has a uid but `request.auth` is
+  /// still null on the server → `permission-denied`.
+  Future<void> _ensureAuthToken(String uid) async {
+    final auth = FirebaseAuth.instance;
+    final user = auth.currentUser;
+    if (user == null || user.uid != uid) {
+      throw FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'permission-denied',
+        message:
+            'Not signed in as $uid (current=${user?.uid}). Tap Retry to re-authenticate.',
+      );
+    }
+    await user.getIdToken();
+  }
+
+  /// Ensure the parent `users/{uid}` doc exists. Some Firebase project setups
+  /// (and future rule tightenings) expect the user root to be present; it's
+  /// cheap and idempotent.
+  Future<void> _ensureUserDoc(String uid) async {
+    final ref = _db.collection('users').doc(uid);
+    final snap = await ref.get();
+    if (!snap.exists) {
+      await ref.set({
+        'uid': uid,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
+  }
+
   @override
   Future<List<Dispute>> loadDisputes(String uid) async {
-    final snap = await _col(uid).orderBy('createdAt', descending: true).get();
-    return snap.docs.map((d) => Dispute.fromJson(d.data()..['id'] = d.id)).toList();
+    await _ensureAuthToken(uid);
+    try {
+      await _ensureUserDoc(uid);
+      final snap =
+          await _col(uid).orderBy('createdAt', descending: true).get();
+      return snap.docs
+          .map((d) => Dispute.fromJson(d.data()..['id'] = d.id))
+          .toList();
+    } on FirebaseException catch (e) {
+      debugPrint('loadDisputes failed: ${e.code} ${e.message}');
+      // Fallback: retry without orderBy (missing index / empty collection edge).
+      if (e.code == 'failed-precondition') {
+        final snap = await _col(uid).get();
+        final list = snap.docs
+            .map((d) => Dispute.fromJson(d.data()..['id'] = d.id))
+            .toList();
+        list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        return list;
+      }
+      rethrow;
+    }
   }
 
   @override
   Future<Dispute> saveDispute(String uid, Dispute dispute) async {
+    await _ensureAuthToken(uid);
+    await _ensureUserDoc(uid);
     final data = dispute.toJson()..['uid'] = uid;
     if (dispute.id.isEmpty) {
       final ref = await _col(uid).add(data);
@@ -33,11 +88,13 @@ class FirestoreDisputeRepository implements DisputeRepository {
 
   @override
   Future<void> deleteDispute(String uid, String id) async {
+    await _ensureAuthToken(uid);
     await _col(uid).doc(id).delete();
   }
 
   @override
   Future<void> deleteAllUserData(String uid) async {
+    await _ensureAuthToken(uid);
     final snap = await _col(uid).get();
     final batch = _db.batch();
     for (final d in snap.docs) {

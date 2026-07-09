@@ -21,16 +21,38 @@ class HomePage extends ConsumerWidget {
       body: SafeArea(
         child: uidAsync.when(
           data: (uid) {
-            if (uid == null) return const _Loading();
+            if (uid == null) {
+              return BrandedErrorBanner(
+                message:
+                    'Could not sign in. Check your connection and try again.',
+                onRetry: () async {
+                  await ref.read(reauthProvider)();
+                  ref.invalidate(userIdProvider);
+                },
+              );
+            }
             final disputesAsync = ref.watch(disputesProvider(uid));
             return disputesAsync.when(
               data: (disputes) => _Body(disputes: disputes),
               loading: () => const _Loading(),
-              error: (e, _) => _Error(message: '$e'),
+              error: (e, _) => BrandedErrorBanner(
+                message: _friendlyError(e),
+                onRetry: () async {
+                  await ref.read(reauthProvider)();
+                  ref.invalidate(userIdProvider);
+                  ref.invalidate(disputesProvider(uid));
+                },
+              ),
             );
           },
           loading: () => const _Loading(),
-          error: (e, _) => _Error(message: '$e'),
+          error: (e, _) => BrandedErrorBanner(
+            message: _friendlyError(e),
+            onRetry: () async {
+              await ref.read(reauthProvider)();
+              ref.invalidate(userIdProvider);
+            },
+          ),
         ),
       ),
       floatingActionButton: Padding(
@@ -69,6 +91,24 @@ class HomePage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Map raw Firebase exceptions to short, user-facing copy. Never dump
+  /// `[cloud_firestore/permission-denied] ...` into the UI.
+  static String _friendlyError(Object e) {
+    final s = e.toString().toLowerCase();
+    if (s.contains('permission-denied') || s.contains('permission_denied')) {
+      return 'Could not load your disputes. Pull to retry — if this keeps happening, sign out and back in from Settings.';
+    }
+    if (s.contains('unavailable') ||
+        s.contains('network') ||
+        s.contains('socket')) {
+      return 'You appear to be offline. Check your connection and retry.';
+    }
+    if (s.contains('unauthenticated')) {
+      return 'Session expired. Tap Retry to sign in again.';
+    }
+    return 'Could not load disputes. Tap Retry.';
   }
 }
 
@@ -273,11 +313,4 @@ class _Loading extends StatelessWidget {
           strokeWidth: 2,
         ),
       );
-}
-
-class _Error extends StatelessWidget {
-  final String message;
-  const _Error({required this.message});
-  @override
-  Widget build(BuildContext context) => BrandedErrorBanner(message: message);
 }

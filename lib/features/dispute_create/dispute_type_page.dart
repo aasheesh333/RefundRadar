@@ -75,62 +75,56 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                 ),
               ),
             ),
-            // sticky footer
-            SafeArea(
-              top: false,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
-                decoration: const BoxDecoration(
-                  color: AppColors.surfaceLight,
-                  border: Border(
-                    top: BorderSide(color: AppColors.dividerLight, width: 1),
+            // sticky footer — Column (not Row+infinite min button) so the
+            // selected label never collapses to one-char-wide vertical text.
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+              decoration: const BoxDecoration(
+                color: AppColors.surfaceLight,
+                border: Border(
+                  top: BorderSide(color: AppColors.dividerLight, width: 1),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    _selected == null
+                        ? 'Selected: —'
+                        : 'Selected: ${_selected!.displayName}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _selected == null
+                          ? AppColors.textTertiaryLight
+                          : AppColors.accent,
+                    ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Selected',
-                            style: AppTypography.overline(
-                              color: AppColors.accent,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _selected?.displayName ?? '—',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimaryLight,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 50,
-                      child: FilledButton(
-                        onPressed: _selected == null
-                            ? null
-                            : () => context.push(
-                                  '/disputes/form?type=${_selected!.id}'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          disabledBackgroundColor:
-                              AppColors.surfaceAltLight,
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(AppRadii.md),
-                          ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 52,
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: _selected == null
+                          ? null
+                          : () => context.push(
+                                '/disputes/form?type=${_selected!.id}'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        disabledBackgroundColor: AppColors.surfaceAltLight,
+                        minimumSize: const Size(0, 52),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadii.md),
                         ),
-                        child: const Text('Continue →'),
                       ),
+                      child: const Text('Continue →'),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
