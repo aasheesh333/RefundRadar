@@ -1,4 +1,4 @@
-name: Build Debug APK
+name: Build Release
 
 on:
   push:
@@ -6,33 +6,21 @@ on:
   pull_request:
     branches: [main, master]
   workflow_dispatch:
-    inputs:
-      build_type:
-        description: 'Build type'
-        required: true
-        default: 'debug'
-        type: choice
-        options:
-          - debug
-          - release
 
-# Private repo free tier = 1 concurrent job. Queue runs instead of racing
-# (which caused GitHub to send a shutdown signal mid-build, cancelling the
-# release AAB/APK). cancel-in-progress:false lets a running release finish.
+# Private repo free tier = 1 concurrent job. Queue runs instead of racing.
 concurrency:
   group: android-build
   cancel-in-progress: false
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Debug build — works with placeholder Firebase / placeholder RevenueCat.
-  # Every push/PR runs this. Uses NO secrets.
+  # Analyze + unit tests on every push/PR (no APK build).
   # ---------------------------------------------------------------------------
-  debug:
-    name: Debug APK
+  quality:
+    name: Analyze + Test
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.build_type == 'debug' }}
+    timeout-minutes: 20
+    if: ${{ github.event_name != 'workflow_dispatch' }}
 
     steps:
       - name: Checkout
@@ -50,28 +38,8 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Flutter version
-        run: flutter --version
-
       - name: Install dependencies
         run: flutter pub get
-
-      # google-services Gradle plugin is always applied (Crashlytics native).
-      # Prefer the real secret when present; otherwise write a minimal
-      # placeholder so processDebugGoogleServices doesn't fail the build.
-      - name: Inject google-services.json (debug)
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: |
-          DEST=android/app/google-services.json
-          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
-            printf '%s' "$GOOGLE_SERVICES_JSON" > "$DEST"
-            echo "Injected real google-services.json ($(wc -c < "$DEST") bytes)"
-          else
-            # Minimal placeholder — package_name must match applicationId.
-            python3 -c 'import json; json.dump({"project_info":{"project_number":"1234567890","project_id":"refund-radar","storage_bucket":"refund-radar.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:1234567890:android:abcdef123456","android_client_info":{"package_name":"com.dhanuk.refundradar"}},"oauth_client":[],"api_key":[{"current_key":"AIzaSyD-EXAMPLE"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}, open("android/app/google-services.json","w")); print("Wrote placeholder google-services.json")'
-          fi
-          python3 -c "import json; json.load(open('android/app/google-services.json')); print('google-services.json OK')"
 
       - name: Verify analysis
         run: flutter analyze
@@ -79,55 +47,14 @@ jobs:
       - name: Run tests
         run: flutter test
 
-      - name: Build debug APK
-        run: flutter build apk --debug --no-tree-shake-icons --split-per-abi
-
-      - name: Cleanup google-services.json
-        if: always()
-        run: rm -f android/app/google-services.json
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: refund-radar-debug-apk
-          path: build/app/outputs/flutter-apk/*.apk
-          retention-days: 90
-
-      - name: List build output
-        run: ls -lh build/app/outputs/flutter-apk/ || true
-
-      - name: Smoke test — APK produced
-        run: |
-          set -euo pipefail
-          APKS=(build/app/outputs/flutter-apk/*.apk)
-          count=${#APKS[@]}
-          if [ "$count" -lt 1 ]; then
-            echo "::error::No APK artifacts found after debug build"
-            exit 1
-          fi
-          for apk in "${APKS[@]}"; do
-            size=$(wc -c < "$apk")
-            echo "OK: $apk ($size bytes)"
-            if [ "$size" -lt 1000000 ]; then
-              echo "::error::APK too small (<1MB) — likely a failed/empty build: $apk"
-              exit 1
-            fi
-          done
-          echo "Smoke test passed: $count ABI-split APK(s)"
-
   # ---------------------------------------------------------------------------
-  # Release build — needs secrets. Manual dispatch only
-  # (workflow_dispatch with build_type=release). Stops if any required
-  # secret is missing. Split into two jobs (AAB then APK) so each gets a
-  # fresh ~16-min hosted-runner budget — the GitHub free private-tier
-  # runner reclaims after ~16 min, which was cancelling a combined build
-  # mid-APK even though the AAB had already uploaded successfully.
+  # Release AAB — workflow_dispatch only. Needs secrets.
   # ---------------------------------------------------------------------------
   release-aab:
     name: Release AAB (Play Store)
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'release' }}
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     concurrency:
       group: release-aab
       cancel-in-progress: false
@@ -286,12 +213,15 @@ jobs:
           done
           echo "AAB smoke test passed: ${#AABS[@]} AAB(s)"
 
+  # ---------------------------------------------------------------------------
+  # Release APK — after AAB, workflow_dispatch only.
+  # ---------------------------------------------------------------------------
   release-apk:
-    name: Release APK (sideload, best-effort)
+    name: Release APK (sideload)
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: release-aab
-    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'release' && always() }}
+    if: ${{ github.event_name == 'workflow_dispatch' && always() }}
     concurrency:
       group: release-apk
       cancel-in-progress: false
