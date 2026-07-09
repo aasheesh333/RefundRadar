@@ -114,10 +114,13 @@ jobs:
   # secret is missing.
   # ---------------------------------------------------------------------------
   release:
-    name: Release APK (signed)
+    name: Release APK + AAB (signed)
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'release' }}
+    concurrency:
+      group: release-build
+      cancel-in-progress: false
 
     steps:
       - name: Checkout
@@ -128,6 +131,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -191,14 +195,13 @@ jobs:
         run: |
           printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
           echo "google-services.json injected (size: $(wc -c < android/app/google-services.json) bytes)"
-          # Validate the JSON is well-formed (defensive — emits ::error on bad input)
           if ! python3 -c "import json,sys; json.load(open('android/app/google-services.json'))" 2>/dev/null; then
             echo "::error::google-services.json is not valid JSON"
             head -c 200 android/app/google-services.json
             exit 1
           fi
 
-      - name: Build release APK + AAB (signed)
+      - name: Build release AAB (signed)
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
@@ -215,46 +218,22 @@ jobs:
           VERSION_NAME: ${{ secrets.VERSION_NAME }}
         run: |
           mkdir -p build/app/outputs/symbols
-          DART_DEFINES=(
-            --dart-define=FB_ANDROID_API_KEY="$FB_ANDROID_API_KEY"
-            --dart-define=FB_ANDROID_APP_ID="$FB_ANDROID_APP_ID"
-            --dart-define=FB_MESSAGING_SENDER_ID="$FB_MESSAGING_SENDER_ID"
-            --dart-define=FB_PROJECT_ID="$FB_PROJECT_ID"
-            --dart-define=FB_STORAGE_BUCKET="$FB_STORAGE_BUCKET"
-            --dart-define=REVENUECAT_SDK_KEY="$REVENUECAT_SDK_KEY"
-            --dart-define=ONESIGNAL_APP_ID="$ONESIGNAL_APP_ID"
-            --dart-define=ONESIGNAL_API_KEY="$ONESIGNAL_API_KEY"
-            --dart-define=VERSION_NAME="$VERSION_NAME"
-            --dart-define=VERSION_CODE="$VERSION_CODE"
-          )
-          flutter build apk --release \
-            --no-tree-shake-icons \
-            --split-per-abi \
-            --obfuscate \
-            --split-debug-info=build/app/outputs/symbols \
-            --build-name="$VERSION_NAME" \
-            --build-number="$VERSION_CODE" \
-            "${DART_DEFINES[@]}"
           flutter build appbundle --release \
             --no-tree-shake-icons \
             --obfuscate \
             --split-debug-info=build/app/outputs/symbols \
             --build-name="$VERSION_NAME" \
             --build-number="$VERSION_CODE" \
-            "${DART_DEFINES[@]}"
-
-      - name: Cleanup keystore + google-services.json
-        if: always()
-        run: |
-          rm -f android/app/keystore.jks
-          rm -f android/app/google-services.json
-
-      - name: Upload release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: refund-radar-release-apk
-          path: build/app/outputs/flutter-apk/*.apk
-          retention-days: 90
+            --dart-define=FB_ANDROID_API_KEY="$FB_ANDROID_API_KEY" \
+            --dart-define=FB_ANDROID_APP_ID="$FB_ANDROID_APP_ID" \
+            --dart-define=FB_MESSAGING_SENDER_ID="$FB_MESSAGING_SENDER_ID" \
+            --dart-define=FB_PROJECT_ID="$FB_PROJECT_ID" \
+            --dart-define=FB_STORAGE_BUCKET="$FB_STORAGE_BUCKET" \
+            --dart-define=REVENUECAT_SDK_KEY="$REVENUECAT_SDK_KEY" \
+            --dart-define=ONESIGNAL_APP_ID="$ONESIGNAL_APP_ID" \
+            --dart-define=ONESIGNAL_API_KEY="$ONESIGNAL_API_KEY" \
+            --dart-define=VERSION_NAME="$VERSION_NAME" \
+            --dart-define=VERSION_CODE="$VERSION_CODE"
 
       - name: Upload release AAB
         uses: actions/upload-artifact@v4
@@ -262,13 +241,64 @@ jobs:
           name: refund-radar-release-aab
           path: build/app/outputs/bundle/release/*.aab
           retention-days: 90
+          if-no-files-found: error
+
+      - name: Build release APK (signed, split-per-abi)
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          FB_ANDROID_API_KEY: ${{ secrets.FB_ANDROID_API_KEY }}
+          FB_ANDROID_APP_ID: ${{ secrets.FB_ANDROID_APP_ID }}
+          FB_MESSAGING_SENDER_ID: ${{ secrets.FB_MESSAGING_SENDER_ID }}
+          FB_PROJECT_ID: ${{ secrets.FB_PROJECT_ID }}
+          FB_STORAGE_BUCKET: ${{ secrets.FB_STORAGE_BUCKET }}
+          REVENUECAT_SDK_KEY: ${{ secrets.REVENUECAT_SDK_KEY }}
+          ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
+          ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
+          VERSION_CODE: ${{ secrets.VERSION_CODE }}
+          VERSION_NAME: ${{ secrets.VERSION_NAME }}
+        run: |
+          flutter build apk --release \
+            --no-tree-shake-icons \
+            --split-per-abi \
+            --obfuscate \
+            --split-debug-info=build/app/outputs/symbols \
+            --build-name="$VERSION_NAME" \
+            --build-number="$VERSION_CODE" \
+            --dart-define=FB_ANDROID_API_KEY="$FB_ANDROID_API_KEY" \
+            --dart-define=FB_ANDROID_APP_ID="$FB_ANDROID_APP_ID" \
+            --dart-define=FB_MESSAGING_SENDER_ID="$FB_MESSAGING_SENDER_ID" \
+            --dart-define=FB_PROJECT_ID="$FB_PROJECT_ID" \
+            --dart-define=FB_STORAGE_BUCKET="$FB_STORAGE_BUCKET" \
+            --dart-define=REVENUECAT_SDK_KEY="$REVENUECAT_SDK_KEY" \
+            --dart-define=ONESIGNAL_APP_ID="$ONESIGNAL_APP_ID" \
+            --dart-define=ONESIGNAL_API_KEY="$ONESIGNAL_API_KEY" \
+            --dart-define=VERSION_NAME="$VERSION_NAME" \
+            --dart-define=VERSION_CODE="$VERSION_CODE"
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: refund-radar-release-apk
+          path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 90
+          if-no-files-found: error
 
       - name: Upload obfuscation symbols
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: refund-radar-debug-symbols
           path: build/app/outputs/symbols
           retention-days: 90
+          if-no-files-found: ignore
+
+      - name: Cleanup keystore + google-services.json
+        if: always()
+        run: |
+          rm -f android/app/keystore.jks
+          rm -f android/app/google-services.json
 
       - name: List build output
         run: |
@@ -280,7 +310,7 @@ jobs:
           set -euo pipefail
           APKS=(build/app/outputs/flutter-apk/*.apk)
           count=${#APKS[@]}
-          if [ "$count" -lt 1 ]; then
+          if [ "$count" -lt 1 ] || [ ! -f "${APKS[0]}" ]; then
             echo "::error::No APK artifacts found after release build"
             exit 1
           fi
@@ -288,7 +318,7 @@ jobs:
             size=$(wc -c < "$apk")
             echo "OK: $apk ($size bytes)"
             if [ "$size" -lt 1000000 ]; then
-              echo "::error::APK too small (<1MB) — likely a failed/empty build: $apk"
+              echo "::error::APK too small (<1MB): $apk"
               exit 1
             fi
           done
@@ -301,7 +331,7 @@ jobs:
             size=$(wc -c < "$aab")
             echo "OK: $aab ($size bytes)"
             if [ "$size" -lt 1000000 ]; then
-              echo "::error::AAB too small (<1MB) — likely a failed/empty build: $aab"
+              echo "::error::AAB too small (<1MB): $aab"
               exit 1
             fi
           done
