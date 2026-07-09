@@ -48,29 +48,61 @@ class FirestoreDisputeRepository implements DisputeRepository {
     }
   }
 
+  /// Cold-boot race fix. On a fresh anonymous sign-in the client holds a
+  /// valid ID token before Firestore's server-side `request.auth` is
+  /// populated. The first `get()` therefore bounces with
+  /// `permission-denied` and surfaces the "Could not load your disputes"
+  /// error banner (bugs/Screenshot 12-12-33). A short retry with backoff
+  /// lets the token propagate (typically <1.5 s) and the read succeeds.
+  Future<List<Dispute>> _loadDisputesWithRetry(String uid) async {
+    const maxAttempts = 4;
+    const delays = [Duration(milliseconds: 500),
+                    Duration(milliseconds: 1200),
+                    Duration(seconds: 3)];
+    Object? lastError;
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        await _ensureUserDoc(uid);
+        final snap =
+            await _col(uid).orderBy('createdAt', descending: true).get();
+        return snap.docs
+            .map((d) => Dispute.fromJson(d.data()..['id'] = d.id))
+            .toList();
+      } on FirebaseException catch (e) {
+        lastError = e;
+        debugPrint('loadDisputes attempt ${attempt + 1} failed: '
+            '${e.code} ${e.message}');
+        // Only retry the auth/token race (`permission-denied` /
+        // `unauthenticated`). Other errors surface immediately.
+        final retriable = e.code == 'permission-denied' ||
+            e.code == 'unauthenticated';
+        // Fallback: retry without orderBy (failed-precondition ≈ missing
+        // index / empty-collection edge). Fire-and-forget correction, then
+        // return the cleaned list.
+        if (e.code == 'failed-precondition') {
+          final snap = await _col(uid).get();
+          final list = snap.docs
+              .map((d) => Dispute.fromJson(d.data()..['id'] = d.id))
+              .toList();
+          list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return list;
+        }
+        if (!retriable || attempt == maxAttempts - 1) rethrow;
+        // Force a fresh token before the next attempt to refresh
+        // `request.auth` on the server.
+        try {
+          await FirebaseAuth.instance.currentUser?.getIdToken(true);
+        } catch (_) {/* ignore */}
+        await Future.delayed(delays[attempt]);
+      }
+    }
+    throw lastError ?? StateError('loadDisputes exhausted retries for $uid');
+  }
+
   @override
   Future<List<Dispute>> loadDisputes(String uid) async {
     await _ensureAuthToken(uid);
-    try {
-      await _ensureUserDoc(uid);
-      final snap =
-          await _col(uid).orderBy('createdAt', descending: true).get();
-      return snap.docs
-          .map((d) => Dispute.fromJson(d.data()..['id'] = d.id))
-          .toList();
-    } on FirebaseException catch (e) {
-      debugPrint('loadDisputes failed: ${e.code} ${e.message}');
-      // Fallback: retry without orderBy (missing index / empty collection edge).
-      if (e.code == 'failed-precondition') {
-        final snap = await _col(uid).get();
-        final list = snap.docs
-            .map((d) => Dispute.fromJson(d.data()..['id'] = d.id))
-            .toList();
-        list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        return list;
-      }
-      rethrow;
-    }
+    return _loadDisputesWithRetry(uid);
   }
 
   @override
