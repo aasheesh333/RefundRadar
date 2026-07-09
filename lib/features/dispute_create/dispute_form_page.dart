@@ -285,6 +285,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                           label: 'AMOUNT DEBITED',
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
                             children: [
                               const Text(
                                 '₹',
