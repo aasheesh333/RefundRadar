@@ -118,15 +118,18 @@ jobs:
   # ---------------------------------------------------------------------------
   # Release build — needs secrets. Manual dispatch only
   # (workflow_dispatch with build_type=release). Stops if any required
-  # secret is missing.
+  # secret is missing. Split into two jobs (AAB then APK) so each gets a
+  # fresh ~16-min hosted-runner budget — the GitHub free private-tier
+  # runner reclaims after ~16 min, which was cancelling a combined build
+  # mid-APK even though the AAB had already uploaded successfully.
   # ---------------------------------------------------------------------------
-  release:
-    name: Release APK + AAB (signed)
+  release-aab:
+    name: Release AAB (Play Store)
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 45
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'release' }}
     concurrency:
-      group: release-build
+      group: release-aab
       cancel-in-progress: false
 
     steps:
@@ -242,6 +245,12 @@ jobs:
             --dart-define=VERSION_NAME="$VERSION_NAME" \
             --dart-define=VERSION_CODE="$VERSION_CODE"
 
+      - name: Cleanup secrets
+        if: always()
+        run: |
+          rm -f android/app/keystore.jks
+          rm -f android/app/google-services.json
+
       - name: Upload release AAB
         uses: actions/upload-artifact@v4
         with:
@@ -250,8 +259,76 @@ jobs:
           retention-days: 90
           if-no-files-found: error
 
-      - name: Build release APK (signed, best-effort)
-        continue-on-error: true
+      - name: Upload obfuscation symbols
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: refund-radar-debug-symbols
+          path: build/app/outputs/symbols
+          retention-days: 90
+          if-no-files-found: ignore
+
+      - name: AAB smoke test
+        run: |
+          set -euo pipefail
+          AABS=(build/app/outputs/bundle/release/*.aab)
+          if [ ! -f "${AABS[0]}" ]; then
+            echo "::error::No AAB artifact found"
+            exit 1
+          fi
+          for aab in "${AABS[@]}"; do
+            size=$(wc -c < "$aab")
+            echo "OK: $aab ($size bytes)"
+            if [ "$size" -lt 1000000 ]; then
+              echo "::error::AAB too small (<1MB): $aab"
+              exit 1
+            fi
+          done
+          echo "AAB smoke test passed: ${#AABS[@]} AAB(s)"
+
+  release-apk:
+    name: Release APK (sideload, best-effort)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: release-aab
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'release' && always() }}
+    concurrency:
+      group: release-apk
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Decode release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: echo "$KEYSTORE_BASE64" | base64 -d > android/app/keystore.jks
+
+      - name: Inject google-services.json
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          python3 -c "import json; json.load(open('android/app/google-services.json'))"
+
+      - name: Build release APK (signed)
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
@@ -284,64 +361,34 @@ jobs:
             --dart-define=VERSION_NAME="$VERSION_NAME" \
             --dart-define=VERSION_CODE="$VERSION_CODE"
 
-      - name: Upload release APK
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: refund-radar-release-apk
-          path: build/app/outputs/flutter-apk/*.apk
-          retention-days: 90
-          if-no-files-found: ignore
-
-      - name: Upload obfuscation symbols
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: refund-radar-debug-symbols
-          path: build/app/outputs/symbols
-          retention-days: 90
-          if-no-files-found: ignore
-
-      - name: Cleanup keystore + google-services.json
+      - name: Cleanup secrets
         if: always()
         run: |
           rm -f android/app/keystore.jks
           rm -f android/app/google-services.json
 
-      - name: List build output
-        run: |
-          ls -lh build/app/outputs/flutter-apk/ || true
-          ls -lh build/app/outputs/bundle/release/ || true
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: refund-radar-release-apk
+          path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 90
+          if-no-files-found: error
 
-      - name: Smoke test — release AAB (and APK if present) produced
+      - name: APK smoke test
         run: |
           set -euo pipefail
-          AABS=(build/app/outputs/bundle/release/*.aab)
-          if [ ! -f "${AABS[0]}" ]; then
-            echo "::error::No AAB artifact found after release build"
+          APKS=(build/app/outputs/flutter-apk/*.apk)
+          if [ ! -f "${APKS[0]}" ]; then
+            echo "::error::No APK artifact found"
             exit 1
           fi
-          for aab in "${AABS[@]}"; do
-            size=$(wc -c < "$aab")
-            echo "OK: $aab ($size bytes)"
+          for apk in "${APKS[@]}"; do
+            size=$(wc -c < "$apk")
+            echo "OK: $apk ($size bytes)"
             if [ "$size" -lt 1000000 ]; then
-              echo "::error::AAB too small (<1MB): $aab"
+              echo "::error::APK too small (<1MB): $apk"
               exit 1
             fi
           done
-          echo "AAB smoke test passed: ${#AABS[@]} AAB(s)"
-          # APK is best-effort (runner time budget); verify only if present.
-          APKS=(build/app/outputs/flutter-apk/*.apk)
-          if [ -f "${APKS[0]}" ]; then
-            for apk in "${APKS[@]}"; do
-              size=$(wc -c < "$apk")
-              echo "OK: $apk ($size bytes)"
-              if [ "$size" -lt 1000000 ]; then
-                echo "::error::APK too small (<1MB): $apk"
-                exit 1
-              fi
-            done
-            echo "APK smoke test passed: ${#APKS[@]} ABI-split APK(s)"
-          else
-            echo "No APK artifacts (best-effort step skipped) — AAB is the release artifact."
-          fi
+          echo "APK smoke test passed: ${#APKS[@]} APK(s)"
