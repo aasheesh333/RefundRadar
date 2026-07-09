@@ -49,5 +49,22 @@
   "commonCancel": "Cancel",
   "commonOk": "OK",
   "commonOffline": "You are offline — changes will sync later.",
-  "paywallUnlockTemplates": "Unlock 50+ templates"
+  "paywallUnlockTemplates": "Unlock 50+ templates",
+  "commonClose": "Close",
+  "wizardTitle": "Escalation steps",
+  "wizardMarkFiled": "Mark as filed",
+  "wizardOpenPortal": "Open portal",
+  "wizardTicketNumber": "Ticket / complaint number",
+  "paywallTitle": "Go Premium",
+  "ombudsmanLetterTitle": "Ombudsman letter",
+  "ombudsmanGenerate": "Generate letter",
+  "ombudsmanCopy": "Copy",
+  "ombudsmanOpenCms": "Open cms.rbi.org.in",
+  "ombudsmanShareCopy": "Share (copy to clipboard)",
+  "disputeTypeContinue": "Continue →",
+  "remindersNoneUpcoming": "No upcoming reminders",
+  "remindersTrackNew": "Track a new dispute",
+  "remindersEmptySubtitle": "Reminders appear when you create or escalate a dispute — so you never miss a 30-day follow-up window.",
+  "addBanksSearchHint": "Search your bank",
+  "settingsDisclaimerTitle": "Disclaimer"
 }

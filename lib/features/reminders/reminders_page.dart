@@ -6,7 +6,10 @@ import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/extensions/dispute_type_display.dart';
 import 'package:refund_radar/data/models/reminder.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
+import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
+import 'package:refund_radar/shared/widgets/skeleton.dart';
 
 class RemindersPage extends ConsumerWidget {
   const RemindersPage({super.key});
@@ -39,14 +42,20 @@ class RemindersPage extends ConsumerWidget {
             ),
             Expanded(
               child: uidAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => _ErrorState(message: e.toString()),
+                loading: () => const SkeletonList(itemCount: 4, itemHeight: 84),
+                error: (e, _) => BrandedErrorBanner(
+                  message: e.toString(),
+                  onRetry: () => ref.invalidate(userIdProvider),
+                ),
                 data: (uid) {
                   if (uid == null) return const _EmptyState();
                   final remindersAsync = ref.watch(remindersProvider(uid));
                   return remindersAsync.when(
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (e, _) => _ErrorState(message: e.toString()),
+                    loading: () => const SkeletonList(itemCount: 4, itemHeight: 84),
+                    error: (e, _) => BrandedErrorBanner(
+                      message: e.toString(),
+                      onRetry: () => ref.invalidate(remindersProvider(uid)),
+                    ),
                     data: (reminders) {
                       final active =
                           reminders.where((r) => !r.dismissed).toList();
@@ -218,15 +227,18 @@ class _EmptyState extends StatelessWidget {
             const Icon(Icons.notifications_none_outlined,
                 size: 64, color: AppColors.accent),
             const SizedBox(height: 16),
-            Text('No upcoming reminders',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimaryLight,
-                    )),
+            Text(
+              AppLocalizations.of(context)?.remindersNoneUpcoming ??
+                  'No upcoming reminders',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimaryLight,
+                  )),
             const SizedBox(height: 8),
             Text(
-              'Reminders appear when you create or escalate a dispute — '
-              'so you never miss a 30-day follow-up window.',
+              AppLocalizations.of(context)?.remindersEmptySubtitle ??
+                  'Reminders appear when you create or escalate a dispute — '
+                  'so you never miss a 30-day follow-up window.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textSecondaryLight,
@@ -243,41 +255,10 @@ class _EmptyState extends StatelessWidget {
                 ),
               ),
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Track a new dispute'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  final String message;
-  const _ErrorState({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.cloud_off_rounded, size: 56, color: AppColors.error),
-            const SizedBox(height: 16),
-            Text('Couldn\'t load reminders',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimaryLight,
-                    )),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.textSecondaryLight,
-                  ),
+              label: Text(
+                AppLocalizations.of(context)?.remindersTrackNew ??
+                    'Track a new dispute',
+              ),
             ),
           ],
         ),

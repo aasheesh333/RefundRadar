@@ -9,6 +9,7 @@ import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/owed_counter_card.dart';
 import 'package:refund_radar/shared/widgets/dispute_card.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
+import 'package:refund_radar/shared/widgets/skeleton.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -307,10 +308,9 @@ class _EmptyState extends StatelessWidget {
 class _Loading extends StatelessWidget {
   const _Loading();
   @override
-  Widget build(BuildContext context) => const Center(
-        child: CircularProgressIndicator(
-          color: AppColors.primary,
-          strokeWidth: 2,
-        ),
-      );
+  Widget build(BuildContext context) {
+    // Skeleton list rather than a spinner — the home page renders a
+    // stack of dispute cards, so the placeholder should mimic them.
+    return const SkeletonList(itemCount: 4, itemHeight: 110);
+  }
 }

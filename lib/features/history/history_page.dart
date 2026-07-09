@@ -7,7 +7,9 @@ import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/extensions/dispute_type_display.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
+import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/filter_pills.dart';
+import 'package:refund_radar/shared/widgets/skeleton.dart';
 
 /// History (Ledger) page matching mockup Screen 9.
 /// Filter pills + win-rate stats header + card list of past/resolved disputes
@@ -40,11 +42,17 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 onFilter: (f) => setState(() => _filter = f),
               ),
               loading: () => const _Loading(),
-              error: (e, _) => Center(child: Text('Error: $e')),
+              error: (e, _) => BrandedErrorBanner(
+                message: e.toString(),
+                onRetry: () => ref.invalidate(disputesProvider(uid)),
+              ),
             );
           },
           loading: () => const _Loading(),
-          error: (e, _) => Center(child: Text('Error: $e')),
+          error: (e, _) => BrandedErrorBanner(
+            message: e.toString(),
+            onRetry: () => ref.invalidate(userIdProvider),
+          ),
         ),
       ),
     );
@@ -466,7 +474,8 @@ class _EmptyHistory extends StatelessWidget {
 class _Loading extends StatelessWidget {
   const _Loading();
   @override
-  Widget build(BuildContext context) => const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+  Widget build(BuildContext context) => const SkeletonList(
+        itemCount: 5,
+        itemHeight: 100,
       );
 }

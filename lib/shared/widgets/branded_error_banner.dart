@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
 
 /// Branded error banner (B8). Shown when an async fetch fails — replaces
 /// the generic `Center(child: Text(error))` pattern with a calm, on-brand
@@ -12,6 +13,11 @@ import 'package:refund_radar/core/theme/app_tokens.dart';
 ///   data: (data) => Content(...),
 /// );
 /// ```
+///
+/// Localized: the title (`Something went wrong`) and the `Retry` button
+/// label flow through [AppLocalizations]. Falls back to English if a
+/// context-localized instance is unavailable (e.g. inside a non-Widget
+/// harness).
 class BrandedErrorBanner extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
@@ -26,6 +32,7 @@ class BrandedErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -42,7 +49,7 @@ class BrandedErrorBanner extends StatelessWidget {
               Icon(icon, size: 36, color: AppColors.error),
               const SizedBox(height: 12),
               Text(
-                'Something went wrong',
+                l?.commonError ?? 'Something went wrong',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimaryLight,
@@ -71,7 +78,7 @@ class BrandedErrorBanner extends StatelessWidget {
                     ),
                   ),
                   icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: const Text('Retry'),
+                  label: Text(l?.commonRetry ?? 'Retry'),
                 ),
               ],
             ],

@@ -49,5 +49,22 @@
   "commonCancel": "रद्द करें",
   "commonOk": "ठीक है",
   "commonOffline": "आप ऑफ़लाइन हैं — बाद में सिंक हो जाएगा।",
-  "paywallUnlockTemplates": "50+ टेम्पलेट अनलॉक करें"
+  "paywallUnlockTemplates": "50+ टेम्पलेट अनलॉक करें",
+  "commonClose": "बंद करें",
+  "wizardTitle": "बढ़ते कदम",
+  "wizardMarkFiled": "दर्ज चिह्नित करें",
+  "wizardOpenPortal": "पोर्टल खोलें",
+  "wizardTicketNumber": "टिकट / शिकायत नंबर",
+  "paywallTitle": "प्रीमियम लें",
+  "ombudsmanLetterTitle": "ओम्बड्समैन पत्र",
+  "ombudsmanGenerate": "पत्र बनाएं",
+  "ombudsmanCopy": "कॉपी",
+  "ombudsmanOpenCms": "cms.rbi.org.in खोलें",
+  "ombudsmanShareCopy": "शेयर (क्लिपबोर्ड पर कॉपी)",
+  "disputeTypeContinue": "जारी रखें →",
+  "remindersNoneUpcoming": "कोई आगामी रिमाइंडर नहीं",
+  "remindersTrackNew": "नया विवाद ट्रैक करें",
+  "remindersEmptySubtitle": "विवाद बनाने या बढ़ाने पर रिमाइंडर आते हैं — ताकि 30-दिन फॉलो-अप सीमा न चूके।",
+  "addBanksSearchHint": "अपना बैंक खोजें",
+  "settingsDisclaimerTitle": "अस्वीकरण"
 }

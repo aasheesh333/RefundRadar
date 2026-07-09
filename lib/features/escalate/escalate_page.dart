@@ -8,6 +8,7 @@ import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
+import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/toggle_switch.dart';
 
 /// Escalate page — mockup Screen 8. Dark green hero with "Maximum penalty
@@ -57,7 +58,10 @@ class _EscalatePageState extends ConsumerState<EscalatePage> {
           loading: () => const Center(
             child: CircularProgressIndicator(color: AppColors.primary),
           ),
-          error: (e, _) => Center(child: Text('Error: $e')),
+          error: (e, _) => BrandedErrorBanner(
+            message: e.toString(),
+            onRetry: () => ref.invalidate(disputesProvider(uid)),
+          ),
         ),
       ),
     );

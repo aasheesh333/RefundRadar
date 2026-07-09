@@ -5,6 +5,7 @@ import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 
 class OmbudsmanLetterPage extends ConsumerStatefulWidget {
   final String disputeId;
@@ -143,7 +144,10 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => BrandedErrorBanner(
+          message: e.toString(),
+          onRetry: () => ref.invalidate(rulesEngineProvider),
+        ),
       ),
     );
   }

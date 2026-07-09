@@ -7,6 +7,7 @@ import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/services/analytics_service.dart';
+import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/stepper_timeline.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 
@@ -171,7 +172,10 @@ class _WizardPageState extends ConsumerState<WizardPage> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => BrandedErrorBanner(
+          message: e.toString(),
+          onRetry: () => ref.invalidate(rulesEngineProvider),
+        ),
       ),
     );
   }

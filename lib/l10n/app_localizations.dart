@@ -82,6 +82,43 @@ class AppLocalizations {
     'templatesLocked': {'en': 'Locked', 'hi': 'लॉक्ड'},
     'loading': {'en': 'Loading...', 'hi': 'लोड हो रहा...'},
     'errorGeneric': {'en': 'Something went wrong', 'hi': 'कुछ गलत हुआ'},
+    // Common error / retry / etc — used by BrandedErrorBanner and several
+    // dialogues. Previously dead code in app_en.arb (53 keys present there
+    // but no getters in AppLocalizations). Phase 3 wires them.
+    'commonError': {'en': 'Something went wrong', 'hi': 'कुछ गलत हुआ'},
+    'commonRetry': {'en': 'Retry', 'hi': 'पुनः प्रयास'},
+    'commonCancel': {'en': 'Cancel', 'hi': 'रद्द करें'},
+    'commonOk': {'en': 'OK', 'hi': 'ओके'},
+    'commonOffline': {
+      'en': 'You are offline — changes will sync later.',
+      'hi': 'आप ऑफ़लाइन हैं — बदलाव बाद में सिंक होंगे।'
+    },
+    'commonCopied': {'en': 'Copied to clipboard', 'hi': 'क्लिपबोर्ड पर कॉपी हुआ'},
+    'commonClose': {'en': 'Close', 'hi': 'बंद करें'},
+    // Screens still on hardcoded strings (Phase 3 background migration).
+    'wizardTitle': {'en': 'Escalation steps', 'hi': 'बढ़ते कदम'},
+    'wizardMarkFiled': {'en': 'Mark as filed', 'hi': 'दर्ज चिह्नित करें'},
+    'wizardOpenPortal': {'en': 'Open portal', 'hi': 'पोर्टल खोलें'},
+    'wizardTicketNumber': {'en': 'Ticket / complaint number', 'hi': 'टिकट / शिकायत नंबर'},
+    'paywallTitle': {'en': 'Go Premium', 'hi': 'प्रीमियम लें'},
+    'ombudsmanLetterTitle': {'en': 'Ombudsman letter', 'hi': 'ओम्बड्समैन पत्र'},
+    'ombudsmanGenerate': {'en': 'Generate letter', 'hi': 'पत्र बनाएं'},
+    'ombudsmanCopy': {'en': 'Copy', 'hi': 'कॉपी'},
+    'ombudsmanOpenCms': {'en': 'Open cms.rbi.org.in', 'hi': 'cms.rbi.org.in खोलें'},
+    'ombudsmanShareCopy': {'en': 'Share (copy to clipboard)', 'hi': 'शेयर (क्लिपबोर्ड पर कॉपी)'},
+    'disputeTypeContinue': {'en': 'Continue →', 'hi': 'जारी रखें →'},
+    'remindersNoneUpcoming': {'en': 'No upcoming reminders', 'hi': 'कोई आगामी रिमाइंडर नहीं'},
+    'remindersTrackNew': {'en': 'Track a new dispute', 'hi': 'नया विवाद ट्रैक करें'},
+    'remindersEmptySubtitle': {
+      'en':
+          'Reminders appear when you create or escalate a dispute — '
+          'so you never miss a 30-day follow-up window.',
+      'hi':
+          'विवाद बनाने या बढ़ाने पर रिमाइंडर आते हैं — ताकि 30-दिन '
+          'फॉलो-अप सीमा न चूके।'
+    },
+    'addBanksSearchHint': {'en': 'Search your bank', 'hi': 'अपना बैंक खोजें'},
+    'settingsDisclaimerTitle': {'en': 'Disclaimer', 'hi': 'अस्वीकरण'},
   };
 
   String _t(String key, {Map<String, String>? args}) {
@@ -145,6 +182,33 @@ class AppLocalizations {
   String get templatesLocked => _t('templatesLocked');
   String get loading => _t('loading');
   String get errorGeneric => _t('errorGeneric');
+
+  // Phase 3 — common strings (BrandedErrorBanner + dialogs):
+  String get commonError => _t('commonError');
+  String get commonRetry => _t('commonRetry');
+  String get commonCancel => _t('commonCancel');
+  String get commonOk => _t('commonOk');
+  String get commonOffline => _t('commonOffline');
+  String get commonCopied => _t('commonCopied');
+  String get commonClose => _t('commonClose');
+
+  // Phase 3 — per-screen strings (one-off migrations):
+  String get wizardTitle => _t('wizardTitle');
+  String get wizardMarkFiled => _t('wizardMarkFiled');
+  String get wizardOpenPortal => _t('wizardOpenPortal');
+  String get wizardTicketNumber => _t('wizardTicketNumber');
+  String get paywallTitle => _t('paywallTitle');
+  String get ombudsmanLetterTitle => _t('ombudsmanLetterTitle');
+  String get ombudsmanGenerate => _t('ombudsmanGenerate');
+  String get ombudsmanCopy => _t('ombudsmanCopy');
+  String get ombudsmanOpenCms => _t('ombudsmanOpenCms');
+  String get ombudsmanShareCopy => _t('ombudsmanShareCopy');
+  String get disputeTypeContinue => _t('disputeTypeContinue');
+  String get remindersNoneUpcoming => _t('remindersNoneUpcoming');
+  String get remindersTrackNew => _t('remindersTrackNew');
+  String get remindersEmptySubtitle => _t('remindersEmptySubtitle');
+  String get addBanksSearchHint => _t('addBanksSearchHint');
+  String get settingsDisclaimerTitle => _t('settingsDisclaimerTitle');
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
