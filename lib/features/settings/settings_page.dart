@@ -13,6 +13,7 @@ class SettingsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
     return Scaffold(
@@ -26,19 +27,19 @@ class SettingsPage extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Settings',
-                    style: TextStyle(
+                  Text(
+                    l10n?.settingsTitle ?? 'Settings',
+                    style: const TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimaryLight,
                     ),
                   ),
                   Tooltip(
-                    message: AppLocalizations.of(context)?.commonClose ?? 'Close',
+                    message: l10n?.commonClose ?? 'Close',
                     child: Semantics(
                       button: true,
-                      label: AppLocalizations.of(context)?.commonClose ?? 'Close',
+                      label: l10n?.commonClose ?? 'Close',
                       child: InkWell(
                         onTap: () => Navigator.of(context).maybePop(),
                         borderRadius: BorderRadius.circular(24),
@@ -102,20 +103,20 @@ class SettingsPage extends ConsumerWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
-                          'Refund Radar user',
-                          style: TextStyle(
+                          l10n?.settingsRefundRadarUser ?? 'Refund Radar user',
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimaryLight,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
-                        SizedBox(height: 1),
+                        const SizedBox(height: 1),
                         Text(
-                          'Local profile',
-                          style: TextStyle(
+                          l10n?.settingsLocalProfile ?? 'Local profile',
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                             color: AppColors.textSecondaryLight,
@@ -137,9 +138,9 @@ class SettingsPage extends ConsumerWidget {
                         color: AppColors.premiumGoldSoft,
                         borderRadius: BorderRadius.circular(AppRadii.pill),
                       ),
-                      child: const Text(
-                        '⭐ Pro',
-                        style: TextStyle(
+                      child: Text(
+                        l10n?.settingsProBadge ?? '⭐ Pro',
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: AppColors.premiumGold,
@@ -156,15 +157,15 @@ class SettingsPage extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
                 children: [
                   _Card(
-                    label: 'SMS detection',
+                    label: l10n?.settingsSmsDetection ?? 'SMS detection',
                     child: Column(
                       children: [
                         Row(
                           children: [
-                            const Expanded(
+                            Expanded(
                               child: Text(
-                                'Auto-detect UTR',
-                                style: TextStyle(
+                                l10n?.settingsAutoDetectUtr ?? 'Auto-detect UTR',
+                                style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textPrimaryLight,
@@ -175,9 +176,10 @@ class SettingsPage extends ConsumerWidget {
                               value: true,
                               onChanged: (_) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
+                                  SnackBar(
                                     content: Text(
-                                      'SMS permission manages under Android settings.',
+                                      l10n?.settingsSmsPermissionHint ??
+                                          'SMS permission manages under Android settings.',
                                     ),
                                   ),
                                 );
@@ -186,20 +188,22 @@ class SettingsPage extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        const Text.rich(
+                        Text.rich(
                           TextSpan(
                             children: [
                               TextSpan(
-                                text: 'On-device. ',
-                                style: TextStyle(
+                                text: l10n?.settingsOnDeviceLabel ?? 'On-device. ',
+                                style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.primary,
                                 ),
                               ),
-                              TextSpan(text: 'Nothing leaves your phone.'),
+                              TextSpan(
+                                  text: l10n?.settingsNothingLeaves ??
+                                      'Nothing leaves your phone.'),
                             ],
                           ),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 10,
                             color: AppColors.textSecondaryLight,
                             height: 1.3,
@@ -210,23 +214,24 @@ class SettingsPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 10),
                   _Card(
-                    label: 'Notifications',
+                    label: l10n?.settingsNotifications ?? 'Notifications',
                     child: _ToggleRows(
                       items: [
                         _ToggleItem(
-                          label: 'Deadline reminders',
+                          label: l10n?.settingsDeadlineReminders ??
+                              'Deadline reminders',
                           value: true,
                           onChanged: (_) => ref
                               .read(notificationServiceProvider)
                               .requestPermission(),
                         ),
                         _ToggleItem(
-                          label: 'Daily comp clock',
+                          label: l10n?.settingsDailyComp ?? 'Daily comp clock',
                           value: true,
                           onChanged: (_) {},
                         ),
                         _ToggleItem(
-                          label: 'Weekly digest',
+                          label: l10n?.settingsWeeklyDigest ?? 'Weekly digest',
                           value: false,
                           onChanged: (_) {},
                         ),
@@ -235,11 +240,11 @@ class SettingsPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 10),
                   _Card(
-                    label: 'Language',
+                    label: l10n?.settingsLanguage ?? 'Language',
                     child: Column(
                       children: [
                         RadioRow(
-                          label: 'English',
+                          label: l10n?.settingsEnglish ?? 'English',
                           selected: locale.languageCode != 'hi',
                           onTap: () =>
                               ref.read(localeProvider.notifier).state =
@@ -247,7 +252,7 @@ class SettingsPage extends ConsumerWidget {
                         ),
                         const SizedBox(height: 6),
                         RadioRow(
-                          label: 'हिन्दी',
+                          label: l10n?.settingsHindi ?? 'हिन्दी',
                           selected: locale.languageCode == 'hi',
                           onTap: () => ref
                               .read(localeProvider.notifier).state =
@@ -258,11 +263,11 @@ class SettingsPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 10),
                   _Card(
-                    label: 'Appearance',
+                    label: l10n?.settingsAppearance ?? 'Appearance',
                     child: Column(
                       children: [
                         RadioRow(
-                          label: 'Light',
+                          label: l10n?.settingsLight ?? 'Light',
                           selected: themeMode == ThemeMode.light,
                           onTap: () => ref
                               .read(themeModeProvider.notifier).state =
@@ -270,7 +275,7 @@ class SettingsPage extends ConsumerWidget {
                         ),
                         const SizedBox(height: 6),
                         RadioRow(
-                          label: 'Dark',
+                          label: l10n?.settingsDark ?? 'Dark',
                           selected: themeMode == ThemeMode.dark,
                           onTap: () =>
                               ref.read(themeModeProvider.notifier).state =
@@ -278,7 +283,7 @@ class SettingsPage extends ConsumerWidget {
                         ),
                         const SizedBox(height: 6),
                         RadioRow(
-                          label: 'System default',
+                          label: l10n?.settingsSystemDefault ?? 'System default',
                           selected: themeMode == ThemeMode.system,
                           onTap: () => ref
                               .read(themeModeProvider.notifier).state =
@@ -289,16 +294,16 @@ class SettingsPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 10),
                   _Card(
-                    label: 'About',
+                    label: l10n?.settingsAbout ?? 'About',
                     child: Column(
-                      children: const [
+                      children: [
                         _RowPair(
-                          left: 'Version',
+                          left: l10n?.settingsVersion ?? 'Version',
                           right: '2.0 (build 389)',
                         ),
-                        SizedBox(height: 6),
+                        const SizedBox(height: 6),
                         _RowPair(
-                          left: 'RBI sources',
+                          left: l10n?.settingsRbiSources ?? 'RBI sources',
                           right: '3 · Jul 2026',
                           rightColor: AppColors.accent,
                         ),
@@ -308,11 +313,12 @@ class SettingsPage extends ConsumerWidget {
                   const SizedBox(height: 10),
                   InkWell(
                     onTap: () => _showDisclaimerDialog(context),
-                    child: const _Card(
-                      label: 'Legal',
+                    child: _Card(
+                      label: l10n?.settingsLegal ?? 'Legal',
                       child: Text(
-                        'Disclaimer · Privacy · Delete data',
-                        style: TextStyle(
+                        l10n?.settingsLegalRow ??
+                            'Disclaimer · Privacy · Delete data',
+                        style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textPrimaryLight,
@@ -339,10 +345,11 @@ class SettingsPage extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Not affiliated with RBI/NPCI/banks',
-                        style: TextStyle(
+                        l10n?.settingsNotAffiliated ??
+                            'Not affiliated with RBI/NPCI/banks',
+                        style: const TextStyle(
                           fontSize: 10,
                           color: AppColors.textTertiaryLight,
                         ),
@@ -355,8 +362,11 @@ class SettingsPage extends ConsumerWidget {
                       child: TextButton(
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Sign out not implemented.'),
+                            SnackBar(
+                              content: Text(
+                                l10n?.settingsSignOutNotImplemented ??
+                                    'Sign out not implemented.',
+                              ),
                             ),
                           );
                         },
@@ -369,9 +379,9 @@ class SettingsPage extends ConsumerWidget {
                           ),
                           padding: const EdgeInsets.symmetric(horizontal: 14),
                         ),
-                        child: const Text(
-                          'Sign out',
-                          style: TextStyle(
+                        child: Text(
+                          l10n?.settingsSignOut ?? 'Sign out',
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
@@ -389,22 +399,24 @@ class SettingsPage extends ConsumerWidget {
   }
 
   void _showDisclaimerDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Disclaimer'),
-        content: const SingleChildScrollView(
+        title: Text(l10n?.settingsDisclaimerTitle ?? 'Disclaimer'),
+        content: SingleChildScrollView(
           child: Text(
-            'Refund Radar is an independent informational tool. It is not affiliated with RBI, '
-            'NPCI, NHAI, IHMCL, or any bank. We never ask for banking passwords, OTPs, or PINs. '
-            'Complaints are filed by you on official portals. Compensation estimates are based on '
-            'published RBI/NPCI rules and actual outcomes depend on your bank/regulator.',
+            l10n?.disclaimerBody ??
+                'Refund Radar is an independent informational tool. It is not affiliated with RBI, '
+                'NPCI, NHAI, IHMCL, or any bank. We never ask for banking passwords, OTPs, or PINs. '
+                'Complaints are filed by you on official portals. Compensation estimates are based on '
+                'published RBI/NPCI rules and actual outcomes depend on your bank/regulator.',
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c),
-            child: const Text('OK'),
+            child: Text(l10n?.commonOk ?? 'OK'),
           ),
         ],
       ),

@@ -6,6 +6,7 @@ import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
@@ -80,6 +81,7 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final comp = CompensationCalculator.compute(dispute);
     final refund = dispute.amount;
     final maxClaim = refund + comp.compensationDue;
@@ -98,9 +100,9 @@ class _Body extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Escalate',
-                      style: TextStyle(
+                    Text(
+                      l10n?.escalateAppBarTitle ?? 'Escalate',
+                      style: const TextStyle(
                         fontFamily: AppTypography.family,
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
@@ -109,7 +111,7 @@ class _Body extends StatelessWidget {
                     ),
                     const SizedBox(height: 1),
                     Text(
-                      'Nodal Officer · ${dispute.entityName ?? "your bank"}',
+                      '${l10n?.escalateNodalOfficer ?? 'Nodal Officer'} · ${dispute.entityName ?? "your bank"}',
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
@@ -178,7 +180,11 @@ class _Body extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${CompensationCalculator.formatIndian(refund)} refund + ${CompensationCalculator.formatIndian(comp.compensationDue)} comp (${comp.daysElapsed} days × ₹100/day)',
+                      l10n?.escalateRefundPlusComp(
+                          CompensationCalculator.formatIndian(refund),
+                          CompensationCalculator.formatIndian(comp.compensationDue),
+                          comp.daysElapsed) ??
+                          '${CompensationCalculator.formatIndian(refund)} refund + ${CompensationCalculator.formatIndian(comp.compensationDue)} comp (${comp.daysElapsed} days × ₹100/day)',
                       style: const TextStyle(
                         fontSize: 11,
                         color: Color(0xB3FFFFFF),
@@ -190,13 +196,13 @@ class _Body extends StatelessWidget {
               const SizedBox(height: 12),
               // send-to card
               _card(
-                label: 'SEND TO',
+                label: l10n?.escalateSendTo ?? 'SEND TO',
                 children: [
                   _RecipientRow(
                     emojiTile: '🎯',
                     bgTileColor: AppColors.alertSoft,
-                    title: 'Nodal Officer',
-                    detail:
+                    title: l10n?.escalateNodalOfficer ?? 'Nodal Officer',
+                    detail: l10n?.escalateSlaDays(_nodalEmail(dispute)) ??
                         '${_nodalEmail(dispute)} · SLA 10d',
                     selected: true,
                   ),
@@ -217,7 +223,7 @@ class _Body extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'CC RBI Ombudsman',
+                          l10n?.escalateCcOmbudsman ?? 'CC RBI Ombudsman',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -238,7 +244,7 @@ class _Body extends StatelessWidget {
               const SizedBox(height: 12),
               // email preview card
               _card(
-                label: 'EMAIL PREVIEW',
+                label: l10n?.escalateEmailPreview ?? 'EMAIL PREVIEW',
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -248,7 +254,8 @@ class _Body extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      'Subject: Escalation — UTR ${dispute.txnId}',
+                      l10n?.escalateEmailSubject(dispute.txnId) ??
+                          'Subject: Escalation — UTR ${dispute.txnId}',
                       style: const TextStyle(
                         fontFamily: 'monospace',
                         fontSize: 12,
@@ -261,7 +268,7 @@ class _Body extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Dear Nodal Officer,',
+                    l10n?.escalateEmailGreeting ?? 'Dear Nodal Officer,',
                     style: const TextStyle(
                         fontSize: 12,
                         height: 1.45,
@@ -279,23 +286,24 @@ class _Body extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 6),
-                  const Text(
-                    '[auto-drafted, tap to edit]',
-                    style: TextStyle(
+                  Text(
+                    l10n?.escalateEmailAutoDrafted ?? '[auto-drafted, tap to edit]',
+                    style: const TextStyle(
                       fontSize: 10,
                       fontStyle: FontStyle.italic,
                       color: AppColors.textTertiaryLight,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Row(
+                  Row(
                     children: [
-                      Text('✓',
+                      const Text('✓',
                           style: TextStyle(
                               fontSize: 10, color: AppColors.accent)),
-                      SizedBox(width: 6),
+                      const SizedBox(width: 6),
                       Text(
-                        'Standards-compliant · view source',
+                        l10n?.escalateStandardsCompliant ??
+                            'Standards-compliant · view source',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
@@ -332,14 +340,15 @@ class _Body extends StatelessWidget {
                               height: 1.4,
                             ),
                             children: [
-                              const TextSpan(text: 'Send within '),
-                              const TextSpan(
-                                text: '24 hours',
-                                style: TextStyle(
+                              TextSpan(text: l10n?.escalateSendWithinPrefix ?? 'Send within '),
+                              TextSpan(
+                                text: l10n?.escalateSendWithin24h ?? '24 hours',
+                                style: const TextStyle(
                                     fontWeight: FontWeight.w700),
                               ),
                               TextSpan(
-                                text:
+                                text: l10n?.escalateSendWithinSuffix(
+                                    CompensationCalculator.formatIndian(comp.compensationDue)) ??
                                     ' to claim full ${CompensationCalculator.formatIndian(comp.compensationDue)} comp retroactively.',
                               ),
                             ],
@@ -364,7 +373,7 @@ class _Body extends StatelessWidget {
           child: Row(
             children: [
               _FooterButton(
-                label: 'Edit',
+                label: l10n?.escalateEdit ?? 'Edit',
                 color: AppColors.surfaceAltLight,
                 textColor: AppColors.primary,
                 onTap: () => _copyEmail(context),
@@ -372,7 +381,7 @@ class _Body extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _FooterButton(
-                  label: 'Send escalation →',
+                  label: l10n?.escalateSend ?? 'Send escalation →',
                   color: AppColors.primary,
                   textColor: Colors.white,
                   elevation: true,
@@ -437,7 +446,7 @@ class _Body extends StatelessWidget {
         'Subject: Escalation — UTR ${dispute.txnId}\n\n${_emailBody()}';
     Clipboard.setData(ClipboardData(text: body));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Email copied to clipboard')),
+      SnackBar(content: Text(AppLocalizations.of(context)?.escalateCopiedToClipboard ?? 'Email copied to clipboard')),
     );
   }
 
@@ -448,7 +457,7 @@ class _Body extends StatelessWidget {
     final url =
         'mailto:${_nodalEmail(dispute)}?subject=$subject&body=$body';
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Drafted — open your mail app: $url')),
+      SnackBar(content: Text(AppLocalizations.of(context)?.escalateDrafted(url) ?? 'Drafted — open your mail app: $url')),
     );
   }
 }

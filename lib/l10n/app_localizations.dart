@@ -119,6 +119,74 @@ class AppLocalizations {
     },
     'addBanksSearchHint': {'en': 'Search your bank', 'hi': 'अपना बैंक खोजें'},
     'settingsDisclaimerTitle': {'en': 'Disclaimer', 'hi': 'अस्वीकरण'},
+    // Settings page — fully i18n'd in Phase 3 follow-up.
+    'settingsTitle': {'en': 'Settings', 'hi': 'सेटिंग्स'},
+    'settingsSmsDetection': {'en': 'SMS detection', 'hi': 'SMS पहचान'},
+    'settingsAutoDetectUtr': {'en': 'Auto-detect UTR', 'hi': 'UTR ऑटो-पहचान'},
+    'settingsSmsPermissionHint': {
+      'en': 'SMS permission manages under Android settings.',
+      'hi': 'SMS अनुमति Android सेटिंग्स में मिलती है।'
+    },
+    'settingsOnDeviceLabel': {'en': 'On-device. ', 'hi': 'ऑन-डिवाइस। '},
+    'settingsNothingLeaves': {
+      'en': 'Nothing leaves your phone.',
+      'hi': 'आपका फ़ोन से कुछ बाहर नहीं जाता।'
+    },
+    'settingsDeadlineReminders': {'en': 'Deadline reminders', 'hi': 'समय-सीमा रिमाइंडर'},
+    'settingsDailyComp': {'en': 'Daily comp clock', 'hi': 'दैनिक मुआवजा घड़ी'},
+    'settingsWeeklyDigest': {'en': 'Weekly digest', 'hi': 'साप्ताहिक सारांश'},
+    'settingsEnglish': {'en': 'English', 'hi': 'अंग्रेज़ी'},
+    'settingsHindi': {'en': 'हिन्दी', 'hi': 'हिन्दी'},
+    'settingsAppearance': {'en': 'Appearance', 'hi': 'दिखावट'},
+    'settingsLight': {'en': 'Light', 'hi': 'लाइट'},
+    'settingsDark': {'en': 'Dark', 'hi': 'डार्क'},
+    'settingsSystemDefault': {'en': 'System default', 'hi': 'सिस्टम डिफ़ॉल्ट'},
+    'settingsAbout': {'en': 'About', 'hi': 'बारे में'},
+    'settingsVersion': {'en': 'Version', 'hi': 'संस्करण'},
+    'settingsRbiSources': {'en': 'RBI sources', 'hi': 'RBI स्रोत'},
+    'settingsLegal': {'en': 'Legal', 'hi': 'क़ानूनी'},
+    'settingsLegalRow': {
+      'en': 'Disclaimer · Privacy · Delete data',
+      'hi': 'अस्वीकरण · गोपनीयता · डेटा हटाएं'
+    },
+    'settingsNotAffiliated': {
+      'en': 'Not affiliated with RBI/NPCI/banks',
+      'hi': 'RBI/NPCI/बैंक से संबद्ध नहीं'
+    },
+    'settingsSignOut': {'en': 'Sign out', 'hi': 'साइन आउट'},
+    'settingsSignOutNotImplemented': {
+      'en': 'Sign out not implemented.',
+      'hi': 'साइन आउट लागू नहीं।'
+    },
+    'settingsProBadge': {'en': '⭐ Pro', 'hi': '⭐ प्रो'},
+    'settingsLocalProfile': {'en': 'Local profile', 'hi': 'स्थानीय प्रोफ़ाइल'},
+    'settingsRefundRadarUser': {'en': 'Refund Radar user', 'hi': 'रिफंड रडार उपयोगकर्ता'},
+    // Escalate page.
+    'escalateAppBarTitle': {'en': 'Escalate', 'hi': 'कदम बढ़ाएं'},
+    'escalateMaxClaim': {'en': 'Maximum you can claim', 'hi': 'अधिकतम दावा राशि'},
+    'escalateRefundPlusComp': {
+      'en': '{refund} refund + {comp} comp ({days} days × ₹100/day)',
+      'hi': '{refund} वापसी + {comp} मुआवजा ({days} दिन × ₹100/दिन)'
+    },
+    'escalateSendTo': {'en': 'SEND TO', 'hi': 'भेजें'},
+    'escalateNodalOfficer': {'en': 'Nodal Officer', 'hi': 'नोडल अधिकारी'},
+    'escalateSlaDays': {'en': '{email} · SLA 10d', 'hi': '{email} · SLA 10 दिन'},
+    'escalateCcOmbudsman': {'en': 'CC RBI Ombudsman', 'hi': 'CC RBI ऑम्बड्समैन'},
+    'escalateEmailPreview': {'en': 'EMAIL PREVIEW', 'hi': 'ईमेल पूर्वावलोकन'},
+    'escalateEmailSubject': {'en': 'Subject: Escalation — UTR {txnId}', 'hi': 'विषय: एस्केलेशन — UTR {txnId}'},
+    'escalateEmailGreeting': {'en': 'Dear Nodal Officer,', 'hi': 'प्रिय नोडल अधिकारी,'},
+    'escalateEmailAutoDrafted': {'en': '[auto-drafted, tap to edit]', 'hi': '[स्वतः तैयार, संपादित करें]'},
+    'escalateStandardsCompliant': {'en': 'Standards-compliant · view source', 'hi': 'मानक-अनुरूप · स्रोत देखें'},
+    'escalateSendWithinPrefix': {'en': 'Send within ', 'hi': 'भेजें '},
+    'escalateSendWithin24h': {'en': '24 hours', 'hi': '24 घंटे'},
+    'escalateSendWithinSuffix': {
+      'en': ' to claim full {comp} comp retroactively.',
+      'hi': ' अनुपात में पूरा {comp} मुआवजा पाने के लिए।'
+    },
+    'escalateEdit': {'en': 'Edit', 'hi': 'संपादित करें'},
+    'escalateSend': {'en': 'Send escalation →', 'hi': 'एस्केलेशन भेजें →'},
+    'escalateCopiedToClipboard': {'en': 'Email copied to clipboard', 'hi': 'ईमेल क्लिपबोर्ड पर कॉपी हुआ'},
+    'escalateDrafted': {'en': 'Drafted — open your mail app: {url}', 'hi': 'तैयार है — अपना मेल� ऐप खोलें: {url}'},
   };
 
   String _t(String key, {Map<String, String>? args}) {
@@ -209,6 +277,56 @@ class AppLocalizations {
   String get remindersEmptySubtitle => _t('remindersEmptySubtitle');
   String get addBanksSearchHint => _t('addBanksSearchHint');
   String get settingsDisclaimerTitle => _t('settingsDisclaimerTitle');
+
+  // Settings page full i18n.
+  String get settingsTitle => _t('settingsTitle');
+  String get settingsSmsDetection => _t('settingsSmsDetection');
+  String get settingsAutoDetectUtr => _t('settingsAutoDetectUtr');
+  String get settingsSmsPermissionHint => _t('settingsSmsPermissionHint');
+  String get settingsOnDeviceLabel => _t('settingsOnDeviceLabel');
+  String get settingsNothingLeaves => _t('settingsNothingLeaves');
+  String get settingsDeadlineReminders => _t('settingsDeadlineReminders');
+  String get settingsDailyComp => _t('settingsDailyComp');
+  String get settingsWeeklyDigest => _t('settingsWeeklyDigest');
+  String get settingsEnglish => _t('settingsEnglish');
+  String get settingsHindi => _t('settingsHindi');
+  String get settingsAppearance => _t('settingsAppearance');
+  String get settingsLight => _t('settingsLight');
+  String get settingsDark => _t('settingsDark');
+  String get settingsSystemDefault => _t('settingsSystemDefault');
+  String get settingsAbout => _t('settingsAbout');
+  String get settingsVersion => _t('settingsVersion');
+  String get settingsRbiSources => _t('settingsRbiSources');
+  String get settingsLegal => _t('settingsLegal');
+  String get settingsLegalRow => _t('settingsLegalRow');
+  String get settingsNotAffiliated => _t('settingsNotAffiliated');
+  String get settingsSignOut => _t('settingsSignOut');
+  String get settingsSignOutNotImplemented => _t('settingsSignOutNotImplemented');
+  String get settingsProBadge => _t('settingsProBadge');
+  String get settingsLocalProfile => _t('settingsLocalProfile');
+  String get settingsRefundRadarUser => _t('settingsRefundRadarUser');
+
+  // Escalate page.
+  String get escalateAppBarTitle => _t('escalateAppBarTitle');
+  String get escalateMaxClaim => _t('escalateMaxClaim');
+  String escalateRefundPlusComp(String refund, String comp, int days) =>
+      _t('escalateRefundPlusComp', args: {'refund': refund, 'comp': comp, 'days': '$days'});
+  String get escalateSendTo => _t('escalateSendTo');
+  String get escalateNodalOfficer => _t('escalateNodalOfficer');
+  String escalateSlaDays(String email) => _t('escalateSlaDays', args: {'email': email});
+  String get escalateCcOmbudsman => _t('escalateCcOmbudsman');
+  String get escalateEmailPreview => _t('escalateEmailPreview');
+  String escalateEmailSubject(String txnId) => _t('escalateEmailSubject', args: {'txnId': txnId});
+  String get escalateEmailGreeting => _t('escalateEmailGreeting');
+  String get escalateEmailAutoDrafted => _t('escalateEmailAutoDrafted');
+  String get escalateStandardsCompliant => _t('escalateStandardsCompliant');
+  String get escalateSendWithinPrefix => _t('escalateSendWithinPrefix');
+  String get escalateSendWithin24h => _t('escalateSendWithin24h');
+  String escalateSendWithinSuffix(String comp) => _t('escalateSendWithinSuffix', args: {'comp': comp});
+  String get escalateEdit => _t('escalateEdit');
+  String get escalateSend => _t('escalateSend');
+  String get escalateCopiedToClipboard => _t('escalateCopiedToClipboard');
+  String escalateDrafted(String url) => _t('escalateDrafted', args: {'url': url});
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
