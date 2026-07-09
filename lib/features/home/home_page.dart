@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -26,9 +27,13 @@ class HomePage extends ConsumerWidget {
         child: uidAsync.when(
           data: (uid) {
             if (uid == null) {
+              final authErr = ref.watch(lastAuthErrorProvider);
               return BrandedErrorBanner(
-                message:
-                    'Could not sign in. Check your connection and try again.',
+                message: authErr != null &&
+                        authErr.toLowerCase().contains('operation-not-allowed')
+                    ? 'Anonymous sign-in is disabled. Enable it in Firebase Console → Authentication → Sign-in method → Anonymous.'
+                    : 'Could not sign in. Check your connection and try again.',
+                detail: authErr,
                 onRetry: () async {
                   await ref.read(reauthProvider)();
                   ref.invalidate(userIdProvider);
@@ -41,6 +46,7 @@ class HomePage extends ConsumerWidget {
               loading: () => const _Loading(),
               error: (e, _) => BrandedErrorBanner(
                 message: _friendlyError(e),
+                detail: _errorDetail(e),
                 onRetry: () async {
                   await ref.read(reauthProvider)();
                   ref.invalidate(userIdProvider);
@@ -52,6 +58,7 @@ class HomePage extends ConsumerWidget {
           loading: () => const _Loading(),
           error: (e, _) => BrandedErrorBanner(
             message: _friendlyError(e),
+            detail: _errorDetail(e),
             onRetry: () async {
               await ref.read(reauthProvider)();
               ref.invalidate(userIdProvider);
@@ -126,7 +133,29 @@ class HomePage extends ConsumerWidget {
     if (s.contains('unauthenticated')) {
       return 'Session expired. Tap Retry to sign in again.';
     }
+    if (s.contains('operation-not-allowed') ||
+        s.contains('admin-restricted-operation')) {
+      return 'Anonymous sign-in is not enabled. Open Firebase Console → Authentication → Anonymous → Enable, then reopen the app.';
+    }
     return 'Could not load disputes. Tap Retry.';
+  }
+
+  /// Short technical code surfaced in the banner's detail row so the exact
+  /// failing layer (auth vs rules vs network) is visible without debugging.
+  /// Kept terse on purpose — the friendly message above is the user-facing
+  /// copy; this just lets us confirm the root cause at a glance.
+  static String? _errorDetail(Object e) {
+    if (kDebugMode) return e.toString();
+    final s = e.toString();
+    // Extract a `category/code` style token if present (Firebase exceptions
+    // stringify as `[cloud_firestore/permission-denied] ...`).
+    final m = RegExp(r'\[([\w/-]+/[a-z-]+)\]').firstMatch(s);
+    if (m != null) return m.group(1);
+    // FirebaseAuthException stringifies as `code: e.code` without brackets.
+    final am = RegExp(r'\b(auth/[a-z-]+)\b').firstMatch(s);
+    if (am != null) return am.group(1);
+    // Last resort: first 80 chars, no stack.
+    return s.length > 80 ? '${s.substring(0, 80)}…' : s;
   }
 }
 

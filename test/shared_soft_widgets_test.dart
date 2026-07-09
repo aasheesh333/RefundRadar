@@ -83,6 +83,19 @@ void main() {
       expect(bg, dark.errorSoft);
       expect(bg, isNot(AppColors.errorSoft));
     });
+
+    testWidgets('detail row renders the technical error code', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const BrandedErrorBanner(
+            message: 'Could not load your disputes. Tap Retry.',
+            detail: 'cloud_firestore/permission-denied',
+          ),
+          dark: false,
+        ),
+      );
+      expect(find.text('cloud_firestore/permission-denied'), findsOneWidget);
+    });
   });
 
   group('HeroEmojiCircle', () {

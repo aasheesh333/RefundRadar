@@ -23,12 +23,17 @@ class BrandedErrorBanner extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
   final IconData icon;
+  // Optional technical detail (Firebase error code / short stack) shown in a
+  // collapsible row under the friendly message. Sanity-check the exact failure
+  // layer without exposing a raw stack to end users.
+  final String? detail;
 
   const BrandedErrorBanner({
     super.key,
     required this.message,
     this.onRetry,
     this.icon = Icons.cloud_off_rounded,
+    this.detail,
   });
 
   @override
@@ -68,6 +73,28 @@ class BrandedErrorBanner extends StatelessWidget {
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
               ),
+              if (detail != null && detail!.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: tc.surfaceAlt,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: SelectableText(
+                    detail!,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontFamily: 'monospace',
+                          fontSize: 11,
+                          color: tc.textTertiary,
+                          height: 1.3,
+                        ),
+                  ),
+                ),
+              ],
               if (onRetry != null) ...[
                 const SizedBox(height: 16),
                 FilledButton.tonalIcon(

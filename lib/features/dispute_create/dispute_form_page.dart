@@ -116,12 +116,17 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       }
       if (!isValidAuthUid(resolvedUid)) {
         if (!mounted) return;
+        final authErr = ref.read(lastAuthErrorProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context)?.formAuthRequired ??
-                  'Could not sign in. Please restart the app and try again.',
+              (authErr != null &&
+                      authErr.toLowerCase().contains('operation-not-allowed'))
+                  ? 'Anonymous sign-in is disabled in Firebase Console. Enable it, then reopen the app.'
+                  : AppLocalizations.of(context)?.formAuthRequired ??
+                      'Could not sign in. Please restart the app and try again.',
             ),
+            duration: const Duration(seconds: 6),
           ),
         );
         return;
