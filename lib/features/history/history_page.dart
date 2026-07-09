@@ -447,7 +447,7 @@ class _EmptyHistory extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             FilledButton(
-              onPressed: () => context.go('/home'),
+              onPressed: () => context.push('/disputes/create'),
               child: Text(l10n?.homeAddDispute ?? 'Add dispute'),
             ),
           ],

@@ -275,7 +275,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
-              onPressed: () => context.go('/home'),
+              onPressed: () => context.push('/disputes/create'),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 shape: RoundedRectangleBorder(
