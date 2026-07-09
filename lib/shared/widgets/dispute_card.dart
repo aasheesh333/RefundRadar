@@ -197,7 +197,7 @@ class DisputeCard extends StatelessWidget {
         label: 'Resolved',
         prefix: '✓',
         fg: AppColors.success,
-        bg: Color(0xFFD7F5E7),
+        bg: AppColors.accentSoft,
       );
     }
     if (missed) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
+import 'package:refund_radar/core/theme/app_tokens.dart';
 
 class StepperTimeline extends StatelessWidget {
   final List<StepperItem> items;
@@ -23,9 +24,9 @@ class StepperTimeline extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: item.isDone
-                          ? const Color(0xFF16C784)
+                          ? AppColors.accent
                           : item.isCurrent
-                              ? const Color(0xFF0B3D2E)
+                              ? AppColors.primary
                               : Colors.grey.shade300,
                     ),
                     child: Center(
@@ -41,7 +42,7 @@ class StepperTimeline extends StatelessWidget {
                     Container(
                       width: 2,
                       height: 60,
-                      color: item.isDone ? const Color(0xFF16C784) : Colors.grey.shade300,
+                      color: item.isDone ? AppColors.accent : Colors.grey.shade300,
                     ),
                 ],
               ),

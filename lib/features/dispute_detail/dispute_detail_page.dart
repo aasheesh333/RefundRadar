@@ -191,7 +191,7 @@ class _DisputeBody extends ConsumerWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFD7F5E7),
+                                  color: AppColors.accentSoft,
                                   borderRadius:
                                       BorderRadius.circular(AppRadii.pill),
                                 ),

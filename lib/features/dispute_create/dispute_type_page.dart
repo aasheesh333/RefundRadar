@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../data/extensions/dispute_type_display.dart';
 import '../../data/models/dispute.dart';
+import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/app_back_button.dart';
 import '../../shared/widgets/onboarding_step_header.dart';
 
@@ -121,7 +122,8 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                           borderRadius: BorderRadius.circular(AppRadii.md),
                         ),
                       ),
-                      child: const Text('Continue →'),
+                      child: Text(AppLocalizations.of(context)?.disputeTypeContinue ??
+                          'Continue →'),
                     ),
                   ),
                 ],

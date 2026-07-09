@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'package:refund_radar/core/providers/app_state_provider.dart';
+import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/services/revenue_cat_service.dart';
 
@@ -126,12 +128,13 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Go Premium')),
+      appBar: AppBar(
+          title: Text(AppLocalizations.of(context)?.paywallTitle ?? 'Go Premium')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           const Icon(Icons.workspace_premium,
-              size: 72, color: Color(0xFFF5A623)),
+              size: 72, color: AppColors.alert),
           const SizedBox(height: 16),
           const Text(
             'Recover more. Unlimited disputes + 50+ templates.',
@@ -145,16 +148,16 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
           const SizedBox(height: 16),
           TextButton(
             onPressed: _purchasingPackageId == null ? _restore : null,
-            child: const Text('Restore purchases'),
+            child: Text(AppLocalizations.of(context)?.paywallRestore ?? 'Restore purchases'),
           ),
           const SizedBox(height: 24),
           FilledButton(
             onPressed: () => context.go(widget.returnPath),
             style: FilledButton.styleFrom(
               minimumSize: const Size.fromHeight(52),
-              backgroundColor: const Color(0xFF0B3D2E),
+              backgroundColor: AppColors.primary,
             ),
-            child: const Text('Maybe later'),
+            child: Text(AppLocalizations.of(context)?.paywallMaybeLater ?? 'Maybe later'),
           ),
         ],
       ),
@@ -300,7 +303,7 @@ class _PlanCard extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(
             color:
-                highlighted ? const Color(0xFF16C784) : Colors.grey.shade300,
+                highlighted ? AppColors.accent : Colors.grey.shade300,
             width: highlighted ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -312,11 +315,11 @@ class _PlanCard extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF16C784).withValues(alpha: 0.15),
+                  color: AppColors.accent.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text('Save 58%',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF16C784))),
+                    style: TextStyle(fontSize: 11, color: AppColors.accent)),
               ),
               const SizedBox(height: 8),
             ],
@@ -387,7 +390,7 @@ class _ComparisonTable extends StatelessWidget {
               child: Icon(Icons.close, color: Colors.grey)),
           Padding(
               padding: EdgeInsets.all(12),
-              child: Icon(Icons.check, color: Color(0xFF16C784))),
+              child: Icon(Icons.check, color: AppColors.accent)),
         ]),
         TableRow(children: [
           Padding(padding: EdgeInsets.all(12), child: Text('Hindi premium templates')),
@@ -396,7 +399,7 @@ class _ComparisonTable extends StatelessWidget {
               child: Icon(Icons.close, color: Colors.grey)),
           Padding(
               padding: EdgeInsets.all(12),
-              child: Icon(Icons.check, color: Color(0xFF16C784))),
+              child: Icon(Icons.check, color: AppColors.accent)),
         ]),
       ],
     );

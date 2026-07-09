@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:refund_radar/core/theme/app_tokens.dart';
 
 class DangerBanner extends StatelessWidget {
   final String message;
@@ -17,17 +18,17 @@ class DangerBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFE5484D).withValues(alpha: 0.1),
+        color: AppColors.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5484D), width: 1),
+        border: Border.all(color: AppColors.error, width: 1),
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: Color(0xFFE5484D)),
+          const Icon(Icons.warning_amber_rounded, color: AppColors.error),
           const SizedBox(width: 12),
           Expanded(
             child: Text(message,
-                style: const TextStyle(color: Color(0xFFE5484D), fontWeight: FontWeight.w600)),
+                style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.w600)),
           ),
           if (onAction != null && actionLabel != null)
             TextButton(onPressed: onAction, child: Text(actionLabel!)),

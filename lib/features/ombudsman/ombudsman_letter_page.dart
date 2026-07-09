@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
+import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
@@ -53,7 +55,9 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
   Widget build(BuildContext context) {
     final rulesAsync = ref.watch(rulesEngineProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Ombudsman letter')),
+      appBar: AppBar(
+          title: Text(AppLocalizations.of(context)?.ombudsmanLetterTitle ??
+              'Ombudsman letter')),
       body: rulesAsync.when(
         data: (rules) {
           return ListView(
@@ -62,15 +66,15 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0B3D2E).withValues(alpha: 0.05),
+                  color: AppColors.primary.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF0B3D2E)),
+                  border: Border.all(color: AppColors.primary),
                 ),
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Premium feature',
-                        style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0B3D2E))),
+                        style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primary)),
                     SizedBox(height: 4),
                     Text('Generate a pre-filled Template C complaint summary that you can paste into cms.rbi.org.in.'),
                   ],
@@ -94,7 +98,8 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
                       ));
                     },
                     icon: const Icon(Icons.auto_fix_high),
-                    label: const Text('Generate letter'),
+                    label: Text(AppLocalizations.of(context)?.ombudsmanGenerate ??
+                        'Generate letter'),
                   ),
                 )
               else ...[
@@ -113,7 +118,8 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
                       child: OutlinedButton.icon(
                         onPressed: () => Clipboard.setData(ClipboardData(text: _letter)),
                         icon: const Icon(Icons.copy),
-                        label: const Text('Copy'),
+                        label: Text(
+                            AppLocalizations.of(context)?.ombudsmanCopy ?? 'Copy'),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -121,7 +127,8 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
                       child: FilledButton.icon(
                         onPressed: () => launchExternalUrl(rules.officialLinks['rbi_cms'] ?? 'https://cms.rbi.org.in'),
                         icon: const Icon(Icons.open_in_new),
-                        label: const Text('Open cms.rbi.org.in'),
+                        label: Text(AppLocalizations.of(context)?.ombudsmanOpenCms ??
+                            'Open cms.rbi.org.in'),
                       ),
                     ),
                   ],
@@ -130,7 +137,8 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
                 OutlinedButton.icon(
                   onPressed: () => Clipboard.setData(ClipboardData(text: _letter)),
                   icon: const Icon(Icons.share),
-                  label: const Text('Share (copy to clipboard)'),
+                  label: Text(AppLocalizations.of(context)?.ombudsmanShareCopy ??
+                      'Share (copy to clipboard)'),
                 ),
               ],
               const SizedBox(height: 24),

@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/stepper_timeline.dart';
@@ -32,7 +34,8 @@ class _WizardPageState extends ConsumerState<WizardPage> {
   Widget build(BuildContext context) {
     final rulesAsync = ref.watch(rulesEngineProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Escalation steps')),
+      appBar: AppBar(
+          title: Text(AppLocalizations.of(context)?.wizardTitle ?? 'Escalation steps')),
       body: rulesAsync.when(
         data: (rules) {
           final steps = _buildSteps(rules);
@@ -97,8 +100,9 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _ticketController,
-                      decoration: const InputDecoration(
-                        labelText: 'Ticket / complaint number',
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)?.wizardTicketNumber ??
+                            'Ticket / complaint number',
                         filled: true,
                         isDense: true,
                       ),
@@ -111,7 +115,8 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                             onPressed: () => setState(() {
                               if (_currentLevel < steps.length - 1) _currentLevel++;
                             }),
-                            child: const Text('Mark as filed'),
+                            child: Text(AppLocalizations.of(context)?.wizardMarkFiled ??
+                                'Mark as filed'),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -158,9 +163,10 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                               if (context.mounted) context.go('/reminders');
                             },
                             style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF0B3D2E),
+                              backgroundColor: AppColors.primary,
                             ),
-                            child: const Text('Done - set reminder'),
+                            child: Text(AppLocalizations.of(context)?.wizardDoneSetReminder ??
+                                'Done — set reminder'),
                           ),
                         ),
                       ],
