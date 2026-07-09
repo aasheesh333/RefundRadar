@@ -411,10 +411,28 @@ gate is now strict: any analyze error or test failure fails the build.
 - RulesEngineRepository deep-merge (nested maps preserve bundled fields) + unit test
 - `FlutterError.onError` always `presentError` before Crashlytics
 
+### UI/UX audit fix pass (commits 29f7b32, this)
+
+**Blockers fixed**
+- Home nav: Settings / Templates / Reminders entry points
+- Escalate: real `launchEmail` + CC ombudsman; missing dispute → error
+- Ombudsman: generates from live Firestore dispute (no fake UTR_PREVIEW)
+- Detail/Escalate: no zero-amount fake dispute fallback
+- SMS: `permission_handler` runtime request
+- Settings Sign out → anonymous reauth; Pro badge respects `isPremium`
+- Dead chrome removed: history search/Load older, templates +
+
+**Major fixed**
+- Form requires bank + date; Create dispute label; all dispute types listed
+- ToggleSwitch 48dp hit target
+- Wizard Mark as filed persists ticket/status
+- Paywall i18n + BrandedErrorBanner + CTA hierarchy
+- `AppThemeColors` helper; home/settings/history scaffolds theme-aware
+
 ### Remaining polish (low priority)
 
-- Fastag / wrong-transfer timeline strings on detail page (English-only)
-- ProGuard already comprehensive — no change needed
-- Dependency versions pinned (commit b21812f)
-- Onboarding fully i18n'd (commit a81926f)
-- CI smoke tests for debug + release APKs (commit a81926f)
+- Full dark-mode sweep of remaining `*Light` hardcodes in cards/shared widgets
+- Fastag / wrong-transfer timeline strings (detail page) English-only
+- Status pills / dispute_type_display still English-only
+- Settings notification toggles still decorative
+- Wizard step body copy still English
