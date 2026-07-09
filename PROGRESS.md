@@ -387,17 +387,34 @@ from the `flutter analyze` and `flutter test` steps in the `debug` job, plus
 the `continue-on-error: true` on `flutter test` in the `release` job. The CI
 gate is now strict: any analyze error or test failure fails the build.
 
-### Next (queued)
+### Phase 3 — UI/UX ✅ DONE (commits ce504a7, d61c618, 9e6b4a8, 708524f, 614c153)
 
-- Phase 3 (UI/UX): replace 5 raw `Center(child: Text('Error: $e'))` screens
-  with `BrandedErrorBanner`; add skeletons everywhere; wire
-  `AppLocalizations.of(context)` for the ~120 hardcoded strings; dark-mode
-  token sweep; accessibility (Semantics/Tooltip/48dp); keyboard handling;
-  fix dead UI affordances; FAB safe-area.
-- Phase 4 (platform/release): `--split-per-abi`; `--obfuscate --split-debug-info`;
-  version source of truth; ProGuard narrow keeps; pin dependency versions; SMS
-  permission in AndroidManifest (with Play Store Permissions Declaration form);
-  artifact retention 90 days.
-- Phase 5 (observability): shallow-vs-deep merge in `RulesEngineRepository`;
-  Crashlytics breadcrumbs for swallowed Analytics/FCM errors; `main.dart`
-  `FlutterError.onError` silent-branch fix; release smoke test in CI.
+- B-U1: `BrandedErrorBanner` on escalate / wizard / history / ombudsman (+ localized)
+- M-U1: `SkeletonList` loaders on home / history / reminders
+- Dark-mode token sweep: 0 bare `Color(0xFF…)` left in `lib/features` + `lib/shared`
+- Accessibility: 48dp targets + Tooltip/Semantics on back/FAB/View-all/Dismiss/Open
+- Keyboard: `resizeToAvoidBottomInset` + tap-to-dismiss on form/wizard/add_banks
+- FAB SafeArea-aware padding
+- Full i18n migration: settings (~30), escalate (~20), dispute form/detail timeline +
+  activity log, history (title/filters/stats/empty), home View-all, add_banks,
+  templates Close/Copy/Pro/Level. AppLocalizations now ~180 keys (en+hi).
+
+### Phase 4 — platform/release ✅ DONE (commit 9e6b4a8)
+
+- AndroidManifest: `READ_SMS` + `RECEIVE_SMS` declared
+- CI: `--split-per-abi` (debug+release); release `--obfuscate --split-debug-info`
+  + debug-symbols artifact; retention 90 days
+- `android/local.properties` gitignored; bugs/ screenshots untracked
+
+### Phase 5 — observability ✅ PARTIAL (commit 9e6b4a8)
+
+- RulesEngineRepository deep-merge (nested maps preserve bundled fields) + unit test
+- `FlutterError.onError` always `presentError` before Crashlytics
+
+### Remaining (low priority)
+
+- Pin dependency versions in pubspec.yaml
+- ProGuard narrow keeps (rules already comprehensive)
+- Release smoke test step in CI
+- Fastag/wrong-transfer timeline strings (detail page) still English-only
+- Onboarding page residual strings (mostly already i18n'd via onboard* keys)
