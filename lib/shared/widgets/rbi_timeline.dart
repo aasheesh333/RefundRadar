@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/app_theme_colors.dart';
 
 /// A single RBI timeline step — matches mockup Screen 7.
 class RbiTimelineStep {
@@ -28,11 +29,12 @@ class RbiTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        border: Border.all(color: AppColors.dividerLight, width: 1),
+        color: tc.surface,
+        border: Border.all(color: tc.divider, width: 1),
         borderRadius: BorderRadius.circular(AppRadii.lg),
         boxShadow: AppShadows.card,
       ),
@@ -41,11 +43,11 @@ class RbiTimeline extends StatelessWidget {
         children: [
           Text(
             headerLabel.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
-              color: AppColors.textSecondaryLight,
+              color: tc.textSecondary,
             ),
           ),
           const SizedBox(height: 10),
@@ -69,6 +71,7 @@ class _StepRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     final (bg, fg, content) = switch (step.state) {
       RbiStepState.done => (
           AppColors.accent,
@@ -89,19 +92,19 @@ class _StepRow extends StatelessWidget {
                   color: Colors.white))
         ),
       RbiStepState.pending => (
-          AppColors.surfaceAltLight,
-          AppColors.textTertiaryLight,
+          tc.surfaceAlt,
+          tc.textTertiary,
           null,
         ),
     };
     final titleColor = step.state == RbiStepState.pending
-        ? AppColors.textTertiaryLight
-        : AppColors.textPrimaryLight;
+        ? tc.textTertiary
+        : tc.textPrimary;
     final detailColor = step.state == RbiStepState.active
         ? AppColors.alert
         : (step.state == RbiStepState.pending
-            ? AppColors.textTertiaryLight
-            : AppColors.textSecondaryLight);
+            ? tc.textTertiary
+            : tc.textSecondary);
     return Row(
       children: [
         Container(

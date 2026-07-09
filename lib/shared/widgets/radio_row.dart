@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/app_theme_colors.dart';
 
 /// RadioRow — inline selectable row used inside Settings cards.
 /// Selected row gets accent-soft bg + filled pri radio; inactive row gets
@@ -18,6 +19,7 @@ class RadioRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -40,8 +42,8 @@ class RadioRow extends StatelessWidget {
                   fontSize: 13,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                   color: selected
-                      ? AppColors.textPrimaryLight
-                      : AppColors.textSecondaryLight,
+                      ? tc.textPrimary
+                      : tc.textSecondary,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -59,6 +61,7 @@ class _Radio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     if (selected) {
       return Container(
         width: 18,
@@ -84,7 +87,7 @@ class _Radio extends StatelessWidget {
       height: 16,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.dividerLight, width: 2),
+        border: Border.all(color: tc.divider, width: 2),
       ),
     );
   }

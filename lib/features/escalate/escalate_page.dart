@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 import 'package:refund_radar/data/models/dispute.dart';
@@ -30,13 +31,14 @@ class _EscalatePageState extends ConsumerState<EscalatePage> {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     final uid = ref.watch(userIdProvider).asData?.value;
     if (uid == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final disputesAsync = ref.watch(disputesProvider(uid));
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: tc.bg,
       body: SafeArea(
         child: disputesAsync.when(
           data: (disputes) {
@@ -85,6 +87,7 @@ class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
     final comp = CompensationCalculator.compute(dispute);
     final refund = dispute.amount;
     final maxClaim = refund + comp.compensationDue;
@@ -105,20 +108,20 @@ class _Body extends StatelessWidget {
                   children: [
                     Text(
                       l10n?.escalateAppBarTitle ?? 'Escalate',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: AppTypography.family,
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimaryLight,
+                        color: tc.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 1),
                     Text(
                       '${l10n?.escalateNodalOfficer ?? 'Nodal Officer'} · ${dispute.entityName ?? "your bank"}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondaryLight,
+                        color: tc.textSecondary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -199,6 +202,7 @@ class _Body extends StatelessWidget {
               const SizedBox(height: 12),
               // send-to card
               _card(
+                context,
                 label: l10n?.escalateSendTo ?? 'SEND TO',
                 children: [
                   _RecipientRow(
@@ -216,7 +220,7 @@ class _Body extends StatelessWidget {
                         width: 26,
                         height: 26,
                         decoration: BoxDecoration(
-                          color: AppColors.surfaceAltLight,
+                          color: tc.surfaceAlt,
                           borderRadius: BorderRadius.circular(7),
                         ),
                         child: const Center(
@@ -231,8 +235,8 @@ class _Body extends StatelessWidget {
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: ccOmbudsman
-                                ? AppColors.textPrimaryLight
-                                : AppColors.textSecondaryLight,
+                                ? tc.textPrimary
+                                : tc.textSecondary,
                           ),
                         ),
                       ),
@@ -247,23 +251,24 @@ class _Body extends StatelessWidget {
               const SizedBox(height: 12),
               // email preview card
               _card(
+                context,
                 label: l10n?.escalateEmailPreview ?? 'EMAIL PREVIEW',
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 8),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceAltLight,
+                      color: tc.surfaceAlt,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       l10n?.escalateEmailSubject(dispute.txnId) ??
                           'Subject: Escalation — UTR ${dispute.txnId}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'monospace',
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimaryLight,
+                        color: tc.textPrimary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -272,18 +277,18 @@ class _Body extends StatelessWidget {
                   const SizedBox(height: 10),
                   Text(
                     l10n?.escalateEmailGreeting ?? 'Dear Nodal Officer,',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 12,
                         height: 1.45,
-                        color: AppColors.textSecondaryLight),
+                        color: tc.textSecondary),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     _emailBody(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       height: 1.45,
-                      color: AppColors.textSecondaryLight,
+                      color: tc.textSecondary,
                     ),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
@@ -291,10 +296,10 @@ class _Body extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     l10n?.escalateEmailAutoDrafted ?? '[auto-drafted, tap to edit]',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
                       fontStyle: FontStyle.italic,
-                      color: AppColors.textTertiaryLight,
+                      color: tc.textTertiary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -336,10 +341,10 @@ class _Body extends StatelessWidget {
                       Expanded(
                         child: RichText(
                           text: TextSpan(
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.textPrimaryLight,
+                              color: tc.textPrimary,
                               height: 1.4,
                             ),
                             children: [
@@ -367,17 +372,17 @@ class _Body extends StatelessWidget {
         // sticky footer
         Container(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-          decoration: const BoxDecoration(
-            color: AppColors.surfaceLight,
+          decoration: BoxDecoration(
+            color: tc.surface,
             border: Border(
-              top: BorderSide(color: AppColors.dividerLight, width: 1),
+              top: BorderSide(color: tc.divider, width: 1),
             ),
           ),
           child: Row(
             children: [
               _FooterButton(
                 label: l10n?.escalateEdit ?? 'Edit',
-                color: AppColors.surfaceAltLight,
+                color: tc.surfaceAlt,
                 textColor: AppColors.primary,
                 onTap: () => _copyEmail(context),
               ),
@@ -398,12 +403,13 @@ class _Body extends StatelessWidget {
     );
   }
 
-  Widget _card({required String label, required List<Widget> children}) {
+  Widget _card(BuildContext context, {required String label, required List<Widget> children}) {
+    final tc = AppThemeColors.of(context);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        border: Border.all(color: AppColors.dividerLight, width: 1),
+        color: tc.surface,
+        border: Border.all(color: tc.divider, width: 1),
         borderRadius: BorderRadius.circular(AppRadii.lg),
         boxShadow: AppShadows.card,
       ),
@@ -412,11 +418,11 @@ class _Body extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1,
-              color: AppColors.textSecondaryLight,
+              color: tc.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
@@ -495,6 +501,7 @@ class _RecipientRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Row(
       children: [
         Container(
@@ -514,19 +521,19 @@ class _RecipientRow extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimaryLight,
+                  color: tc.textPrimary,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               Text(
                 detail,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
-                  color: AppColors.textSecondaryLight,
+                  color: tc.textSecondary,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

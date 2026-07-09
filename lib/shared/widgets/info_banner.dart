@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/app_theme_colors.dart';
 
 /// InfoBanner — soft-bg r10 box with leading emoji + rich text.
 /// `kind` controls background and emoji: success (✓ acc), warn (⚠ gold),
@@ -20,6 +21,7 @@ class InfoBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     final fg = switch (kind) {
       InfoKind.success => AppColors.success,
       InfoKind.warn => AppColors.premiumGold,
@@ -61,12 +63,12 @@ class InfoBanner extends StatelessWidget {
           Expanded(
             child: Text.rich(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: AppTypography.family,
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
                 height: 1.4,
-                color: AppColors.textPrimaryLight,
+                color: tc.textPrimary,
               ),
             ),
           ),

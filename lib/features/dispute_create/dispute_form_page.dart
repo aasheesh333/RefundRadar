@@ -7,6 +7,7 @@ import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
@@ -213,10 +214,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
     final type = DisputeType.fromId(widget.type);
     final rulesAsync = ref.watch(rulesEngineProvider);
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: tc.bg,
       resizeToAvoidBottomInset: true,
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -235,23 +237,23 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'STEP 2 OF 4',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.2,
-                            color: AppColors.textSecondaryLight,
+                            color: tc.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 1),
-                        const Text(
+                        Text(
                           'Dispute details',
                           style: TextStyle(
                             fontFamily: AppTypography.family,
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimaryLight,
+                            color: tc.textPrimary,
                           ),
                         ),
                       ],
@@ -284,9 +286,9 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceLight,
+                      color: tc.surface,
                       border:
-                          Border.all(color: AppColors.dividerLight, width: 1),
+                          Border.all(color: tc.divider, width: 1),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Column(
@@ -326,10 +328,10 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                               Expanded(
                                 child: TextField(
                                   controller: _utrCtrl,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
-                                    color: AppColors.textPrimaryLight,
+                                    color: tc.textPrimary,
                                     fontFamily: AppTypography.family,
                                     letterSpacing: 0.5,
                                   ),
@@ -368,22 +370,22 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                             crossAxisAlignment: CrossAxisAlignment.baseline,
                             textBaseline: TextBaseline.alphabetic,
                             children: [
-                              const Text(
+                              Text(
                                 '₹',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textSecondaryLight,
+                                  color: tc.textSecondary,
                                 ),
                               ),
                               const SizedBox(width: 5),
                               Expanded(
                                 child: TextField(
                                   controller: _amountCtrl,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimaryLight,
+                                    color: tc.textPrimary,
                                     fontFamily: AppTypography.family,
                                   ),
                                   cursorColor: AppColors.primary,
@@ -425,8 +427,8 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
                                       color: _date == null
-                                          ? AppColors.textTertiaryLight
-                                          : AppColors.textPrimaryLight,
+                                          ? tc.textTertiary
+                                          : tc.textPrimary,
                                     ),
                                   ),
                                 ),
@@ -443,10 +445,10 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                           child: TextField(
                             controller: _descCtrl,
                             maxLines: 2,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.textPrimaryLight,
+                              color: tc.textPrimary,
                               fontFamily: AppTypography.family,
                               height: 1.35,
                             ),
@@ -471,10 +473,10 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
             // sticky footer
             Container(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceLight,
+              decoration: BoxDecoration(
+                color: tc.surface,
                 border: Border(
-                  top: BorderSide(color: AppColors.dividerLight, width: 1),
+                  top: BorderSide(color: tc.divider, width: 1),
                 ),
               ),
               child: Row(
@@ -483,13 +485,13 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'ESTIMATED',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
-                            color: AppColors.textSecondaryLight,
+                            color: tc.textSecondary,
                           ),
                         ),
                         const SizedBox(height: 1),
@@ -563,6 +565,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   }
 
   Widget _buildInfoBanner(DisputeType type) {
+    final tc = AppThemeColors.of(context);
     if (type == DisputeType.wrongTransfer) {
       return Container(
         padding: const EdgeInsets.all(10),
@@ -572,16 +575,16 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text('⚠', style: TextStyle(fontSize: 12, color: AppColors.alert)),
-            SizedBox(width: 8),
+          children: [
+            const Text('⚠', style: TextStyle(fontSize: 12, color: AppColors.alert)),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
                 'Wrong UPI transfers are not covered by RBI compensation. Recovery depends on beneficiary consent via bank/NPCI.',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimaryLight,
+                  color: tc.textPrimary,
                   height: 1.4,
                 ),
               ),
@@ -605,10 +608,10 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
           Expanded(
             child: RichText(
               text: TextSpan(
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimaryLight,
+                  color: tc.textPrimary,
                   height: 1.4,
                 ),
                 children: [
@@ -664,6 +667,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   }
 
   Future<void> _pickBank(BuildContext context, RulesEngine rules) async {
+    final tc = AppThemeColors.of(context);
     final isFastag = widget.type == 'fastag';
     final list = <({String name, String id})>[];
     if (isFastag) {
@@ -691,7 +695,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
             final b = list[i];
             return ListTile(
               leading: CircleAvatar(
-                backgroundColor: AppColors.surfaceAltLight,
+                backgroundColor: tc.surfaceAlt,
                 child: Text(
                   b.name.substring(0, 1).toUpperCase(),
                   style: const TextStyle(

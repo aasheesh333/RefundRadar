@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/data/constants/bank_catalog.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/shared/widgets/onboarding_step_header.dart';
@@ -75,9 +76,10 @@ class _AddBanksPageState extends State<AddBanksPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final banks = _filteredBanks;
+    final tc = AppThemeColors.of(context);
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: tc.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -87,20 +89,20 @@ class _AddBanksPageState extends State<AddBanksPage> {
               child: Row(
                 children: [
                   Material(
-                    color: AppColors.surfaceLight,
-                    shape: const CircleBorder(
+                    color: tc.surface,
+                    shape: CircleBorder(
                       side: BorderSide(
-                          color: AppColors.dividerLight, width: 1),
+                          color: tc.divider, width: 1),
                     ),
                     child: InkWell(
                       customBorder: const CircleBorder(),
                       onTap: () => context.go('/onboard/sms'),
-                      child: const SizedBox(
+                      child: SizedBox(
                         width: 36,
                         height: 36,
                         child: Center(
                           child: Icon(Icons.arrow_back,
-                              size: 18, color: AppColors.textPrimaryLight),
+                              size: 18, color: tc.textPrimary),
                         ),
                       ),
                     ),
@@ -148,7 +150,7 @@ class _AddBanksPageState extends State<AddBanksPage> {
                               stops: [0.0, 1.0],
                             ),
                             border: Border.all(
-                                color: AppColors.dividerLight, width: 1),
+                                color: tc.divider, width: 1),
                           ),
                           child: const Center(
                             child: Text('🏦', style: TextStyle(fontSize: 30)),
@@ -158,7 +160,7 @@ class _AddBanksPageState extends State<AddBanksPage> {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
                                 'Tell us your banks',
                                 style: TextStyle(
@@ -166,7 +168,7 @@ class _AddBanksPageState extends State<AddBanksPage> {
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                   height: 1.2,
-                                  color: AppColors.textPrimaryLight,
+                                  color: tc.textPrimary,
                                 ),
                               ),
                               SizedBox(height: 4),
@@ -175,7 +177,7 @@ class _AddBanksPageState extends State<AddBanksPage> {
                                 style: TextStyle(
                                   fontSize: 11,
                                   height: 1.45,
-                                  color: AppColors.textSecondaryLight,
+                                  color: tc.textSecondary,
                                 ),
                               ),
                             ],
@@ -193,32 +195,32 @@ class _AddBanksPageState extends State<AddBanksPage> {
                           onChanged: (v) => setState(() => _query = v),
                           decoration: InputDecoration(
                             hintText: 'Search your bank',
-                            hintStyle: const TextStyle(
+                            hintStyle: TextStyle(
                                 fontSize: 13,
-                                color: AppColors.textSecondaryLight),
-                            prefixIcon: const Icon(Icons.search,
+                                color: tc.textSecondary),
+                            prefixIcon: Icon(Icons.search,
                                 size: 18,
-                                color: AppColors.textSecondaryLight),
+                                color: tc.textSecondary),
                             filled: true,
-                            fillColor: AppColors.surfaceLight,
+                            fillColor: tc.surface,
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 12),
                             border: OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.circular(AppRadii.md),
-                              borderSide: const BorderSide(
-                                  color: AppColors.dividerLight, width: 1),
+                              borderSide: BorderSide(
+                                  color: tc.divider, width: 1),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius:
                                   BorderRadius.circular(AppRadii.md),
-                              borderSide: const BorderSide(
-                                  color: AppColors.dividerLight, width: 1),
+                              borderSide: BorderSide(
+                                  color: tc.divider, width: 1),
                             ),
                             suffixIcon: IconButton(
-                              icon: const Icon(Icons.close,
+                              icon: Icon(Icons.close,
                                   size: 16,
-                                  color: AppColors.textSecondaryLight),
+                                  color: tc.textSecondary),
                               onPressed: () => setState(() {
                                 _isSearching = false;
                                 _query = '';
@@ -235,14 +237,14 @@ class _AddBanksPageState extends State<AddBanksPage> {
                           child: TextButton.icon(
                             onPressed: () =>
                                 setState(() => _isSearching = true),
-                            icon: const Icon(Icons.search,
+                            icon: Icon(Icons.search,
                                 size: 16,
-                                color: AppColors.textSecondaryLight),
+                                color: tc.textSecondary),
                             label: Text(
                                 l10n?.addBanksSearchLabel ?? 'Search',
-                                style: const TextStyle(
+                                style: TextStyle(
                                     fontSize: 12,
-                                    color: AppColors.textSecondaryLight)),
+                                    color: tc.textSecondary)),
                           ),
                         ),
                       ),
@@ -266,10 +268,10 @@ class _AddBanksPageState extends State<AddBanksPage> {
             // sticky footer
             Container(
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceLight,
+              decoration: BoxDecoration(
+                color: tc.surface,
                 border: Border(
-                  top: BorderSide(color: AppColors.dividerLight, width: 1),
+                  top: BorderSide(color: tc.divider, width: 1),
                 ),
               ),
               child: SafeArea(
@@ -285,8 +287,8 @@ class _AddBanksPageState extends State<AddBanksPage> {
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           disabledBackgroundColor:
-                              AppColors.dividerLight,
-                          disabledForegroundColor: AppColors.textSecondaryLight,
+                              tc.divider,
+                          disabledForegroundColor: tc.textSecondary,
                           shape: RoundedRectangleBorder(
                             borderRadius:
                                 BorderRadius.circular(AppRadii.sm),
@@ -308,13 +310,13 @@ class _AddBanksPageState extends State<AddBanksPage> {
                     // 3-dot progress (3rd = filled/accent)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         SizedBox(
                           width: 8,
                           height: 8,
                           child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: AppColors.dividerLight,
+                              color: tc.divider,
                               borderRadius:
                                   BorderRadius.all(Radius.circular(4)),
                             ),
@@ -326,14 +328,14 @@ class _AddBanksPageState extends State<AddBanksPage> {
                           height: 8,
                           child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: AppColors.dividerLight,
+                              color: tc.divider,
                               borderRadius:
                                   BorderRadius.all(Radius.circular(4)),
                             ),
                           ),
                         ),
                         SizedBox(width: 8),
-                        SizedBox(
+                        const SizedBox(
                           width: 24,
                           height: 8,
                           child: DecoratedBox(
@@ -375,8 +377,9 @@ class _BankRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final nodalEmail = BankCatalog.nodalEmailFor(bank.id);
+    final tc = AppThemeColors.of(context);
     return Material(
-      color: AppColors.surfaceLight,
+      color: tc.surface,
       borderRadius: BorderRadius.circular(AppRadii.lg),
       child: InkWell(
         onTap: onTap,
@@ -387,7 +390,7 @@ class _BankRow extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.lg),
             border: Border.all(
-              color: selected ? AppColors.primary : AppColors.dividerLight,
+              color: selected ? AppColors.primary : tc.divider,
               width: selected ? 2 : 1,
             ),
             boxShadow: AppShadows.card,
@@ -398,7 +401,7 @@ class _BankRow extends StatelessWidget {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceAltLight,
+                  color: tc.surfaceAlt,
                   borderRadius: BorderRadius.circular(AppRadii.sm),
                 ),
                 child: Center(
@@ -421,10 +424,10 @@ class _BankRow extends StatelessWidget {
                       bank.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimaryLight,
+                        color: tc.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 1),
@@ -432,9 +435,9 @@ class _BankRow extends StatelessWidget {
                       nodalEmail ?? 'Dispute handling per RBI rules',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.textSecondaryLight,
+                        color: tc.textSecondary,
                       ),
                     ),
                   ],
@@ -447,12 +450,12 @@ class _BankRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: selected
                       ? AppColors.primary
-                      : AppColors.surfaceLight,
+                      : tc.surface,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: selected
                         ? AppColors.primary
-                        : AppColors.dividerLight,
+                        : tc.divider,
                     width: 2,
                   ),
                 ),

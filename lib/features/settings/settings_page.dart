@@ -7,7 +7,6 @@ import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_theme_colors.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../l10n/app_localizations.dart';
-import '../../services/notification_service.dart';
 import '../../shared/widgets/radio_row.dart';
 import '../../shared/widgets/toggle_switch.dart';
 
@@ -34,10 +33,10 @@ class SettingsPage extends ConsumerWidget {
                 children: [
                   Text(
                     l10n?.settingsTitle ?? 'Settings',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimaryLight,
+                      color: tc.textPrimary,
                     ),
                   ),
                   Tooltip(
@@ -52,17 +51,17 @@ class SettingsPage extends ConsumerWidget {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceLight,
+                            color: tc.surface,
                             border: Border.all(
-                              color: AppColors.dividerLight,
+                              color: tc.divider,
                               width: 1,
                             ),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.close,
                             size: 18,
-                            color: AppColors.textSecondaryLight,
+                            color: tc.textSecondary,
                           ),
                         ),
                       ),
@@ -74,10 +73,9 @@ class SettingsPage extends ConsumerWidget {
             // profile row
             Container(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(
-                  bottom:
-                      BorderSide(color: AppColors.dividerLight, width: 1),
+                  bottom: BorderSide(color: tc.divider, width: 1),
                 ),
               ),
               child: Row(
@@ -111,20 +109,20 @@ class SettingsPage extends ConsumerWidget {
                       children: [
                         Text(
                           l10n?.settingsRefundRadarUser ?? 'Refund Radar user',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimaryLight,
+                            color: tc.textPrimary,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 1),
                         Text(
                           l10n?.settingsLocalProfile ?? 'Local profile',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.textSecondaryLight,
+                            color: tc.textSecondary,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -176,10 +174,10 @@ class SettingsPage extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                 l10n?.settingsAutoDetectUtr ?? 'Auto-detect UTR',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimaryLight,
+                                  color: tc.textPrimary,
                                 ),
                               ),
                             ),
@@ -214,9 +212,9 @@ class SettingsPage extends ConsumerWidget {
                                       'Nothing leaves your phone.'),
                             ],
                           ),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
-                            color: AppColors.textSecondaryLight,
+                            color: tc.textSecondary,
                             height: 1.3,
                           ),
                         ),
@@ -231,20 +229,18 @@ class SettingsPage extends ConsumerWidget {
                         _ToggleItem(
                           label: l10n?.settingsDeadlineReminders ??
                               'Deadline reminders',
-                          value: true,
-                          onChanged: (_) => ref
-                              .read(notificationServiceProvider)
-                              .requestPermission(),
+                          value: ref.watch(notifDeadlineProvider),
+                          onChanged: (v) => setNotifDeadline(ref, v),
                         ),
                         _ToggleItem(
                           label: l10n?.settingsDailyComp ?? 'Daily comp clock',
-                          value: true,
-                          onChanged: (_) {},
+                          value: ref.watch(notifDailyProvider),
+                          onChanged: (v) => setNotifDaily(ref, v),
                         ),
                         _ToggleItem(
                           label: l10n?.settingsWeeklyDigest ?? 'Weekly digest',
-                          value: false,
-                          onChanged: (_) {},
+                          value: ref.watch(notifWeeklyProvider),
+                          onChanged: (v) => setNotifWeekly(ref, v),
                         ),
                       ],
                     ),
@@ -329,10 +325,10 @@ class SettingsPage extends ConsumerWidget {
                       child: Text(
                         l10n?.settingsLegalRow ??
                             'Disclaimer · Privacy · Delete data',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimaryLight,
+                          color: tc.textPrimary,
                         ),
                       ),
                     ),
@@ -345,11 +341,11 @@ class SettingsPage extends ConsumerWidget {
               top: false,
               child: Container(
                 padding: const EdgeInsets.fromLTRB(20, 9, 20, 9),
-                decoration: const BoxDecoration(
-                  color: AppColors.surfaceLight,
+                decoration: BoxDecoration(
+                  color: tc.surface,
                   border: Border(
                     top: BorderSide(
-                      color: AppColors.dividerLight,
+                      color: tc.divider,
                       width: 1,
                     ),
                   ),
@@ -360,9 +356,9 @@ class SettingsPage extends ConsumerWidget {
                       child: Text(
                         l10n?.settingsNotAffiliated ??
                             'Not affiliated with RBI/NPCI/banks',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
-                          color: AppColors.textTertiaryLight,
+                          color: tc.textTertiary,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -445,11 +441,12 @@ class _Card extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        border: Border.all(color: AppColors.dividerLight, width: 1),
+        color: tc.surface,
+        border: Border.all(color: tc.divider, width: 1),
         borderRadius: BorderRadius.circular(AppRadii.lg),
       ),
       child: Column(
@@ -459,12 +456,12 @@ class _Card extends StatelessWidget {
             padding: const EdgeInsets.only(left: 2, bottom: 6),
             child: Text(
               label.toUpperCase(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: AppTypography.family,
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.8,
-                color: AppColors.textSecondaryLight,
+                color: tc.textSecondary,
               ),
             ),
           ),
@@ -479,35 +476,38 @@ class _RowPair extends StatelessWidget {
   const _RowPair({
     required this.left,
     required this.right,
-    this.rightColor = AppColors.textPrimaryLight,
+    this.rightColor,
   });
   final String left;
   final String right;
-  final Color rightColor;
+  final Color? rightColor;
 
   @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          Expanded(
-            child: Text(
-              left,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textSecondaryLight,
-              ),
-            ),
-          ),
-          Text(
-            right,
+  Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            left,
             style: TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: rightColor,
+              fontWeight: FontWeight.w600,
+              color: tc.textSecondary,
             ),
           ),
-        ],
-      );
+        ),
+        Text(
+          right,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: rightColor ?? tc.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _ToggleItem {
@@ -526,32 +526,35 @@ class _ToggleRows extends StatelessWidget {
   final List<_ToggleItem> items;
 
   @override
-  Widget build(BuildContext context) => Column(
-        children: [
-          for (var i = 0; i < items.length; i++) ...[
-            if (i != 0) const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    items[i].label,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: items[i].value
-                          ? AppColors.textPrimaryLight
-                          : AppColors.textSecondaryLight,
-                    ),
+  Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
+    return Column(
+      children: [
+        for (var i = 0; i < items.length; i++) ...[
+          if (i != 0) const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  items[i].label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: items[i].value
+                        ? tc.textPrimary
+                        : tc.textSecondary,
                   ),
                 ),
-                const SizedBox(width: 10),
-                ToggleSwitch(
-                  value: items[i].value,
-                  onChanged: items[i].onChanged,
-                ),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(width: 10),
+              ToggleSwitch(
+                value: items[i].value,
+                onChanged: items[i].onChanged,
+              ),
+            ],
+          ),
         ],
-      );
+      ],
+    );
+  }
 }

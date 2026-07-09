@@ -137,6 +137,7 @@ class _Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
     if (disputes.isEmpty) return const _EmptyState();
     final totalOwed = disputes.fold<double>(
         0, (sum, d) => sum + CompensationCalculator.compute(d).compensationDue);
@@ -169,7 +170,7 @@ class _Body extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: AppThemeColors.of(context).textSecondary,
+                      color: tc.textSecondary,
                     ),
                   ),
                 ],
@@ -225,7 +226,7 @@ class _Body extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceAltLight,
+                        color: tc.surfaceAlt,
                         shape: BoxShape.circle,
                         border:
                             Border.all(color: AppColors.premiumGold, width: 2),
@@ -263,7 +264,7 @@ class _Body extends StatelessWidget {
                 fontFamily: AppTypography.family,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppThemeColors.of(context).textPrimary,
+                color: tc.textPrimary,
               ),
             ),
             GestureDetector(
@@ -306,6 +307,7 @@ class _EmptyState extends StatelessWidget {
   const _EmptyState();
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -324,23 +326,23 @@ class _EmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'No disputes yet',
               style: TextStyle(
                 fontFamily: AppTypography.family,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimaryLight,
+                color: tc.textPrimary,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Add your first stuck transaction to start tracking compensation.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textSecondaryLight,
+                color: tc.textSecondary,
                 height: 1.45,
               ),
             ),

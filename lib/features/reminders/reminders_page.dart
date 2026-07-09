@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/extensions/dispute_type_display.dart';
 import 'package:refund_radar/data/models/reminder.dart';
@@ -16,9 +17,10 @@ class RemindersPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tc = AppThemeColors.of(context);
     final uidAsync = ref.watch(userIdProvider);
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: tc.bg,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,7 +36,7 @@ class RemindersPage extends ConsumerWidget {
                     'Reminders',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimaryLight,
+                          color: tc.textPrimary,
                         ),
                   ),
                 ],
@@ -89,6 +91,7 @@ class _ReminderCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tc = AppThemeColors.of(context);
     final type = reminder.disputeType;
     final now = DateTime.now();
     final delta = reminder.fireAt.difference(now);
@@ -101,12 +104,12 @@ class _ReminderCard extends ConsumerWidget {
             : 'In $daysLeft ${daysLeft == 1 ? 'day' : 'days'}';
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: tc.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: overdue
               ? AppColors.error.withValues(alpha: 0.30)
-              : AppColors.dividerLight,
+              : tc.divider,
         ),
       ),
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -137,7 +140,7 @@ class _ReminderCard extends ConsumerWidget {
                         reminder.title,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimaryLight,
+                              color: tc.textPrimary,
                             ),
                       ),
                     ),
@@ -145,7 +148,7 @@ class _ReminderCard extends ConsumerWidget {
                       overdue ? 'OVERDUE' : reminder.stage.displayName.toUpperCase(),
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
                             letterSpacing: 0.6,
-                            color: overdue ? AppColors.error : AppColors.textTertiaryLight,
+                            color: overdue ? AppColors.error : tc.textTertiary,
                             fontWeight: FontWeight.w600,
                           ),
                     ),
@@ -155,7 +158,7 @@ class _ReminderCard extends ConsumerWidget {
                 Text(
                   reminder.body,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondaryLight,
+                        color: tc.textSecondary,
                         height: 1.35,
                       ),
                 ),
@@ -165,13 +168,13 @@ class _ReminderCard extends ConsumerWidget {
                     Icon(
                       overdue ? Icons.warning_amber_rounded : Icons.schedule_rounded,
                       size: 14,
-                      color: overdue ? AppColors.error : AppColors.textTertiaryLight,
+                      color: overdue ? AppColors.error : tc.textTertiary,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       subtitle,
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                            color: overdue ? AppColors.error : AppColors.textTertiaryLight,
+                            color: overdue ? AppColors.error : tc.textTertiary,
                             fontWeight: FontWeight.w500,
                           ),
                     ),
@@ -242,6 +245,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
@@ -256,7 +260,7 @@ class _EmptyState extends StatelessWidget {
                   'No upcoming reminders',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimaryLight,
+                    color: tc.textPrimary,
                   )),
             const SizedBox(height: 8),
             Text(
@@ -265,7 +269,7 @@ class _EmptyState extends StatelessWidget {
                   'so you never miss a 30-day follow-up window.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondaryLight,
+                    color: tc.textSecondary,
                     height: 1.4,
                   ),
             ),

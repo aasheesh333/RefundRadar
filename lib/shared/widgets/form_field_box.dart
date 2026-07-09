@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/app_theme_colors.dart';
 
 /// Labeled input box matching mockup Screen 6 form fields.
 /// 11pt uppercase label, 8px-rounded bordered input box.
@@ -19,7 +20,8 @@ class FormFieldBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = focused ? AppColors.primary : AppColors.dividerLight;
+    final tc = AppThemeColors.of(context);
+    final borderColor = focused ? AppColors.primary : tc.divider;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -27,10 +29,10 @@ class FormFieldBox extends StatelessWidget {
           children: [
             Text(
               label.toUpperCase(),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textSecondaryLight,
+                color: tc.textSecondary,
               ),
             ),
             if (helper != null) ...[
@@ -50,7 +52,7 @@ class FormFieldBox extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: AppColors.surfaceLight,
+            color: tc.surface,
             border: Border.all(color: borderColor, width: 1),
             borderRadius: BorderRadius.circular(AppRadii.xs),
           ),

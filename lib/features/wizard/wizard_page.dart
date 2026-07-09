@@ -79,7 +79,12 @@ class _WizardPageState extends ConsumerState<WizardPage> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not save ticket. Try again.')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.wizardSaveFailed ??
+                  'Could not save ticket. Try again.',
+            ),
+          ),
         );
       }
     } finally {
@@ -128,7 +133,10 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                         onPressed: () => Clipboard.setData(
                             ClipboardData(text: steps[i].complaintText!)),
                         icon: const Icon(Icons.copy),
-                        label: const Text('Copy complaint text'),
+                        label: Text(
+                          AppLocalizations.of(context)?.wizardCopyComplaint ??
+                              'Copy complaint text',
+                        ),
                       ),
                     ],
                     if (steps[i].url != null) ...[
@@ -136,7 +144,10 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                       FilledButton.icon(
                         onPressed: () => launchExternalUrl(steps[i].url!),
                         icon: const Icon(Icons.open_in_new),
-                        label: const Text('Open portal'),
+                        label: Text(
+                          AppLocalizations.of(context)?.wizardOpenPortal ??
+                              'Open portal',
+                        ),
                       ),
                     ],
                     if (steps[i].phone != null) ...[
@@ -144,12 +155,18 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                       OutlinedButton.icon(
                         onPressed: () => launchPhone(steps[i].phone!),
                         icon: const Icon(Icons.phone),
-                        label: Text('Call ${steps[i].phone}'),
+                        label: Text(
+                          '${AppLocalizations.of(context)?.wizardCallPrefix ?? 'Call'} ${steps[i].phone}',
+                        ),
                       ),
                     ],
                     if (steps[i].documents.isNotEmpty) ...[
                       const SizedBox(height: 12),
-                      Text('Documents needed:', style: Theme.of(context).textTheme.titleSmall),
+                      Text(
+                        AppLocalizations.of(context)?.wizardDocuments ??
+                            'Documents needed',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
                       ...steps[i].documents.map((d) => Row(
                             children: [
                               const Icon(Icons.check_circle_outline, size: 16),
@@ -247,30 +264,41 @@ class _WizardPageState extends ConsumerState<WizardPage> {
   }
 
   List<_Step> _buildSteps(RulesEngine rules) {
+    final l10n = AppLocalizations.of(context);
     return [
       _Step(
-        title: 'Level 1 - UPI app / bank',
-        body: 'File complaint in your UPI app (GPay/PhonePe/Paytm) or your bank. '
-            'Note the ticket number. Bank has up to 30 days to respond.',
+        title: l10n?.wizardLevel1Title ?? 'Level 1 - UPI app / bank',
+        body: l10n?.wizardLevel1Body ??
+            'File complaint in your UPI app (GPay/PhonePe/Paytm) or your bank. '
+                'Note the ticket number. Bank has up to 30 days to respond.',
         url: rules.officialLinks['upi_complaints'],
         phone: '14448',
         complaintText: null,
-        documents: ['UTR / Transaction ID', 'Amount', 'Date', 'VPA', 'Bank statement screenshot'],
+        documents: [
+          'UTR / Transaction ID',
+          'Amount',
+          'Date',
+          'VPA',
+          'Bank statement screenshot'
+        ],
       ),
       _Step(
-        title: 'Level 2 - NPCI portal',
-        body: 'Visit NPCI Dispute Redressal portal. Needs UTR, amount, date, VPA, bank statement.',
+        title: l10n?.wizardLevel2Title ?? 'Level 2 - NPCI portal',
+        body: l10n?.wizardLevel2Body ??
+            'Visit NPCI Dispute Redressal portal. Needs UTR, amount, date, VPA, bank statement.',
         url: rules.officialLinks['upi_complaints'],
         phone: null,
-        complaintText: 'Dear NPCI Team,\n\nUTR: {UTR}\nAmount: Rs. {AMOUNT}\nDate: {TXN_DATE}\nVPA: {VPA}\n\n'
+        complaintText:
+            'Dear NPCI Team,\n\nUTR: {UTR}\nAmount: Rs. {AMOUNT}\nDate: {TXN_DATE}\nVPA: {VPA}\n\n'
             'I have not received credit / refund and the bank has not resolved within 30 days.\n'
             'Please escalate this dispute.',
         documents: ['UTR', 'Amount', 'Date', 'VPA', 'Bank statement'],
       ),
       _Step(
-        title: 'Level 3 - RBI Ombudsman',
-        body: 'File at cms.rbi.org.in within 90 days of bank response window. '
-            'Category: Deficiency in Service. Free.',
+        title: l10n?.wizardLevel3Title ?? 'Level 3 - RBI Ombudsman',
+        body: l10n?.wizardLevel3Body ??
+            'File at cms.rbi.org.in within 90 days of bank response window. '
+                'Category: Deficiency in Service. Free.',
         url: rules.officialLinks['rbi_cms'],
         phone: '14448',
         complaintText: 'Complaint against: {ENTITY_NAME} (Bank)\n'
@@ -280,7 +308,11 @@ class _WizardPageState extends ConsumerState<WizardPage> {
             '3. No reply for 30 days.\n'
             '4. Under RBI TAT Harmonisation circular, entitled to reversal + Rs.100/day.\n\n'
             'Relief: Refund Rs. {AMOUNT} + compensation Rs. {COMPENSATION_DUE}.',
-        documents: ['Transaction proof', 'Complaint acknowledgement', 'Bank reply (if any)'],
+        documents: [
+          'Transaction proof',
+          'Complaint acknowledgement',
+          'Bank reply (if any)'
+        ],
       ),
     ];
   }

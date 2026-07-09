@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/app_theme_colors.dart';
 import '../../data/extensions/dispute_type_display.dart';
 import '../../data/models/dispute.dart';
 import '../../l10n/app_localizations.dart';
@@ -31,8 +32,9 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: tc.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -52,8 +54,8 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                 ],
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 24, 20, 8),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -61,7 +63,7 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondaryLight,
+                    color: tc.textSecondary,
                   ),
                 ),
               ),
@@ -84,10 +86,10 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
-              decoration: const BoxDecoration(
-                color: AppColors.surfaceLight,
+              decoration: BoxDecoration(
+                color: tc.surface,
                 border: Border(
-                  top: BorderSide(color: AppColors.dividerLight, width: 1),
+                  top: BorderSide(color: tc.divider, width: 1),
                 ),
               ),
               child: Column(
@@ -97,14 +99,14 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                   Text(
                     _selected == null
                         ? 'Selected: —'
-                        : 'Selected: ${_selected!.displayName}',
+                        : 'Selected: ${_selected!.localizedName(AppLocalizations.of(context))}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: _selected == null
-                          ? AppColors.textTertiaryLight
+                          ? tc.textTertiary
                           : AppColors.accent,
                     ),
                   ),
@@ -119,7 +121,7 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                                 '/disputes/form?type=${_selected!.id}'),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        disabledBackgroundColor: AppColors.surfaceAltLight,
+                        disabledBackgroundColor: tc.surfaceAlt,
                         minimumSize: const Size(0, 52),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppRadii.md),
@@ -152,15 +154,18 @@ class _Row extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    final comp = type.localizedCompensation(l10n);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadii.lg),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
+          color: tc.surface,
           border: Border.all(
-            color: selected ? AppColors.primary : AppColors.dividerLight,
+            color: selected ? AppColors.primary : tc.divider,
             width: selected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(AppRadii.lg),
@@ -182,26 +187,26 @@ class _Row extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    type.displayName,
-                    style: const TextStyle(
+                    type.localizedName(l10n),
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimaryLight,
+                      color: tc.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    type.subtitle,
-                    style: const TextStyle(
+                    type.localizedSubtitle(l10n),
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondaryLight,
+                      color: tc.textSecondary,
                     ),
                   ),
-                  if (type.compensationLabel != null) ...[
+                  if (comp != null) ...[
                     const SizedBox(height: 6),
                     Text(
-                      type.compensationLabel!,
+                      comp,
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -233,7 +238,7 @@ class _Row extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.dividerLight,
+                        color: tc.divider,
                         width: 2,
                       ),
                     ),

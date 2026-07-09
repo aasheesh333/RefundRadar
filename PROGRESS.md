@@ -429,10 +429,11 @@ gate is now strict: any analyze error or test failure fails the build.
 - Paywall i18n + BrandedErrorBanner + CTA hierarchy
 - `AppThemeColors` helper; home/settings/history scaffolds theme-aware
 
-### Remaining polish (low priority)
+### Remaining polish — completed (this commit)
 
-- Full dark-mode sweep of remaining `*Light` hardcodes in cards/shared widgets
-- Fastag / wrong-transfer timeline strings (detail page) English-only
-- Status pills / dispute_type_display still English-only
-- Settings notification toggles still decorative
-- Wizard step body copy still English
+- Full dark-mode sweep: features + shared widgets → `AppThemeColors`
+- Status pills + dispute type names/subtitles i18n (en/hi)
+- Settings notification toggles persisted (SharedPreferences)
+- Wizard level titles/bodies + Copy/Open/Call/Documents i18n
+- FASTag / wrong-transfer timeline strings i18n
+- CI release job builds signed APK + AAB with smoke tests

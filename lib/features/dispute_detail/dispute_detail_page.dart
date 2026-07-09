@@ -5,6 +5,7 @@ import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/data/extensions/dispute_type_display.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
@@ -22,13 +23,14 @@ class DisputeDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tc = AppThemeColors.of(context);
     final uid = ref.watch(userIdProvider).asData?.value;
     if (uid == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final disputesAsync = ref.watch(disputesProvider(uid));
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: tc.bg,
       body: SafeArea(
         child: disputesAsync.when(
           data: (disputes) {
@@ -65,6 +67,7 @@ class _DisputeBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tc = AppThemeColors.of(context);
     final l10n = AppLocalizations.of(context);
     final comp = CompensationCalculator.compute(dispute);
     final isFastag = dispute.type == DisputeType.fastag;
@@ -93,21 +96,21 @@ class _DisputeBody extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      dispute.type.displayName,
-                      style: const TextStyle(
+                      dispute.type.localizedName(l10n),
+                      style: TextStyle(
                         fontFamily: AppTypography.family,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimaryLight,
+                        color: tc.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       _headerSubtitle(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondaryLight,
+                        color: tc.textSecondary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -213,12 +216,12 @@ class _DisputeBody extends ConsumerWidget {
                               ),
                             const SizedBox(width: 8),
                             Text(
-                              dispute.type.compensationLabel ??
+                              dispute.type.localizedCompensation(l10n) ??
                                   'Guidance mode',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondaryLight,
+                                color: tc.textSecondary,
                               ),
                             ),
                           ],
@@ -231,7 +234,7 @@ class _DisputeBody extends ConsumerWidget {
               const SizedBox(height: 14),
               // RBI timeline card
               RbiTimeline(
-                headerLabel: _timelineHeader(),
+                headerLabel: _timelineHeader(l10n),
                 steps: _timelineSteps(comp, l10n),
               ),
               const SizedBox(height: 14),
@@ -289,10 +292,10 @@ class _DisputeBody extends ConsumerWidget {
         // sticky footer
         Container(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-          decoration: const BoxDecoration(
-            color: AppColors.surfaceLight,
+          decoration: BoxDecoration(
+            color: tc.surface,
             border: Border(
-              top: BorderSide(color: AppColors.dividerLight, width: 1),
+              top: BorderSide(color: tc.divider, width: 1),
             ),
           ),
           child: Row(
@@ -301,10 +304,10 @@ class _DisputeBody extends ConsumerWidget {
                 child: dispute.status != DisputeStatus.resolved
                     ? RichText(
                         text: TextSpan(
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.textSecondaryLight,
+                            color: tc.textSecondary,
                             height: 1.3,
                           ),
                           children: [
@@ -328,12 +331,12 @@ class _DisputeBody extends ConsumerWidget {
                           ],
                         ),
                       )
-                    : const Text(
+                    : Text(
                         'This dispute is resolved.',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondaryLight,
+                          color: tc.textSecondary,
                         ),
                       ),
               ),
@@ -341,7 +344,7 @@ class _DisputeBody extends ConsumerWidget {
                 label: dispute.status == DisputeStatus.resolved
                     ? 'Reopen'
                     : 'Mark resolved',
-                color: AppColors.surfaceAltLight,
+                color: tc.surfaceAlt,
                 textColor: AppColors.primary,
                 onTap: () => _toggleResolved(context, ref),
               ),
@@ -375,52 +378,64 @@ class _DisputeBody extends ConsumerWidget {
         DisputeType.wrongTransfer => 'Wrong transfer',
       };
 
-  String _timelineHeader() => dispute.type == DisputeType.fastag
-      ? 'FASTag timeline (30-day window)'
-      : dispute.type == DisputeType.bankCharge
-          ? 'Bank timeline (30-day window)'
-          : 'RBI timeline (T-day = 0)';
+  String _timelineHeader(AppLocalizations? l10n) =>
+      dispute.type == DisputeType.fastag
+          ? (l10n?.detailTimelineFastagHeader ??
+              'FASTag timeline (30-day window)')
+          : dispute.type == DisputeType.bankCharge
+              ? (l10n?.detailTimelineBankHeader ??
+                  'Bank timeline (30-day window)')
+              : (l10n?.detailTimelineRbiHeader ?? 'RBI timeline (T-day = 0)');
 
-  List<RbiTimelineStep> _timelineSteps(CompensationResult comp, AppLocalizations? l10n) {
+  List<RbiTimelineStep> _timelineSteps(
+      CompensationResult comp, AppLocalizations? l10n) {
     final tat = dispute.type.tatDays ?? 5;
     if (dispute.type == DisputeType.wrongTransfer) {
       return [
-        const RbiTimelineStep(
-            title: 'Request to own bank',
-            detail: 'Contact your bank to reach the beneficiary',
+        RbiTimelineStep(
+            title: l10n?.detailTlWtRequest ?? 'Request to own bank',
+            detail: l10n?.detailTlWtRequestDetail ??
+                'Contact your bank to reach the beneficiary',
             state: RbiStepState.done),
-        const RbiTimelineStep(
-            title: 'NPCI DRM entry',
-            detail: 'Within 3 days — wrong-transfer portal'),
-        const RbiTimelineStep(
-            title: 'Cyber cell complaint',
-            detail: 'If fraud suspected'),
-        const RbiTimelineStep(
-            title: 'Legal notice',
-            detail: 'Final escalation'),
+        RbiTimelineStep(
+            title: l10n?.detailTlWtNpci ?? 'NPCI DRM entry',
+            detail: l10n?.detailTlWtNpciDetail ??
+                'Within 3 days — wrong-transfer portal'),
+        RbiTimelineStep(
+            title: l10n?.detailTlWtCyber ?? 'Cyber cell complaint',
+            detail: l10n?.detailTlWtCyberDetail ?? 'If fraud suspected'),
+        RbiTimelineStep(
+            title: l10n?.detailTlWtLegal ?? 'Legal notice',
+            detail: l10n?.detailTlWtLegalDetail ?? 'Final escalation'),
       ];
     }
     if (dispute.type == DisputeType.fastag) {
       return [
-        const RbiTimelineStep(
-            title: 'Reported',
-            detail: 'Day 0 · transaction flagged',
+        RbiTimelineStep(
+            title: l10n?.detailTlFtReported ?? 'Reported',
+            detail:
+                l10n?.detailTlFtReportedDetail ?? 'Day 0 · transaction flagged',
             state: RbiStepState.done),
         RbiTimelineStep(
-            title: 'Issuer bank',
+            title: l10n?.detailTlFtIssuer ?? 'Issuer bank',
             detail: dispute.entityName != null
-                ? '${dispute.entityName} dispute section · 7-10 days'
-                : 'Issuer bank · 7-10 days',
+                ? (l10n?.detailTlFtIssuerDetail(dispute.entityName!) ??
+                    '${dispute.entityName} dispute section · 7-10 days')
+                : (l10n?.detailTlFtIssuerGeneric ??
+                    'Issuer bank · 7-10 days'),
             state: RbiStepState.active),
-        const RbiTimelineStep(
-            title: '1033 Helpline',
-            detail: 'If no reply in 7 days'),
-        const RbiTimelineStep(
-            title: 'IHMCL false-deduction email',
-            detail: 'falsededuction@ihmcl.com'),
-        const RbiTimelineStep(
-            title: 'RBI Ombudsman',
-            detail: 'If unresolved after 30 days'),
+        RbiTimelineStep(
+            title: l10n?.detailTlFtHelpline ?? '1033 Helpline',
+            detail:
+                l10n?.detailTlFtHelplineDetail ?? 'If no reply in 7 days'),
+        RbiTimelineStep(
+            title: l10n?.detailTlFtIhmcl ?? 'IHMCL false-deduction email',
+            detail:
+                l10n?.detailTlFtIhmclDetail ?? 'falsededuction@ihmcl.com'),
+        RbiTimelineStep(
+            title: l10n?.detailTlFtOmbudsman ?? 'RBI Ombudsman',
+            detail: l10n?.detailTlFtOmbudsmanDetail ??
+                'If unresolved after 30 days'),
       ];
     }
     final ackDone = dispute.status != DisputeStatus.draft;
@@ -570,8 +585,9 @@ class _IconAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Material(
-      color: AppColors.surfaceAltLight,
+      color: tc.surfaceAlt,
       borderRadius: BorderRadius.circular(AppRadii.md),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadii.md),

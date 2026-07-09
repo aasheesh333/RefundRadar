@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/theme/app_theme_colors.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/hero_emoji_circle.dart';
@@ -66,9 +67,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
     final slides = _slidesFor(l10n);
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: tc.bg,
       body: Column(
         children: [
           // top bar with skip — safe top only
@@ -83,7 +85,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   style: TextButton.styleFrom(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    foregroundColor: AppColors.textSecondaryLight,
+                    foregroundColor: tc.textSecondary,
                   ),
                   child: Text(
                     l10n?.onboardSkip ?? 'Skip',
@@ -146,7 +148,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.textTertiaryLight,
+                      color: tc.textTertiary,
                       height: 1.4,
                     ),
                   ),
@@ -183,6 +185,7 @@ class _SlideView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxHeight < 420;
@@ -208,7 +211,7 @@ class _SlideView extends StatelessWidget {
                   fontSize: compact ? 24 : 28,
                   fontWeight: FontWeight.w700,
                   height: 1.2,
-                  color: AppColors.textPrimaryLight,
+                  color: tc.textPrimary,
                 ),
               ),
               const SizedBox(height: 10),
@@ -219,12 +222,12 @@ class _SlideView extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: compact ? 4 : 6,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: AppTypography.family,
                     fontSize: 15,
                     fontWeight: FontWeight.w400,
                     height: 1.45,
-                    color: AppColors.textSecondaryLight,
+                    color: tc.textSecondary,
                   ),
                 ),
               ),

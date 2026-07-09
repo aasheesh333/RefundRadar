@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/app_theme_colors.dart';
 
 /// PageDots — 3-dot indicator (mockup `.page-dots`).
 /// Active dot = 24×8 pill r4 accent. Inactive = 8×8 circle r4 hr.
@@ -15,6 +16,7 @@ class PageDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
@@ -26,7 +28,7 @@ class PageDots extends StatelessWidget {
             width: i == current ? 24 : 8,
             height: 8,
             decoration: BoxDecoration(
-              color: i == current ? AppColors.accent : AppColors.dividerLight,
+              color: i == current ? AppColors.accent : tc.divider,
               borderRadius:
                   BorderRadius.circular(i == current ? 4 : 4),
             ),

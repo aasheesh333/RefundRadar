@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'package:refund_radar/core/providers/app_state_provider.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
@@ -357,10 +358,11 @@ class _ComparisonTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
     return Table(
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       border: TableBorder.symmetric(
-        inside: BorderSide(color: AppColors.dividerLight),
+        inside: BorderSide(color: tc.divider),
       ),
       children: [
         TableRow(children: [
@@ -403,9 +405,9 @@ class _ComparisonTable extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               child: Text(
                   l10n?.paywallOmbudsmanLetter ?? 'Ombudsman letter generator')),
-          const Padding(
-              padding: EdgeInsets.all(12),
-              child: Icon(Icons.close, color: AppColors.textTertiaryLight)),
+          Padding(
+              padding: const EdgeInsets.all(12),
+              child: Icon(Icons.close, color: tc.textTertiary)),
           const Padding(
               padding: EdgeInsets.all(12),
               child: Icon(Icons.check, color: AppColors.accent)),
@@ -414,9 +416,9 @@ class _ComparisonTable extends StatelessWidget {
           const Padding(
               padding: EdgeInsets.all(12),
               child: Text('Hindi premium templates')),
-          const Padding(
-              padding: EdgeInsets.all(12),
-              child: Icon(Icons.close, color: AppColors.textTertiaryLight)),
+          Padding(
+              padding: const EdgeInsets.all(12),
+              child: Icon(Icons.close, color: tc.textTertiary)),
           const Padding(
               padding: EdgeInsets.all(12),
               child: Icon(Icons.check, color: AppColors.accent)),

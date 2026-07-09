@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 
 /// Branded error banner (B8). Shown when an async fetch fails — replaces
@@ -32,6 +33,7 @@ class BrandedErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     final l = AppLocalizations.of(context);
     return Center(
       child: Padding(
@@ -52,7 +54,7 @@ class BrandedErrorBanner extends StatelessWidget {
                 l?.commonError ?? 'Something went wrong',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimaryLight,
+                      color: tc.textPrimary,
                     ),
               ),
               const SizedBox(height: 6),
@@ -60,7 +62,7 @@ class BrandedErrorBanner extends StatelessWidget {
                 message,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondaryLight,
+                      color: tc.textSecondary,
                       height: 1.35,
                     ),
                 maxLines: 4,

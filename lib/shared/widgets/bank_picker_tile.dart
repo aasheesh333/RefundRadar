@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/app_theme_colors.dart';
 
 /// Bank/issuer picker row matching mockup Screen 6 BANK field.
 /// 26×26 initial-letter tile + bank name + ▾ chevron.
@@ -14,6 +15,7 @@ class BankPickerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadii.xs),
@@ -23,7 +25,7 @@ class BankPickerTile extends StatelessWidget {
             width: 26,
             height: 26,
             decoration: BoxDecoration(
-              color: AppColors.surfaceAltLight,
+              color: tc.surfaceAlt,
               borderRadius: BorderRadius.circular(7),
             ),
             child: Center(
@@ -45,14 +47,14 @@ class BankPickerTile extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: bankName.isEmpty
-                    ? AppColors.textTertiaryLight
-                    : AppColors.textPrimaryLight,
+                    ? tc.textTertiary
+                    : tc.textPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          const Icon(Icons.expand_more, color: AppColors.textTertiaryLight, size: 20),
+          Icon(Icons.expand_more, color: tc.textTertiary, size: 20),
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:refund_radar/services/notification_service.dart';
 
 /// App-level global state: premium-flag + install timestamp + free-dispute counter.
 ///
@@ -14,10 +15,49 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 final _kPrefPremium = 'app.isPremium';
 const _kPrefInstallTs = 'app.installTsMs';
+const _kPrefNotifDeadline = 'settings.notif.deadline';
+const _kPrefNotifDaily = 'settings.notif.daily';
+const _kPrefNotifWeekly = 'settings.notif.weekly';
 
 /// `true` when the user has an active premium subscription (RevenueCat).
 /// Defaults to `false`. Mutated only through `setPremium`.
 final isPremiumProvider = StateProvider<bool>((ref) => false);
+
+/// Notification preference toggles (persisted). Defaults: deadline+daily on.
+final notifDeadlineProvider = StateProvider<bool>((ref) => true);
+final notifDailyProvider = StateProvider<bool>((ref) => true);
+final notifWeeklyProvider = StateProvider<bool>((ref) => false);
+
+Future<void> persistNotifPref(
+  dynamic ref, {
+  required String key,
+  required bool value,
+}) async {
+  final sp = await SharedPreferences.getInstance();
+  await sp.setBool(key, value);
+  if (key == _kPrefNotifDeadline) {
+    ref.read(notifDeadlineProvider.notifier).state = value;
+  } else if (key == _kPrefNotifDaily) {
+    ref.read(notifDailyProvider.notifier).state = value;
+  } else if (key == _kPrefNotifWeekly) {
+    ref.read(notifWeeklyProvider.notifier).state = value;
+  }
+}
+
+Future<void> setNotifDeadline(dynamic ref, bool value) async {
+  if (value) {
+    try {
+      await ref.read(notificationServiceProvider).requestPermission();
+    } catch (_) {}
+  }
+  await persistNotifPref(ref, key: _kPrefNotifDeadline, value: value);
+}
+
+Future<void> setNotifDaily(dynamic ref, bool value) =>
+    persistNotifPref(ref, key: _kPrefNotifDaily, value: value);
+
+Future<void> setNotifWeekly(dynamic ref, bool value) =>
+    persistNotifPref(ref, key: _kPrefNotifWeekly, value: value);
 
 /// Number of hours since the first launch on this device. Returns 0 before
 /// the install timestamp has been initialised (first read of the session).
@@ -86,6 +126,12 @@ Future<void> hydratePersistedAppState(dynamic ref) async {
   final sp = await SharedPreferences.getInstance();
   ref.read(isPremiumProvider.notifier).state =
       sp.getBool(_kPrefPremium) ?? false;
+  ref.read(notifDeadlineProvider.notifier).state =
+      sp.getBool(_kPrefNotifDeadline) ?? true;
+  ref.read(notifDailyProvider.notifier).state =
+      sp.getBool(_kPrefNotifDaily) ?? true;
+  ref.read(notifWeeklyProvider.notifier).state =
+      sp.getBool(_kPrefNotifWeekly) ?? false;
   await ref.read(freeDisputesUsedProvider.notifier).hydrate();
 }
 

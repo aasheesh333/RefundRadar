@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 
 /// Skeleton placeholder box used in loading states (B8). Renders a soft
 /// rounded grey tile that pulses, mimicking the eventual content shape.
@@ -53,6 +53,7 @@ class _SkeletonBoxState extends State<SkeletonBox> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return AnimatedBuilder(
       animation: _a,
       builder: (_, _) {
@@ -60,7 +61,7 @@ class _SkeletonBoxState extends State<SkeletonBox> with SingleTickerProviderStat
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: AppColors.dividerLight.withValues(alpha: 0.55 * _a.value),
+            color: tc.divider.withValues(alpha: 0.55 * _a.value),
             borderRadius: BorderRadius.circular(widget.radius),
           ),
         );

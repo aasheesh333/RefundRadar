@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/app_theme_colors.dart';
 
 /// A single activity-log entry — matches mockup Screen 7.
 class ActivityEntry {
@@ -25,11 +26,12 @@ class ActivityLog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        border: Border.all(color: AppColors.dividerLight, width: 1),
+        color: tc.surface,
+        border: Border.all(color: tc.divider, width: 1),
         borderRadius: BorderRadius.circular(AppRadii.lg),
         boxShadow: AppShadows.card,
       ),
@@ -38,11 +40,11 @@ class ActivityLog extends StatelessWidget {
         children: [
           Text(
             headerLabel.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
-              color: AppColors.textSecondaryLight,
+              color: tc.textSecondary,
             ),
           ),
           const SizedBox(height: 10),
@@ -66,8 +68,9 @@ class _EntryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     final dotColor =
-        entry.highlighted ? AppColors.accent : AppColors.textTertiaryLight;
+        entry.highlighted ? AppColors.accent : tc.textTertiary;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -84,18 +87,18 @@ class _EntryRow extends StatelessWidget {
             children: [
               Text(
                 entry.label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimaryLight,
+                  color: tc.textPrimary,
                 ),
               ),
               const SizedBox(height: 1),
               Text(
                 entry.meta,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.textSecondaryLight,
+                  color: tc.textSecondary,
                 ),
               ),
             ],

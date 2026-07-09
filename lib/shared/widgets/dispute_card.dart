@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/app_theme_colors.dart';
 import '../../data/extensions/dispute_type_display.dart';
 import '../../data/models/dispute.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/compensation_calculator.dart';
 import 'status_pill.dart';
 
@@ -16,6 +18,8 @@ class DisputeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     final comp = CompensationCalculator.compute(dispute);
     final isFastag = dispute.type == DisputeType.fastag;
     final isBankCharge = dispute.type == DisputeType.bankCharge;
@@ -29,7 +33,7 @@ class DisputeCard extends StatelessWidget {
         !isBankCharge && !isWrongTransfer && daysLeft <= 0 && dispute.status != DisputeStatus.resolved;
 
     final borderColor =
-        deadlineMissed ? AppColors.errorSoft : AppColors.dividerLight;
+        deadlineMissed ? AppColors.errorSoft : tc.divider;
 
     return InkWell(
       onTap: onTap,
@@ -37,7 +41,7 @@ class DisputeCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
+          color: tc.surface,
           border: Border.all(color: borderColor, width: 1),
           borderRadius: BorderRadius.circular(AppRadii.lg),
           boxShadow: AppShadows.card,
@@ -70,11 +74,11 @@ class DisputeCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          dispute.type.displayName,
-                          style: const TextStyle(
+                          dispute.type.localizedName(l10n),
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimaryLight,
+                            color: tc.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -96,10 +100,10 @@ class DisputeCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     _subtitle(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondaryLight,
+                      color: tc.textSecondary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -145,10 +149,10 @@ class DisputeCard extends StatelessWidget {
                         const SizedBox(width: 6),
                         Text(
                           daysLeft > 0 ? '$daysLeft days left' : 'Expired',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.textSecondaryLight,
+                            color: tc.textSecondary,
                           ),
                         ),
                       ],
@@ -159,7 +163,9 @@ class DisputeCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          dispute.type.compensationLabel ?? 'Guidance mode',
+                          dispute.type.localizedCompensation(
+                                  AppLocalizations.of(context)) ??
+                              'Guidance mode',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -184,32 +190,34 @@ class DisputeCard extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             // right status pill
-            _rightPill(deadlineMissed, dayN, windowDays),
+            _rightPill(context, deadlineMissed, dayN, windowDays),
           ],
         ),
       ),
     );
   }
 
-  Widget _rightPill(bool missed, int dayN, int windowDays) {
+  Widget _rightPill(
+      BuildContext context, bool missed, int dayN, int windowDays) {
+    final l10n = AppLocalizations.of(context);
     if (dispute.status == DisputeStatus.resolved) {
-      return const StatusPill(
-        label: 'Resolved',
+      return StatusPill(
+        label: l10n?.statusResolved ?? 'Resolved',
         prefix: '✓',
         fg: AppColors.success,
         bg: AppColors.accentSoft,
       );
     }
     if (missed) {
-      return const StatusPill(
-        label: 'Missed',
+      return StatusPill(
+        label: l10n?.statusMissed ?? 'Missed',
         prefix: '⚠',
         fg: AppColors.error,
         bg: AppColors.errorSoft,
       );
     }
     return StatusPill(
-      label: 'Day $dayN of $windowDays',
+      label: l10n?.statusDayOf(dayN, windowDays) ?? 'Day $dayN of $windowDays',
       prefix: '⏰',
       fg: AppColors.alert,
       bg: AppColors.alertSoft,
@@ -259,6 +267,7 @@ class _Timeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     const segments = 7;
     final perSeg = total / segments;
     return Row(
@@ -269,7 +278,7 @@ class _Timeline extends StatelessWidget {
             margin: EdgeInsets.only(right: i < segments - 1 ? 3 : 0),
             height: 5,
             decoration: BoxDecoration(
-              color: filled ? color : AppColors.dividerLight,
+              color: filled ? color : tc.divider,
               borderRadius: BorderRadius.circular(2),
             ),
           ),

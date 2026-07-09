@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/theme/app_theme_colors.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../data/models/template.dart';
@@ -33,11 +34,12 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     final templatesAsync = ref.watch(templatesProvider);
     final rulesAsync = ref.watch(rulesEngineProvider);
     final locale = ref.watch(localeProvider);
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: tc.bg,
       body: SafeArea(
         child: templatesAsync.when(
           data: (templates) =>
@@ -62,6 +64,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     required Set<String> freeIds,
     required String localeCode,
   }) {
+    final tc = AppThemeColors.of(context);
     final repo = ref.read(templateRepositoryProvider);
     final filtered = _selectedCategory == 'All'
         ? templates
@@ -81,22 +84,22 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       'Templates',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimaryLight,
+                        color: tc.textPrimary,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
                       'RBI-compliant dispute letters',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondaryLight,
+                        color: tc.textSecondary,
                       ),
                     ),
                   ],
@@ -148,19 +151,19 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
         // sources footer
         Container(
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-          color: AppColors.surfaceAltLight,
+          color: tc.surfaceAlt,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text('📚', style: TextStyle(fontSize: 14)),
-              SizedBox(width: 10),
+            children: [
+              const Text('📚', style: TextStyle(fontSize: 14)),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Sources · RBI Master Directions DPSS.CO.PD.No.629/02.03.001 (2018) · Banking Ombudsman Scheme 2006 · NPCI FASTag dispute guidelines',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondaryLight,
+                    color: tc.textSecondary,
                     height: 1.4,
                   ),
                 ),
@@ -222,6 +225,7 @@ class _TemplateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
     final levelBadge = locked
         ? StatusPill(
             label: l10n?.templateProBadge ?? 'Pro',
@@ -250,8 +254,8 @@ class _TemplateCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
-          border: Border.all(color: AppColors.dividerLight, width: 1),
+          color: tc.surface,
+          border: Border.all(color: tc.divider, width: 1),
           borderRadius: BorderRadius.circular(AppRadii.lg),
         ),
         child: Row(
@@ -262,7 +266,7 @@ class _TemplateCard extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: _softColorFor(template.category),
+                color: _softColorFor(template.category, tc),
                 borderRadius: BorderRadius.circular(AppRadii.sm),
               ),
               child: Center(
@@ -283,10 +287,10 @@ class _TemplateCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           template.titleFor(localeCode),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimaryLight,
+                            color: tc.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -298,10 +302,10 @@ class _TemplateCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '${template.category} · Level ${template.escalationLevel}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondaryLight,
+                      color: tc.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -309,10 +313,10 @@ class _TemplateCard extends StatelessWidget {
                     preview,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.textSecondaryLight,
+                      color: tc.textSecondary,
                       height: 1.5,
                     ),
                   ),
@@ -348,11 +352,11 @@ class _TemplateCard extends StatelessWidget {
     );
   }
 
-  Color _softColorFor(String category) => switch (category) {
+  Color _softColorFor(String category, AppThemeColors tc) => switch (category) {
         'UPI / IMPS / ATM' => AppColors.alertSoft,
         'FASTag' => AppColors.accentSoft,
         'Advanced / legal' => AppColors.premiumGoldSoft,
-        _ => AppColors.surfaceAltLight,
+        _ => tc.surfaceAlt,
       };
 
   String _emojiFor(String category, int level) => switch (category) {

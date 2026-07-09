@@ -163,7 +163,7 @@ class _Body extends StatelessWidget {
                   _StatBox(
                     label: l10n?.historyWinRate ?? 'WIN RATE',
                     value: '$winRate%',
-                    valueColor: AppColors.textPrimaryLight,
+                    valueColor: tc.textPrimary,
                   ),
                 ],
               ),
@@ -172,7 +172,7 @@ class _Body extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondaryLight,
+                  color: tc.textSecondary,
                 ),
               ),
             ],
@@ -201,16 +201,17 @@ class _StatBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.6,
-            color: AppColors.textSecondaryLight,
+            color: tc.textSecondary,
           ),
         ),
         const SizedBox(height: 2),
@@ -234,6 +235,7 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     final won = dispute.status == DisputeStatus.resolved &&
         (dispute.resolvedAmount ?? 0) > 0;
     final lost = dispute.status == DisputeStatus.expired ||
@@ -257,7 +259,7 @@ class _HistoryCard extends StatelessWidget {
           'PARTIAL'
         ),
       (true, _, _) => (
-          AppColors.dividerLight,
+          tc.divider,
           AppColors.accentSoft,
           AppColors.accent,
           AppColors.accent,
@@ -271,9 +273,9 @@ class _HistoryCard extends StatelessWidget {
           'LOST'
         ),
       _ => (
-          AppColors.dividerLight,
+          tc.divider,
           AppColors.premiumGoldSoft,
-          AppColors.textPrimaryLight,
+          tc.textPrimary,
           AppColors.premiumGold,
           'FILED'
         ),
@@ -284,7 +286,7 @@ class _HistoryCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: AppColors.surfaceLight,
+          color: tc.surface,
           border: Border.all(color: cardBorderColor, width: 1),
           borderRadius: BorderRadius.circular(AppRadii.lg),
           boxShadow: AppShadows.card,
@@ -312,20 +314,20 @@ class _HistoryCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        dispute.type.displayName,
-                        style: const TextStyle(
+                        dispute.type.localizedName(AppLocalizations.of(context)),
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimaryLight,
+                          color: tc.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         '${dispute.entityName ?? "—"} · ${_fmtDate(dispute.resolvedAt ?? dispute.txnDate)}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondaryLight,
+                          color: tc.textSecondary,
                         ),
                       ),
                     ],
@@ -358,16 +360,16 @@ class _HistoryCard extends StatelessWidget {
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.only(top: 8),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(
-                    color: AppColors.dividerLight,
+                    color: tc.divider,
                     width: 1,
                     style: BorderStyle.solid,
                   ),
                 ),
               ),
-              child: _footerText(),
+              child: _footerText(context, tc),
             ),
           ],
         ),
@@ -375,7 +377,7 @@ class _HistoryCard extends StatelessWidget {
     );
   }
 
-  Widget _footerText() {
+  Widget _footerText(BuildContext context, AppThemeColors tc) {
     final l1 = dispute.filedDates['l1'];
     final resolved = dispute.resolvedAt;
     if (dispute.status == DisputeStatus.resolved && resolved != null && l1 != null) {
@@ -388,7 +390,7 @@ class _HistoryCard extends StatelessWidget {
         children: [
           Text(
             'Filed ${_fmtDate(l1)} · resolved in $days days',
-            style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight),
+            style: TextStyle(fontSize: 11, color: tc.textSecondary),
           ),
           Text(
             comp,
@@ -401,8 +403,8 @@ class _HistoryCard extends StatelessWidget {
     return Text(
       dispute.status == DisputeStatus.expired
           ? 'Dispute window expired without resolution'
-          : '${dispute.type.compensationLabel ?? "Guidance mode"} · ${_fmtDate(dispute.txnDate)}',
-      style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight),
+          : '${dispute.type.localizedCompensation(AppLocalizations.of(context)) ?? "Guidance mode"} · ${_fmtDate(dispute.txnDate)}',
+      style: TextStyle(fontSize: 11, color: tc.textSecondary),
     );
   }
 
@@ -415,6 +417,7 @@ class _EmptyHistory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -425,11 +428,11 @@ class _EmptyHistory extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               l10n?.historyEmptyTitle ?? 'No history yet',
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: AppTypography.family,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimaryLight,
+                color: tc.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
@@ -437,9 +440,9 @@ class _EmptyHistory extends StatelessWidget {
               l10n?.historyEmptySubtitle ??
                   'Resolved and expired disputes will appear here.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: AppColors.textSecondaryLight,
+                color: tc.textSecondary,
               ),
             ),
             const SizedBox(height: 16),

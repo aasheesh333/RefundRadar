@@ -64,6 +64,111 @@ class AppLocalizations {
     'paywallActiveDisputes': {'en': 'Active disputes', 'hi': 'सक्रिय विवाद'},
     'paywallTemplates': {'en': 'Templates', 'hi': 'टेम्पलेट'},
     'paywallOmbudsmanLetter': {'en': 'Ombudsman letter generator', 'hi': 'ऑम्बड्समैन पत्र जनरेटर'},
+    'statusResolved': {'en': 'Resolved', 'hi': 'सुलझा'},
+    'statusMissed': {'en': 'Missed', 'hi': 'छूटा'},
+    'statusDayOf': {'en': 'Day {day} of {total}', 'hi': 'दिन {day}/{total}'},
+    'typeUpiP2p': {'en': 'UPI / QR failed', 'hi': 'UPI / QR फेल'},
+    'typeUpiP2m': {'en': 'Failed UPI refund', 'hi': 'UPI रिफंड नहीं मिला'},
+    'typeAtm': {'en': 'ATM failed dispense', 'hi': 'ATM निकासी फेल'},
+    'typeFastag': {'en': 'FASTag double-cut', 'hi': 'FASTag डबल कट'},
+    'typeImps': {'en': 'IMPS / NEFT failed', 'hi': 'IMPS / NEFT फेल'},
+    'typeBankCharge': {'en': 'Bank charge', 'hi': 'बैंक शुल्क'},
+    'typeWrongTransfer': {'en': 'Wrong transfer', 'hi': 'गलत ट्रांसफर'},
+    'typeSubUpiP2p': {'en': 'Debit, no credit · double debit', 'hi': 'कटौती, क्रेडिट नहीं · डबल डेबिट'},
+    'typeSubUpiP2m': {'en': 'Refund not received', 'hi': 'रिफंड नहीं मिला'},
+    'typeSubAtm': {'en': 'Cash debited, not dispensed', 'hi': 'पैसे कटे, निकले नहीं'},
+    'typeSubFastag': {'en': 'Double debit · failed tag read', 'hi': 'डबल डेबिट · टैग रीड फेल'},
+    'typeSubImps': {'en': 'Money debited, not credited', 'hi': 'पैसे कटे, जमा नहीं'},
+    'typeSubBankCharge': {'en': 'Unauthorised debits', 'hi': 'अनधिकृत कटौती'},
+    'typeSubWrongTransfer': {'en': 'Wrong-account guidance', 'hi': 'गलत खाते की गाइड'},
+    'typeCompPerDay': {'en': '₹{amount}/day compensation', 'hi': '₹{amount}/दिन मुआवजा'},
+    'wizardCallPrefix': {'en': 'Call', 'hi': 'कॉल'},
+    'wizardLevel1Title': {'en': 'Level 1 - UPI app / bank', 'hi': 'स्तर 1 - UPI ऐप / बैंक'},
+    'wizardLevel1Body': {
+      'en':
+          'File complaint in your UPI app (GPay/PhonePe/Paytm) or your bank. Note the ticket number. Bank has up to 30 days to respond.',
+      'hi':
+          'अपने UPI ऐप (GPay/PhonePe/Paytm) या बैंक में शिकायत दर्ज करें। टिकट नंबर नोट करें। बैंक को 30 दिन तक जवाब देने का समय है।'
+    },
+    'wizardLevel2Title': {'en': 'Level 2 - NPCI portal', 'hi': 'स्तर 2 - NPCI पोर्टल'},
+    'wizardLevel2Body': {
+      'en':
+          'Visit NPCI Dispute Redressal portal. Needs UTR, amount, date, VPA, bank statement.',
+      'hi':
+          'NPCI Dispute Redressal पोर्टल पर जाएँ। UTR, राशि, तिथि, VPA, बैंक स्टेटमेंट चाहिए।'
+    },
+    'wizardLevel3Title': {'en': 'Level 3 - RBI Ombudsman', 'hi': 'स्तर 3 - RBI ऑम्बड्समैन'},
+    'wizardLevel3Body': {
+      'en':
+          'File at cms.rbi.org.in within 90 days of bank response window. Category: Deficiency in Service. Free.',
+      'hi':
+          'बैंक जवाब सीमा के 90 दिनों में cms.rbi.org.in पर दर्ज करें। श्रेणी: सेवा में कमी। मुफ़्त।'
+    },
+    'wizardSaveFailed': {
+      'en': 'Could not save ticket. Try again.',
+      'hi': 'टिकट सेव नहीं हुआ। फिर कोशिश करें।'
+    },
+    'detailTimelineFastagHeader': {
+      'en': 'FASTag timeline (30-day window)',
+      'hi': 'FASTag टाइमलाइन (30-दिन सीमा)'
+    },
+    'detailTimelineBankHeader': {
+      'en': 'Bank timeline (30-day window)',
+      'hi': 'बैंक टाइमलाइन (30-दिन सीमा)'
+    },
+    'detailTimelineRbiHeader': {
+      'en': 'RBI timeline (T-day = 0)',
+      'hi': 'RBI टाइमलाइन (T-दिन = 0)'
+    },
+    'detailTlWtRequest': {'en': 'Request to own bank', 'hi': 'अपने बैंक को अनुरोध'},
+    'detailTlWtRequestDetail': {
+      'en': 'Contact your bank to reach the beneficiary',
+      'hi': 'लाभार्थी तक पहुँचने के लिए बैंक से संपर्क करें'
+    },
+    'detailTlWtNpci': {'en': 'NPCI DRM entry', 'hi': 'NPCI DRM दर्ज'},
+    'detailTlWtNpciDetail': {
+      'en': 'Within 3 days — wrong-transfer portal',
+      'hi': '3 दिनों में — गलत-ट्रांसफर पोर्टल'
+    },
+    'detailTlWtCyber': {'en': 'Cyber cell complaint', 'hi': 'साइबर सेल शिकायत'},
+    'detailTlWtCyberDetail': {
+      'en': 'If fraud suspected',
+      'hi': 'यदि धोखाधड़ी संदेह हो'
+    },
+    'detailTlWtLegal': {'en': 'Legal notice', 'hi': 'कानूनी नोटिस'},
+    'detailTlWtLegalDetail': {'en': 'Final escalation', 'hi': 'अंतिम एस्केलेशन'},
+    'detailTlFtReported': {'en': 'Reported', 'hi': 'रिपोर्ट किया'},
+    'detailTlFtReportedDetail': {
+      'en': 'Day 0 · transaction flagged',
+      'hi': 'दिन 0 · लेनदेन चिह्नित'
+    },
+    'detailTlFtIssuer': {'en': 'Issuer bank', 'hi': 'जारीकर्ता बैंक'},
+    'detailTlFtIssuerDetail': {
+      'en': '{bank} dispute section · 7-10 days',
+      'hi': '{bank} विवाद अनुभाग · 7-10 दिन'
+    },
+    'detailTlFtIssuerGeneric': {
+      'en': 'Issuer bank · 7-10 days',
+      'hi': 'जारीकर्ता बैंक · 7-10 दिन'
+    },
+    'detailTlFtHelpline': {'en': '1033 Helpline', 'hi': '1033 हेल्पलाइन'},
+    'detailTlFtHelplineDetail': {
+      'en': 'If no reply in 7 days',
+      'hi': 'यदि 7 दिनों में जवाब नहीं'
+    },
+    'detailTlFtIhmcl': {
+      'en': 'IHMCL false-deduction email',
+      'hi': 'IHMCL गलत-कटौती ईमेल'
+    },
+    'detailTlFtIhmclDetail': {
+      'en': 'falsededuction@ihmcl.com',
+      'hi': 'falsededuction@ihmcl.com'
+    },
+    'detailTlFtOmbudsman': {'en': 'RBI Ombudsman', 'hi': 'RBI ऑम्बड्समैन'},
+    'detailTlFtOmbudsmanDetail': {
+      'en': 'If unresolved after 30 days',
+      'hi': 'यदि 30 दिनों बाद भी अनसुलझा'
+    },
     'remindersTitle': {'en': 'Reminders', 'hi': 'रिमाइंडर'},
     'remindersEmpty': {'en': 'No upcoming reminders', 'hi': 'कोई रिमाइंडर नहीं'},
     'settingsLanguage': {'en': 'Language', 'hi': 'भाषा'},
@@ -455,6 +560,68 @@ class AppLocalizations {
   String templateLevelLabel(int level) =>
       _t('templateLevelLabel', args: {'level': '$level'});
   String get templateProBadge => _t('templateProBadge');
+
+  // Status pills.
+  String get statusResolved => _t('statusResolved');
+  String get statusMissed => _t('statusMissed');
+  String statusDayOf(int day, int total) =>
+      _t('statusDayOf', args: {'day': '$day', 'total': '$total'});
+
+  // Dispute type display names + subtitles.
+  String get typeUpiP2p => _t('typeUpiP2p');
+  String get typeUpiP2m => _t('typeUpiP2m');
+  String get typeAtm => _t('typeAtm');
+  String get typeFastag => _t('typeFastag');
+  String get typeImps => _t('typeImps');
+  String get typeBankCharge => _t('typeBankCharge');
+  String get typeWrongTransfer => _t('typeWrongTransfer');
+  String get typeSubUpiP2p => _t('typeSubUpiP2p');
+  String get typeSubUpiP2m => _t('typeSubUpiP2m');
+  String get typeSubAtm => _t('typeSubAtm');
+  String get typeSubFastag => _t('typeSubFastag');
+  String get typeSubImps => _t('typeSubImps');
+  String get typeSubBankCharge => _t('typeSubBankCharge');
+  String get typeSubWrongTransfer => _t('typeSubWrongTransfer');
+  String typeCompPerDay(String amount) =>
+      _t('typeCompPerDay', args: {'amount': amount});
+
+  // Wizard step copy.
+  String get wizardCopyComplaintLabel => _t('wizardCopyComplaint');
+  String get wizardDocuments => _t('wizardDocuments');
+  String get wizardDocumentsLabel => _t('wizardDocuments');
+  String get wizardCallPrefix => _t('wizardCallPrefix');
+  String get wizardLevel1Title => _t('wizardLevel1Title');
+  String get wizardLevel1Body => _t('wizardLevel1Body');
+  String get wizardLevel2Title => _t('wizardLevel2Title');
+  String get wizardLevel2Body => _t('wizardLevel2Body');
+  String get wizardLevel3Title => _t('wizardLevel3Title');
+  String get wizardLevel3Body => _t('wizardLevel3Body');
+  String get wizardSaveFailed => _t('wizardSaveFailed');
+
+  // Detail timeline headers + FASTag / wrong-transfer.
+  String get detailTimelineFastagHeader => _t('detailTimelineFastagHeader');
+  String get detailTimelineBankHeader => _t('detailTimelineBankHeader');
+  String get detailTimelineRbiHeader => _t('detailTimelineRbiHeader');
+  String get detailTlWtRequest => _t('detailTlWtRequest');
+  String get detailTlWtRequestDetail => _t('detailTlWtRequestDetail');
+  String get detailTlWtNpci => _t('detailTlWtNpci');
+  String get detailTlWtNpciDetail => _t('detailTlWtNpciDetail');
+  String get detailTlWtCyber => _t('detailTlWtCyber');
+  String get detailTlWtCyberDetail => _t('detailTlWtCyberDetail');
+  String get detailTlWtLegal => _t('detailTlWtLegal');
+  String get detailTlWtLegalDetail => _t('detailTlWtLegalDetail');
+  String get detailTlFtReported => _t('detailTlFtReported');
+  String get detailTlFtReportedDetail => _t('detailTlFtReportedDetail');
+  String get detailTlFtIssuer => _t('detailTlFtIssuer');
+  String detailTlFtIssuerDetail(String bank) =>
+      _t('detailTlFtIssuerDetail', args: {'bank': bank});
+  String get detailTlFtIssuerGeneric => _t('detailTlFtIssuerGeneric');
+  String get detailTlFtHelpline => _t('detailTlFtHelpline');
+  String get detailTlFtHelplineDetail => _t('detailTlFtHelplineDetail');
+  String get detailTlFtIhmcl => _t('detailTlFtIhmcl');
+  String get detailTlFtIhmclDetail => _t('detailTlFtIhmclDetail');
+  String get detailTlFtOmbudsman => _t('detailTlFtOmbudsman');
+  String get detailTlFtOmbudsmanDetail => _t('detailTlFtOmbudsmanDetail');
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

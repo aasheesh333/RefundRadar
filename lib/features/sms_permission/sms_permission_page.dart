@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/shared/widgets/onboarding_step_header.dart';
 
 /// Onboarding SMS permission page (mockup Screen 12).
@@ -12,8 +13,9 @@ class SmsPermissionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: tc.bg,
       body: SafeArea(
         child: Column(
           children: [
@@ -23,10 +25,9 @@ class SmsPermissionPage extends StatelessWidget {
               child: Row(
                 children: [
                   Material(
-                    color: AppColors.surfaceLight,
-                    shape: const CircleBorder(
-                      side: BorderSide(
-                          color: AppColors.dividerLight, width: 1),
+                    color: tc.surface,
+                    shape: CircleBorder(
+                      side: BorderSide(color: tc.divider, width: 1),
                     ),
                     child: Tooltip(
                       message: 'Back',
@@ -36,12 +37,12 @@ class SmsPermissionPage extends StatelessWidget {
                         child: InkWell(
                           customBorder: const CircleBorder(),
                           onTap: () => context.go('/onboard'),
-                          child: const SizedBox(
+                          child: SizedBox(
                             width: 48,
                             height: 48,
                             child: Center(
                               child: Icon(Icons.arrow_back,
-                                  size: 22, color: AppColors.textPrimaryLight),
+                                  size: 22, color: tc.textPrimary),
                             ),
                           ),
                         ),
@@ -69,7 +70,7 @@ class SmsPermissionPage extends StatelessWidget {
                       child: _HeroPhone(),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Detect failed UPI automatically',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -77,18 +78,18 @@ class SmsPermissionPage extends StatelessWidget {
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         height: 1.2,
-                        color: AppColors.textPrimaryLight,
+                        color: tc.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Reads bank SMS on-device to auto-detect UTR, date, and amount. '
                       'No messages sent to servers.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
                         height: 1.45,
-                        color: AppColors.textSecondaryLight,
+                        color: tc.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -132,6 +133,7 @@ class _HowItWorksCard extends StatelessWidget {
   const _HowItWorksCard();
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     final steps = const [
       ('1', 'Receive any bank SMS (debit failed, refund processed)'),
       ('2', 'Local regex parser extracts UTR and amount on-device'),
@@ -140,21 +142,21 @@ class _HowItWorksCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: tc.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
         boxShadow: AppShadows.card,
-        border: Border.all(color: AppColors.dividerLight, width: 1),
+        border: Border.all(color: tc.divider, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'HOW IT WORKS',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.0,
-              color: AppColors.textSecondaryLight,
+              color: tc.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
@@ -184,11 +186,11 @@ class _HowItWorksCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     txt,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       height: 1.4,
-                      color: AppColors.textPrimaryLight,
+                      color: tc.textPrimary,
                     ),
                   ),
                 ),
@@ -206,6 +208,7 @@ class _PrivacyNote extends StatelessWidget {
   const _PrivacyNote();
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -214,13 +217,13 @@ class _PrivacyNote extends StatelessWidget {
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Padding(
+        children: [
+          const Padding(
             padding: EdgeInsets.only(top: 1),
             child: Text('⚠️',
                 style: TextStyle(fontSize: 12, color: AppColors.premiumGold)),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Android allows only Financial SMS from approved bank sender IDs — no personal SMS read.',
@@ -228,7 +231,7 @@ class _PrivacyNote extends StatelessWidget {
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
                 height: 1.4,
-                color: AppColors.textPrimaryLight,
+                color: tc.textPrimary,
               ),
             ),
           ),
@@ -242,28 +245,29 @@ class _SampleSmsCard extends StatelessWidget {
   const _SampleSmsCard();
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.surfaceAltLight,
+        color: tc.surfaceAlt,
         borderRadius: BorderRadius.circular(AppRadii.lg),
-        border: Border.all(color: AppColors.dividerLight, width: 1),
+        border: Border.all(color: tc.divider, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text(
                 'Sample auto-detected event',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimaryLight,
+                  color: tc.textPrimary,
                 ),
               ),
-              Text(
+              const Text(
                 'SMS detected',
                 style: TextStyle(
                   fontSize: 10,
@@ -278,29 +282,29 @@ class _SampleSmsCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
+              color: tc.surface,
               borderRadius: BorderRadius.circular(AppRadii.xs),
             ),
             child: RichText(
-              text: const TextSpan(
+              text: TextSpan(
                 style: TextStyle(
                   fontSize: 11,
                   height: 1.45,
                   fontFamily: 'monospace',
-                  color: AppColors.textSecondaryLight,
+                  color: tc.textSecondary,
                 ),
                 children: [
-                  TextSpan(text: 'From: '),
-                  TextSpan(
+                  const TextSpan(text: 'From: '),
+                  const TextSpan(
                     text: 'HD-HDFCBK',
                     style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary),
                   ),
-                  TextSpan(text: ' · 08 Jul 2026\nBody: ₹400 debited from A/c ✱✱✱✱1234 for UPI txn. UTR '),
-                  TextSpan(
+                  const TextSpan(text: ' · 08 Jul 2026\nBody: ₹400 debited from A/c ✱✱✱✱1234 for UPI txn. UTR '),
+                  const TextSpan(
                     text: '412981901234',
                     style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary),
                   ),
-                  TextSpan(text: '. If failed, complain within 5 days.'),
+                  const TextSpan(text: '. If failed, complain within 5 days.'),
                 ],
               ),
             ),
@@ -315,12 +319,13 @@ class _SmsFooter extends StatelessWidget {
   const _SmsFooter();
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceLight,
+      decoration: BoxDecoration(
+        color: tc.surface,
         border: Border(
-          top: BorderSide(color: AppColors.dividerLight, width: 1),
+          top: BorderSide(color: tc.divider, width: 1),
         ),
       ),
       child: SafeArea(
@@ -400,36 +405,36 @@ class _SmsFooter extends StatelessWidget {
             // 3-dot progress (2nd = filled/accent)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 SizedBox(
                   width: 8,
                   height: 8,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: AppColors.dividerLight,
-                      borderRadius: BorderRadius.all(Radius.circular(4)),
+                      color: tc.divider,
+                      borderRadius: const BorderRadius.all(Radius.circular(4)),
                     ),
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 SizedBox(
                   width: 24,
                   height: 8,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: AppColors.accent,
-                      borderRadius: BorderRadius.all(Radius.circular(4)),
+                      borderRadius: const BorderRadius.all(Radius.circular(4)),
                     ),
                   ),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 SizedBox(
                   width: 8,
                   height: 8,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: AppColors.dividerLight,
-                      borderRadius: BorderRadius.all(Radius.circular(4)),
+                      color: tc.divider,
+                      borderRadius: const BorderRadius.all(Radius.circular(4)),
                     ),
                   ),
                 ),
