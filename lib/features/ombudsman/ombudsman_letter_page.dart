@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:refund_radar/core/providers/auth_provider.dart';
+import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
@@ -8,6 +10,7 @@ import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
+import 'package:refund_radar/shared/widgets/skeleton.dart';
 
 class OmbudsmanLetterPage extends ConsumerStatefulWidget {
   final String disputeId;
@@ -54,13 +57,40 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
   @override
   Widget build(BuildContext context) {
     final rulesAsync = ref.watch(rulesEngineProvider);
+    final uid = ref.watch(userIdProvider).asData?.value;
+    final disputesAsync =
+        uid == null ? null : ref.watch(disputesProvider(uid));
     return Scaffold(
       appBar: AppBar(
           title: Text(AppLocalizations.of(context)?.ombudsmanLetterTitle ??
               'Ombudsman letter')),
       body: rulesAsync.when(
         data: (rules) {
-          return ListView(
+          if (uid == null || disputesAsync == null) {
+            return const SkeletonList(itemCount: 3);
+          }
+          return disputesAsync.when(
+            loading: () => const SkeletonList(itemCount: 3),
+            error: (e, _) => BrandedErrorBanner(
+              message: e.toString(),
+              onRetry: () => ref.invalidate(disputesProvider(uid)),
+            ),
+            data: (disputes) {
+              Dispute? dispute;
+              for (final d in disputes) {
+                if (d.id == widget.disputeId) {
+                  dispute = d;
+                  break;
+                }
+              }
+              if (dispute == null) {
+                return BrandedErrorBanner(
+                  message: 'Dispute not found.',
+                  onRetry: () => ref.invalidate(disputesProvider(uid)),
+                );
+              }
+              final liveDispute = dispute;
+              return ListView(
             padding: const EdgeInsets.all(16),
             children: [
               Container(
@@ -84,19 +114,7 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
               if (_letter.isEmpty)
                 Center(
                   child: FilledButton.icon(
-                    onPressed: () {
-                      _generateLetter(Dispute(
-                        id: widget.disputeId,
-                        type: DisputeType.upiP2p,
-                        amount: 500,
-                        txnDate: DateTime.now().subtract(const Duration(days: 35)),
-                        txnId: 'UTR_PREVIEW',
-                        entityName: 'Your Bank',
-                        createdAt: DateTime.now().subtract(const Duration(days: 34)),
-                        filedDates: {'l1': DateTime.now().subtract(const Duration(days: 33))},
-                        ticketNumbers: {'l1': 'TKT-12345'},
-                      ));
-                    },
+                    onPressed: () => _generateLetter(liveDispute),
                     icon: const Icon(Icons.auto_fix_high),
                     label: Text(AppLocalizations.of(context)?.ombudsmanGenerate ??
                         'Generate letter'),
@@ -150,8 +168,10 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
               ),
             ],
           );
+            },
+          );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const SkeletonList(itemCount: 3),
         error: (e, _) => BrandedErrorBanner(
           message: e.toString(),
           onRetry: () => ref.invalidate(rulesEngineProvider),

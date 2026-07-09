@@ -127,20 +127,6 @@ class _Body extends StatelessWidget {
                   color: AppColors.textPrimaryLight,
                 ),
               ),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
-                  border:
-                      Border.all(color: AppColors.dividerLight, width: 1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child:
-                      Text('🔍', style: TextStyle(fontSize: 18)),
-                ),
-              ),
             ],
           ),
         ),
@@ -198,31 +184,6 @@ class _Body extends StatelessWidget {
                   separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (_, i) => _HistoryCard(dispute: filtered[i]),
                 ),
-        ),
-        // "Load older" footer
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: const BoxDecoration(
-            color: AppColors.surfaceLight,
-            border: Border(
-              top: BorderSide(color: AppColors.dividerLight, width: 1),
-            ),
-          ),
-          child: Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Load older · ${filtered.isNotEmpty ? "more" : "—"}',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondaryLight,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ],
     );
@@ -477,6 +438,11 @@ class _EmptyHistory extends StatelessWidget {
                 fontSize: 12,
                 color: AppColors.textSecondaryLight,
               ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () => context.go('/home'),
+              child: Text(l10n?.homeAddDispute ?? 'Add dispute'),
             ),
           ],
         ),

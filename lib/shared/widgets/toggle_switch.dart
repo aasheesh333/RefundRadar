@@ -16,32 +16,43 @@ class ToggleSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final on = value;
-    return InkWell(
-      onTap: onChanged == null ? null : () => onChanged!(!value),
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        width: 34,
-        height: 20,
-        decoration: BoxDecoration(
-          color: on ? AppColors.accent : AppColors.dividerLight,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Stack(
-          children: [
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 120),
-              left: on ? 18 : 2,
-              top: 2,
-              child: Container(
-                width: 16,
-                height: 16,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
+    // Visual switch stays 34×20; hit target expanded to 48dp for a11y.
+    return Semantics(
+      toggled: value,
+      button: true,
+      child: InkWell(
+        onTap: onChanged == null ? null : () => onChanged!(!value),
+        borderRadius: BorderRadius.circular(24),
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: Center(
+            child: Container(
+              width: 34,
+              height: 20,
+              decoration: BoxDecoration(
+                color: on ? AppColors.accent : AppColors.dividerLight,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Stack(
+                children: [
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 120),
+                    left: on ? 18 : 2,
+                    top: 2,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

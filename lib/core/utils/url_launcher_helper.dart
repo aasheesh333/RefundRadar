@@ -9,16 +9,30 @@ Future<void> launchPhone(String phone) async {
   await launchUrl(Uri.parse('tel:$phone'));
 }
 
-Future<void> launchEmail(String email, {String? subject, String? body}) async {
-  final uri = EmailUtil.build(email, subject: subject, body: body);
-  await launchUrl(uri);
+Future<bool> launchEmail(
+  String email, {
+  String? subject,
+  String? body,
+  String? cc,
+}) async {
+  final uri = EmailUtil.build(email, subject: subject, body: body, cc: cc);
+  if (await canLaunchUrl(uri)) {
+    return launchUrl(uri);
+  }
+  return false;
 }
 
 class EmailUtil {
-  static Uri build(String email, {String? subject, String? body}) {
+  static Uri build(
+    String email, {
+    String? subject,
+    String? body,
+    String? cc,
+  }) {
     final params = <String, String>{};
     if (subject != null) params['subject'] = subject;
     if (body != null) params['body'] = body;
+    if (cc != null && cc.isNotEmpty) params['cc'] = cc;
     return Uri(scheme: 'mailto', path: email, queryParameters: params);
   }
 }

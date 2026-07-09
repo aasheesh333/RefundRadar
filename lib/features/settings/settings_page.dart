@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/providers/app_state_provider.dart';
+import '../../core/providers/auth_provider.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../l10n/app_localizations.dart';
@@ -16,6 +18,7 @@ class SettingsPage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
+    final isPremium = ref.watch(isPremiumProvider);
     return Scaffold(
       backgroundColor: AppColors.bgLight,
       body: SafeArea(
@@ -135,15 +138,21 @@ class SettingsPage extends ConsumerWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.premiumGoldSoft,
+                        color: isPremium
+                            ? AppColors.premiumGoldSoft
+                            : AppColors.accentSoft,
                         borderRadius: BorderRadius.circular(AppRadii.pill),
                       ),
                       child: Text(
-                        l10n?.settingsProBadge ?? '⭐ Pro',
-                        style: const TextStyle(
+                        isPremium
+                            ? (l10n?.settingsProBadge ?? '⭐ Pro')
+                            : (l10n?.paywallTitle ?? 'Upgrade'),
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.premiumGold,
+                          color: isPremium
+                              ? AppColors.premiumGold
+                              : AppColors.primary,
                         ),
                       ),
                     ),
@@ -358,15 +367,17 @@ class SettingsPage extends ConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     SizedBox(
-                      height: 30,
+                      height: 48,
                       child: TextButton(
-                        onPressed: () {
+                        onPressed: () async {
+                          // Anonymous re-auth: clears stale session + mints a
+                          // fresh uid so Firestore rules re-bind cleanly.
+                          await ref.read(reauthProvider)();
+                          ref.invalidate(userIdProvider);
+                          if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                l10n?.settingsSignOutNotImplemented ??
-                                    'Sign out not implemented.',
-                              ),
+                            const SnackBar(
+                              content: Text('Session refreshed.'),
                             ),
                           );
                         },
@@ -378,6 +389,7 @@ class SettingsPage extends ConsumerWidget {
                                 BorderRadius.circular(AppRadii.md),
                           ),
                           padding: const EdgeInsets.symmetric(horizontal: 14),
+                          minimumSize: const Size(0, 48),
                         ),
                         child: Text(
                           l10n?.settingsSignOut ?? 'Sign out',

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
@@ -39,17 +40,19 @@ class _EscalatePageState extends ConsumerState<EscalatePage> {
       body: SafeArea(
         child: disputesAsync.when(
           data: (disputes) {
-            final dispute = disputes.firstWhere(
-              (d) => d.id == widget.disputeId,
-              orElse: () => Dispute(
-                id: widget.disputeId,
-                type: DisputeType.upiP2p,
-                amount: 0,
-                txnDate: DateTime.now(),
-                txnId: '',
-                createdAt: DateTime.now(),
-              ),
-            );
+            Dispute? dispute;
+            for (final d in disputes) {
+              if (d.id == widget.disputeId) {
+                dispute = d;
+                break;
+              }
+            }
+            if (dispute == null) {
+              return BrandedErrorBanner(
+                message: 'Dispute not found.',
+                onRetry: () => ref.invalidate(disputesProvider(uid)),
+              );
+            }
             return _Body(
               dispute: dispute,
               ccOmbudsman: _ccOmbudsman,
@@ -94,7 +97,7 @@ class _Body extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
           child: Row(
             children: [
-              AppBackButton(size: 36, onTap: () => context.pop()),
+              AppBackButton(onTap: () => context.pop()),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -450,15 +453,29 @@ class _Body extends StatelessWidget {
     );
   }
 
-  void _sendEmail(BuildContext context) {
-    final body = Uri.encodeComponent(_emailBody());
-    final subject =
-        Uri.encodeComponent('Escalation — UTR ${dispute.txnId}');
-    final url =
-        'mailto:${_nodalEmail(dispute)}?subject=$subject&body=$body';
+  Future<void> _sendEmail(BuildContext context) async {
+    final subject = 'Escalation — UTR ${dispute.txnId}';
+    final body = _emailBody();
+    final to = _nodalEmail(dispute);
+    final cc = ccOmbudsman ? 'crpc@rbi.org.in' : null;
+    final ok = await launchEmail(to, subject: subject, body: body, cc: cc);
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)?.escalateDrafted(url) ?? 'Drafted — open your mail app: $url')),
+      SnackBar(
+        content: Text(
+          ok
+              ? (AppLocalizations.of(context)?.escalateDrafted(to) ??
+                  'Opening mail app…')
+              : (AppLocalizations.of(context)?.escalateCopiedToClipboard ??
+                  'Could not open mail app — email copied instead.'),
+        ),
+      ),
     );
+    if (!ok) {
+      await Clipboard.setData(ClipboardData(
+        text: 'To: $to\n${cc != null ? 'CC: $cc\n' : ''}Subject: $subject\n\n$body',
+      ));
+    }
   }
 }
 

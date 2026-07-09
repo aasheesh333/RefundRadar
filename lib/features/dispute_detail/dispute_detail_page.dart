@@ -32,21 +32,26 @@ class DisputeDetailPage extends ConsumerWidget {
       body: SafeArea(
         child: disputesAsync.when(
           data: (disputes) {
-            final dispute = disputes.firstWhere(
-              (d) => d.id == id,
-              orElse: () => Dispute(
-                id: id,
-                type: DisputeType.upiP2p,
-                amount: 0,
-                txnDate: DateTime.now(),
-                txnId: '',
-                createdAt: DateTime.now(),
-              ),
-            );
+            Dispute? dispute;
+            for (final d in disputes) {
+              if (d.id == id) {
+                dispute = d;
+                break;
+              }
+            }
+            if (dispute == null) {
+              return BrandedErrorBanner(
+                message: 'Dispute not found.',
+                onRetry: () => ref.invalidate(disputesProvider(uid)),
+              );
+            }
             return _DisputeBody(uid: uid, dispute: dispute);
           },
-  loading: () => const SkeletonList(itemCount: 3),
-  error: (e, _) => BrandedErrorBanner(message: e.toString()),
+          loading: () => const SkeletonList(itemCount: 3),
+          error: (e, _) => BrandedErrorBanner(
+            message: e.toString(),
+            onRetry: () => ref.invalidate(disputesProvider(uid)),
+          ),
         ),
       ),
     );

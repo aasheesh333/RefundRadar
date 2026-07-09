@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/shared/widgets/onboarding_step_header.dart';
 
@@ -331,10 +332,28 @@ class _SmsFooter extends StatelessWidget {
               width: double.infinity,
               height: 52,
               child: FilledButton(
-                onPressed: () {
-                  // TODO: request android.permission.RECEIVE_SMS / READ_SMS,
-                  // then navigate. For now treat as granted and proceed.
-                  context.go('/onboard/banks');
+                onPressed: () async {
+                  // Runtime SMS permission (declared in AndroidManifest).
+                  // On non-Android or denial we still continue — user can
+                  // paste SMS later on the dispute form.
+                  try {
+                    final status = await Permission.sms.request();
+                    if (!context.mounted) return;
+                    if (status.isGranted || status.isLimited) {
+                      context.go('/onboard/banks');
+                      return;
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'SMS permission denied — you can still paste SMS later.',
+                        ),
+                      ),
+                    );
+                  } catch (_) {
+                    // Plugin missing / desktop — continue onboarding.
+                  }
+                  if (context.mounted) context.go('/onboard/banks');
                 },
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,

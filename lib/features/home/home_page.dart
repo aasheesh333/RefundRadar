@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
@@ -18,8 +19,9 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final uidAsync = ref.watch(userIdProvider);
+    final tc = AppThemeColors.of(context);
     return Scaffold(
-      backgroundColor: AppColors.bgLight,
+      backgroundColor: tc.bg,
       body: SafeArea(
         child: uidAsync.when(
           data: (uid) {
@@ -152,9 +154,9 @@ class _Body extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Refund Radar',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)?.appName ?? 'Refund Radar',
+                    style: const TextStyle(
                       fontFamily: AppTypography.family,
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
@@ -164,30 +166,81 @@ class _Body extends StatelessWidget {
                   const SizedBox(height: 1),
                   Text(
                     '${disputes.length} active ${disputes.length == 1 ? 'dispute' : 'disputes'}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondaryLight,
+                      color: AppThemeColors.of(context).textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceAltLight,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.premiumGold, width: 2),
+            Tooltip(
+              message: 'Reminders',
+              child: Semantics(
+                button: true,
+                label: 'Reminders',
+                child: InkWell(
+                  onTap: () => context.push('/reminders'),
+                  borderRadius: BorderRadius.circular(24),
+                  child: const SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: Icon(Icons.notifications_outlined,
+                        size: 22, color: AppColors.primary),
+                  ),
+                ),
               ),
-              child: const Center(
-                child: Text(
-                  'A',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+            ),
+            Tooltip(
+              message: 'Templates',
+              child: Semantics(
+                button: true,
+                label: 'Templates',
+                child: InkWell(
+                  onTap: () => context.push('/templates'),
+                  borderRadius: BorderRadius.circular(24),
+                  child: const SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: Icon(Icons.description_outlined,
+                        size: 22, color: AppColors.primary),
+                  ),
+                ),
+              ),
+            ),
+            Tooltip(
+              message: AppLocalizations.of(context)?.settingsTitle ?? 'Settings',
+              child: Semantics(
+                button: true,
+                label: AppLocalizations.of(context)?.settingsTitle ?? 'Settings',
+                child: InkWell(
+                  onTap: () => context.push('/settings'),
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    alignment: Alignment.center,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceAltLight,
+                        shape: BoxShape.circle,
+                        border:
+                            Border.all(color: AppColors.premiumGold, width: 2),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'A',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -204,13 +257,13 @@ class _Body extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Active disputes',
               style: TextStyle(
                 fontFamily: AppTypography.family,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimaryLight,
+                color: AppThemeColors.of(context).textPrimary,
               ),
             ),
             GestureDetector(

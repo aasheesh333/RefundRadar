@@ -79,6 +79,28 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         );
         return;
       }
+      if (_bankName.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.formLabelBank != null
+                  ? 'Select a bank'
+                  : 'Select a bank',
+            ),
+          ),
+        );
+        return;
+      }
+      if (_date == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.formSelectDate ?? 'Select date',
+            ),
+          ),
+        );
+        return;
+      }
       final uid = ref.read(userIdProvider).asData?.value;
       if (uid == null) return;
 
@@ -514,9 +536,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                           AlwaysStoppedAnimation(Colors.white),
                                     ),
                                   )
-                                : const Text(
-                                    'Review →',
-                                    style: TextStyle(
+                                : Text(
+                                    AppLocalizations.of(context)
+                                            ?.formCreateDispute ??
+                                        'Create dispute',
+                                    style: const TextStyle(
                                       fontFamily: AppTypography.family,
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,

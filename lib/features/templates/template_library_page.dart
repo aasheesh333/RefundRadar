@@ -102,19 +102,6 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                   ],
                 ),
               ),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.add,
-                  size: 20,
-                  color: Colors.white,
-                ),
-              ),
             ],
           ),
         ),

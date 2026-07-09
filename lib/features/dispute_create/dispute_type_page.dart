@@ -18,12 +18,15 @@ class DisputeTypePage extends StatefulWidget {
 class _DisputeTypePageState extends State<DisputeTypePage> {
   DisputeType? _selected;
 
-  /// 4 categories shown in the mockup (UPI, ATM, FASTag, IMPS).
+  /// User-facing dispute types (UPI P2P + P2M, ATM, FASTag, IMPS, bank charge, wrong transfer).
   static const _order = [
+    DisputeType.upiP2p,
     DisputeType.upiP2m,
     DisputeType.atm,
     DisputeType.fastag,
     DisputeType.imps,
+    DisputeType.bankCharge,
+    DisputeType.wrongTransfer,
   ];
 
   @override
