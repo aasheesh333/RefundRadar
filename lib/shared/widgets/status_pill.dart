@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme_colors.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/theme/status_kind_theme.dart';
 
 /// StatusPill — `.pi` mockup equiv. Fully rounded pill, 11px/600, with
 /// optional emoji prefix. Default colours from [StatusKind]; override with
@@ -13,20 +15,23 @@ class StatusPill extends StatelessWidget {
     this.prefix,
   });
 
-  /// Convenience builder using the existing `StatusKind` token pair.
+  /// Convenience builder using brightness-aware [StatusKind] softs.
   factory StatusPill.kind({
     Key? key,
+    required BuildContext context,
     required String label,
     required StatusKind kind,
     String? prefix,
-  }) =>
-      StatusPill(
-        key: key,
-        label: label,
-        prefix: prefix,
-        fg: kind.fg,
-        bg: kind.bg,
-      );
+  }) {
+    final tc = AppThemeColors.of(context);
+    return StatusPill(
+      key: key,
+      label: label,
+      prefix: prefix,
+      fg: kind.fgFor(tc),
+      bg: kind.bgFor(tc),
+    );
+  }
 
   final String label;
   final String? prefix;

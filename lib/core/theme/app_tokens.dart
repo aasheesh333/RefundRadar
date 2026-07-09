@@ -217,6 +217,7 @@ extension StatusKindX on StatusKind {
         StatusKind.premium => AppColors.premiumGold,
       };
 
+  /// Light-only; prefer [StatusKindThemeX.bgFor] in widgets.
   Color get bg => switch (this) {
         StatusKind.neutral => const Color(0xFFE5E7E2),
         StatusKind.info => AppColors.accentSoft,

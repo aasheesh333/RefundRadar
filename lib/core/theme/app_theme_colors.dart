@@ -10,6 +10,10 @@ class AppThemeColors {
   static AppThemeColors of(BuildContext context) =>
       AppThemeColors._(Theme.of(context).brightness == Brightness.dark);
 
+  @visibleForTesting
+  factory AppThemeColors.forTest({required bool isDark}) =>
+      AppThemeColors._(isDark);
+
   Color get bg => isDark ? AppColors.bgDark : AppColors.bgLight;
   Color get surface => isDark ? AppColors.surfaceDark : AppColors.surfaceLight;
   Color get surfaceAlt =>

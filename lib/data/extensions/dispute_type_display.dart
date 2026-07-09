@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_theme_colors.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../l10n/app_localizations.dart';
 import '../models/dispute.dart';
@@ -16,6 +17,7 @@ extension DisputeTypeDisplay on DisputeType {
         DisputeType.wrongTransfer => '🔁',
       };
 
+  /// Light-only; prefer [softColorFor] in widgets.
   Color get softColor => switch (this) {
         DisputeType.upiP2p => AppColors.accentSoft,
         DisputeType.upiP2m => AppColors.accentSoft,
@@ -24,6 +26,16 @@ extension DisputeTypeDisplay on DisputeType {
         DisputeType.imps => AppColors.errorSoft,
         DisputeType.bankCharge => AppColors.surfaceAltLight,
         DisputeType.wrongTransfer => AppColors.surfaceAltLight,
+      };
+
+  Color softColorFor(AppThemeColors tc) => switch (this) {
+        DisputeType.upiP2p => tc.accentSoft,
+        DisputeType.upiP2m => tc.accentSoft,
+        DisputeType.atm => tc.premiumGoldSoft,
+        DisputeType.fastag => tc.alertSoft,
+        DisputeType.imps => tc.errorSoft,
+        DisputeType.bankCharge => tc.surfaceAlt,
+        DisputeType.wrongTransfer => tc.surfaceAlt,
       };
 
   /// English fallback (non-UI / tests).
