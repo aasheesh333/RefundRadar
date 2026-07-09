@@ -13,6 +13,23 @@ abstract class DisputeRepository {
 class FirestoreDisputeRepository implements DisputeRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  /// Optional cascade hook invoked AFTER a single dispute is deleted. The
+  /// provider layer wires this to delete the dispute's reminders + cancel
+  /// its local notifications. Failures inside the hook are logged and do
+  /// NOT un-delete the dispute — orphaned reminders are harmless (next sync
+  /// re-validates them).
+  final Future<void> Function(String uid, String disputeId)? onDeleteDispute;
+
+  /// Optional cascade hook invoked AFTER all the user's disputes are
+  /// deleted by `deleteAllUserData`. Provider wires this to wipe the
+  /// reminder subcollection + cancel ALL scheduled local notifications.
+  final Future<void> Function(String uid)? onDeleteAllUserData;
+
+  FirestoreDisputeRepository({
+    this.onDeleteDispute,
+    this.onDeleteAllUserData,
+  });
+
   CollectionReference<Map<String, dynamic>> _col(String uid) =>
       _db.collection('users').doc(uid).collection('disputes');
 
@@ -122,6 +139,15 @@ class FirestoreDisputeRepository implements DisputeRepository {
   Future<void> deleteDispute(String uid, String id) async {
     await _ensureAuthToken(uid);
     await _col(uid).doc(id).delete();
+    // Cascade: wipe reminders + cancel local notifications. Best-effort —
+    // a failure here means an orphaned reminder row, not a leaked dispute.
+    if (onDeleteDispute != null) {
+      try {
+        await onDeleteDispute!(uid, id);
+      } catch (e, st) {
+        debugPrint('onDeleteDispute cascade failed for $id: $e\n$st');
+      }
+    }
   }
 
   @override
@@ -134,5 +160,15 @@ class FirestoreDisputeRepository implements DisputeRepository {
     }
     await batch.commit();
     await _db.collection('users').doc(uid).delete();
+    // Cascade: delete the reminders subcollection + cancel all scheduled
+    // notifications BEFORE the parent user doc is gone (rules require
+    // `isOwner(uid)`, so the token must still be valid here).
+    if (onDeleteAllUserData != null) {
+      try {
+        await onDeleteAllUserData!(uid);
+      } catch (e, st) {
+        debugPrint('onDeleteAllUserData cascade failed for $uid: $e\n$st');
+      }
+    }
   }
 }

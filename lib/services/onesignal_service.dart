@@ -1,3 +1,4 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -82,7 +83,11 @@ class OneSignalService {
   }
 
   /// Pushes the 9 spec-topics as OneSignal user-tags ('true'/'false').
-  /// Best-effort; silently no-op on failure.
+  /// Best-effort; silently no-op on failure. Optional [freeLimitActive]
+  /// overrides the historical predicate `!isPremium` (which subscribed
+  /// every free user — including just-installed signups — to the
+  /// `free_limit_hit` campaign segment). When omitted, defaults to
+  /// `!isPremium` to preserve the original behaviour for old callers.
   Future<void> syncTags({
     required int installedHours,
     required int activeDisputes,
@@ -91,14 +96,16 @@ class OneSignalService {
     required bool hasFastag,
     required bool hasUpi,
     required String languageCode,
+    bool? freeLimitActive,
   }) async {
     if (!_initialized) return;
+    final freeGateOn = freeLimitActive ?? (!isPremium);
     final tagValues = <String, String>{
       'dormant_no_dispute':
           (installedHours >= 48 && activeDisputes == 0) ? 'true' : 'false',
       'active_dispute': activeDisputes >= 1 ? 'true' : 'false',
       'deadline_missed': hasExpiredDispute ? 'true' : 'false',
-      'free_limit_hit': (!isPremium) ? 'true' : 'false',
+      'free_limit_hit': freeGateOn ? 'true' : 'false',
       'premium': isPremium ? 'true' : 'false',
       'fastag_user': hasFastag ? 'true' : 'false',
       'upi_user': hasUpi ? 'true' : 'false',
@@ -110,6 +117,13 @@ class OneSignalService {
       _log('synced ${tagValues.length} tags.');
     } catch (e, st) {
       _log('syncTags failed: $e\n$st');
+      // Previously silently swallowed — now record a Crashlytics breadcrumb
+      // so release builds surface persistent tag-sync failures (otherwise
+      // OneSignal segmentation drifts silently from FCM topic state).
+      try {
+        await FirebaseCrashlytics.instance
+            .recordError(e, st, reason: 'OneSignal.syncTags', fatal: false);
+      } catch (_) {/* Crashlytics not initialised */}
     }
   }
 

@@ -39,7 +39,12 @@ service cloud.firestore {
         allow read: if isOwner(uid);
         allow create: if isOwner(uid)
                       && request.resource.data.uid == uid;
-        allow update: if isOwner(uid);
+        // Mirror the disputes block: both the existing resource AND the
+        // incoming write must still own the same uid. Prevents a reminder
+        // `update` from silently re-assigning it to another uid string.
+        allow update: if isOwner(uid)
+                      && resource.data.uid == uid
+                      && request.resource.data.uid == uid;
         allow delete: if isOwner(uid);
       }
     }

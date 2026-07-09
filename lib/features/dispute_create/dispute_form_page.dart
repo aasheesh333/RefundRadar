@@ -1,3 +1,4 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,6 +32,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   String _bankName = '';
   String _selectedEntityId = '';
   bool _utrFound = false;
+  // Re-entrancy guard: double-tap on the submit button must not fire two
+  // saveDispute calls (the `id == ''` branch in FirestoreDisputeRepository
+  // does `_col.add`, so two concurrent saves would create duplicate
+  // disputes). Set true on entry, cleared on success/failure.
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -57,80 +63,127 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   }
 
   void _save() async {
-    final amount = double.tryParse(_amountCtrl.text) ?? 0;
-    if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter the debited amount')),
-      );
-      return;
-    }
-    final uid = ref.read(userIdProvider).asData?.value;
-    if (uid == null) return;
+    // B-D8 re-entrancy guard. Double-tap on the submit button would fire
+    // two concurrent saveDispute calls → two duplicate disputes (add()
+    // branch in FirestoreDisputeRepository does NOT dedupe). Set the guard
+    // up front before any await so a fast second tap returns immediately.
+    if (_saving) return;
+    setState(() => _saving = true);
 
-    // B3 free-tier gate: free users limited to 1 active dispute (spec §4.3).
-    // Active = status in {draft, filed_l1, filed_l2, ombudsman}.
-    final isPremium = ref.read(isPremiumProvider);
-    if (!isPremium) {
-      final disputesAsync = await ref.read(disputesProvider(uid).future);
-      const terminal = {
-        DisputeStatus.resolved,
-        DisputeStatus.expired,
-      };
-      final activeCount =
-          disputesAsync.where((d) => !terminal.contains(d.status)).length;
-      if (activeCount >= 1) {
-        // Bump the counter for analytics + send to the paywall.
-        await ref.read(freeDisputesUsedProvider.notifier).increment();
-        if (!mounted) return;
+    try {
+      final amount = double.tryParse(_amountCtrl.text) ?? 0;
+      if (amount <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'Free plan allows 1 active dispute. Upgrade for unlimited.'),
-            duration: Duration(seconds: 2),
-          ),
+          const SnackBar(content: Text('Enter the debited amount')),
         );
-        context.push('/paywall?return=/home&trigger=free_second_dispute');
         return;
       }
-    }
+      final uid = ref.read(userIdProvider).asData?.value;
+      if (uid == null) return;
 
-    final dispute = Dispute(
-      id: '',
-      uid: uid,
-      type: DisputeType.fromId(widget.type),
-      amount: amount,
-      txnDate: _date ?? DateTime.now(),
-      txnId: _utrCtrl.text,
-      entityName: _bankName.isEmpty ? null : _bankName,
-      entityId: _selectedEntityId.isEmpty ? null : _selectedEntityId,
-      createdAt: DateTime.now(),
-    );
-    final repo = ref.read(disputeRepositoryProvider);
-    try {
-      final saved = await repo.saveDispute(uid, dispute);
-      // B3: increment free-tier counter (no-op for premium, but cheap).
+      // B3 free-tier gate: free users limited to 1 active dispute (spec §4.3).
+      // Active = status in {draft, filed_l1, filed_l2, ombudsman}.
+      final isPremium = ref.read(isPremiumProvider);
       if (!isPremium) {
-        await ref.read(freeDisputesUsedProvider.notifier).increment();
-      }
-      // B4 analytics: dispute_created event (spec §10).
-      ref.read(analyticsServiceProvider).logDisputeCreated(
-            disputeType: dispute.type.id,
-            isPremium: isPremium,
+        final disputesAsync = await ref.read(disputesProvider(uid).future);
+        const terminal = {
+          DisputeStatus.resolved,
+          DisputeStatus.expired,
+        };
+        final activeCount =
+            disputesAsync.where((d) => !terminal.contains(d.status)).length;
+        if (activeCount >= 1) {
+          // Bump the counter for analytics + send to the paywall.
+          await ref.read(freeDisputesUsedProvider.notifier).increment();
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Free plan allows 1 active dispute. Upgrade for unlimited.'),
+              duration: Duration(seconds: 2),
+            ),
           );
-      // B6: generate / sync reminders + schedule local notifications.
-      //    Safe no-op if Firestore isn't reachable; failures are caught by
-      //    the outer zone and reported to Crashlytics.
-      await syncRemindersForDispute(ref, uid, saved);
-      // Home uses a FutureProvider — must invalidate or the new dispute
-      // won't appear until process restart.
-      ref.invalidate(disputesProvider(uid));
-      if (mounted) context.go('/home');
-    } catch (e) {
-      if (!mounted) return;
-      final msg = e.toString().toLowerCase().contains('permission')
-          ? 'Could not save — sign-in expired. Go Home and tap Retry.'
-          : 'Could not save dispute. Check connection and try again.';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+          context.push('/paywall?return=/home&trigger=free_second_dispute');
+          return;
+        }
+      }
+
+      final dispute = Dispute(
+        id: '',
+        uid: uid,
+        type: DisputeType.fromId(widget.type),
+        amount: amount,
+        txnDate: _date ?? DateTime.now(),
+        txnId: _utrCtrl.text,
+        entityName: _bankName.isEmpty ? null : _bankName,
+        entityId: _selectedEntityId.isEmpty ? null : _selectedEntityId,
+        createdAt: DateTime.now(),
+      );
+      final repo = ref.read(disputeRepositoryProvider);
+      Dispute? saved;
+      bool rollbackNeeded = false;
+      try {
+        saved = await repo.saveDispute(uid, dispute);
+        rollbackNeeded = true; // dispute committed, must clean up on failure
+        // B3: increment free-tier counter (no-op for premium, but cheap).
+        if (!isPremium) {
+          await ref.read(freeDisputesUsedProvider.notifier).increment();
+        }
+        // B4 analytics: dispute_created event (spec §10).
+        ref.read(analyticsServiceProvider).logDisputeCreated(
+              disputeType: dispute.type.id,
+              isPremium: isPremium,
+            );
+        // B6: generate / sync reminders + schedule local notifications.
+        //    Per-reminder try/catch inside the sync helper makes this
+        //    non-fatal: a notification scheduling failure doesn't un-save
+        //    the dispute. Firestore reminder write has its own auth retry.
+        await syncRemindersForDispute(ref, uid, saved);
+        rollbackNeeded = false; // success — no rollback
+        // Home uses a FutureProvider AND reminders has its own provider;
+        // invalidate BOTH or the new dispute's reminders won't show on the
+        // reminders page (only Home invalidated historically — see M-D10).
+        ref.invalidate(disputesProvider(uid));
+        ref.invalidate(remindersProvider(uid));
+        if (mounted) context.go('/home');
+      } catch (e, st) {
+        // B-D9 rollback: if saveDispute committed but a subsequent step
+        // (reminders sync / analytics / invalidate) threw, the dispute doc
+        // exists in Firestore but reminders may be partially-committed.
+        // Best-effort delete to avoid an orphaned dispute with no reminders.
+        if (rollbackNeeded && saved != null) {
+          try {
+            await repo.deleteDispute(uid, saved.id);
+          } catch (de, dst) {
+            debugPrint('rollback deleteDispute failed: $de\n$dst');
+          }
+        }
+        // Friendly copy per error class. `unavailable` = offline (Firestore
+        // queues writes but our `_ensureUserDoc` get() throws first);
+        // `permission-denied` = auth race; everything else = transient.
+        final s = e.toString().toLowerCase();
+        final msg = s.contains('permission-denied') ||
+                s.contains('permission_denied') ||
+                s.contains('unauthenticated')
+            ? 'Could not save — sign-in expired. Go Home and tap Retry.'
+            : s.contains('unavailable') ||
+                    s.contains('network') ||
+                    s.contains('socket')
+                ? 'You appear to be offline. Reconnect and try again.'
+                : 'Could not save dispute. Check connection and try again.';
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(msg)));
+        // Surface the underlying failure to Crashlytics so we see the
+        // distribution of failure causes in release builds (vs. today
+        // where everything is a silent SnackBar).
+        try {
+          await FirebaseCrashlytics.instance.recordError(e, st,
+              reason: 'DisputeFormPage._save', fatal: false);
+        } catch (_) {/* Crashlytics not initialised */}
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 
@@ -425,28 +478,45 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                       ],
                     ),
                   ),
-                  Container(
-                    height: 52,
-                    padding: const EdgeInsets.symmetric(horizontal: 22),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(AppRadii.md),
-                      boxShadow: AppShadows.button,
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
+                  AnimatedOpacity(
+                    opacity: _saving ? 0.6 : 1.0,
+                    duration: const Duration(milliseconds: 150),
+                    child: Container(
+                      height: 52,
+                      padding: const EdgeInsets.symmetric(horizontal: 22),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(AppRadii.md),
-                        onTap: _save,
-                        child: const Center(
-                          child: Text(
-                            'Review →',
-                            style: TextStyle(
-                              fontFamily: AppTypography.family,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
+                        boxShadow: AppShadows.button,
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(AppRadii.md),
+                          // onTap is null while _saving — disables the tap
+                          // affordance AND the InkWell ripple (Material rule:
+                          // a null onTap is treated as a disabled ink well).
+                          onTap: _saving ? null : _save,
+                          child: Center(
+                            child: _saving
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.4,
+                                      valueColor:
+                                          AlwaysStoppedAnimation(Colors.white),
+                                    ),
+                                  )
+                                : const Text(
+                                    'Review →',
+                                    style: TextStyle(
+                                      fontFamily: AppTypography.family,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),

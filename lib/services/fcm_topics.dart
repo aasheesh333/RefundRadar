@@ -39,12 +39,21 @@ class FcmTopicService {
     required bool hasFastag,
     required bool hasUpi,
     required String languageCode,
+    // Free-tier counter — pushed in from `freeDisputesUsedProvider` via
+    // `FcmReevaluator`. Defaults to 0 (no historical free disputes) so
+    // callers that don't know about the gate never subscribe brand-new
+    // users to the `free_limit_hit` push segment.
+    int freeDisputesUsed = 0,
   }) async {
     final active = <String, bool>{
       'dormant_no_dispute': installedHours >= 48 && activeDisputes == 0,
       'active_dispute': activeDisputes >= 1,
       'deadline_missed': hasExpiredDispute,
-      'free_limit_hit': !isPremium,
+      // Free limit segment only fires for users who have actually used ≥1
+      // free dispute. Brand-new free installs (freeDisputesUsed == 0) used
+      // to be permanently subscribed here — that spammed paywall pushes to
+      // every non-paying user, even just-installed signups. Fix: gate.
+      'free_limit_hit': !isPremium && freeDisputesUsed >= 1,
       'premium': isPremium,
       'fastag_user': hasFastag,
       'upi_user': hasUpi,
