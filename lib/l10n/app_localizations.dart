@@ -256,6 +256,12 @@ class AppLocalizations {
   String get tagline => _t('tagline');
   String get onboardSkip => _t('onboardSkip');
   String get onboardCta => _t('onboardCta');
+  String get onboardSlide1Title => _t('onboardSlide1Title');
+  String get onboardSlide1Desc => _t('onboardSlide1Desc');
+  String get onboardSlide2Title => _t('onboardSlide2Title');
+  String get onboardSlide2Desc => _t('onboardSlide2Desc');
+  String get onboardSlide3Title => _t('onboardSlide3Title');
+  String get onboardSlide3Desc => _t('onboardSlide3Desc');
   String get homeOwedTitle => _t('homeOwedTitle');
   String homeOwedSubtitle(int count, String perDay) =>
       _t('homeOwedSubtitle', args: {'count': '$count', 'perDay': perDay});

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/hero_emoji_circle.dart';
 import '../../shared/widgets/page_dots.dart';
 
@@ -21,7 +22,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   void _next() {
-    if (_page < _slides.length - 1) {
+    final slides = _slidesFor(AppLocalizations.of(context));
+    if (_page < slides.length - 1) {
       _pc.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.ease,
@@ -31,35 +33,40 @@ class _OnboardingPageState extends State<OnboardingPage> {
     }
   }
 
-  static const _slides = <_SlideData>[
-    _SlideData(
-      emoji: '💸',
-      title: '₹100/day — banks owe YOU\nfor failed UPI',
-      desc:
-          'RBI rules make banks pay compensation for delayed refunds on failed UPI, IMPS, ATM, and FASTag transactions.',
-      softColor: AppColors.accentSoft,
-      ctaLabel: 'Start free',
-    ),
-    _SlideData(
-      emoji: '🚗',
-      title: "FASTag double-cut?\nYou're owed ₹100/day",
-      desc:
-          'NPCI rules say banks must refund FASTag double-debits within 5 days. We track the deadline and escalate.',
-      softColor: AppColors.alertSoft,
-      ctaLabel: 'Continue',
-    ),
-    _SlideData(
-      emoji: '⚖️',
-      title: 'Banks ignoring you?\nTake them to the Ombudsman',
-      desc:
-          "If a bank doesn't refund within 10 days, we auto-draft a Banking Ombudsman complaint citing the exact RBI circular.",
-      softColor: AppColors.premiumGoldSoft,
-      ctaLabel: 'Get started',
-    ),
-  ];
+  List<_SlideData> _slidesFor(AppLocalizations? l10n) => [
+        _SlideData(
+          emoji: '💸',
+          title: l10n?.onboardSlide1Title ??
+              '₹100/day — banks owe YOU\nfor failed UPI',
+          desc: l10n?.onboardSlide1Desc ??
+              'RBI rules make banks pay compensation for delayed refunds on failed UPI, IMPS, ATM, and FASTag transactions.',
+          softColor: AppColors.accentSoft,
+          ctaLabel: l10n?.onboardCta ?? 'Start free',
+        ),
+        _SlideData(
+          emoji: '🚗',
+          title: l10n?.onboardSlide2Title ??
+              "FASTag double-cut?\nYou're owed ₹100/day",
+          desc: l10n?.onboardSlide2Desc ??
+              'NPCI rules say banks must refund FASTag double-debits within 5 days. We track the deadline and escalate.',
+          softColor: AppColors.alertSoft,
+          ctaLabel: l10n?.disputeTypeContinue ?? 'Continue',
+        ),
+        _SlideData(
+          emoji: '⚖️',
+          title: l10n?.onboardSlide3Title ??
+              'Banks ignoring you?\nTake them to the Ombudsman',
+          desc: l10n?.onboardSlide3Desc ??
+              "If a bank doesn't refund within 10 days, we auto-draft a Banking Ombudsman complaint citing the exact RBI circular.",
+          softColor: AppColors.premiumGoldSoft,
+          ctaLabel: l10n?.onboardCta ?? 'Get started',
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final slides = _slidesFor(l10n);
     return Scaffold(
       backgroundColor: AppColors.bgLight,
       body: Column(
@@ -78,9 +85,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     foregroundColor: AppColors.textSecondaryLight,
                   ),
-                  child: const Text(
-                    'Skip',
-                    style: TextStyle(
+                  child: Text(
+                    l10n?.onboardSkip ?? 'Skip',
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -93,11 +100,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
           Expanded(
             child: PageView.builder(
               controller: _pc,
-              itemCount: _slides.length,
+              itemCount: slides.length,
               onPageChanged: (i) => setState(() => _page = i),
               itemBuilder: (context, i) => _SlideView(
-                slide: _slides[i],
-                totalSlides: _slides.length,
+                slide: slides[i],
+                totalSlides: slides.length,
               ),
             ),
           ),
@@ -110,7 +117,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  PageDots(count: _slides.length, current: _page),
+                  PageDots(count: slides.length, current: _page),
                   const SizedBox(height: 14),
                   SizedBox(
                     width: double.infinity,
@@ -124,7 +131,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         ),
                       ),
                       child: Text(
-                        _slides[_page].ctaLabel,
+                        slides[_page].ctaLabel,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -133,8 +140,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Independent tool · Not affiliated with RBI/NPCI/banks',
+                  Text(
+                    l10n?.settingsNotAffiliated ??
+                        'Independent tool · Not affiliated with RBI/NPCI/banks',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 11,

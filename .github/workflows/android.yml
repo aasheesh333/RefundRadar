@@ -89,6 +89,25 @@ jobs:
       - name: List build output
         run: ls -lh build/app/outputs/flutter-apk/ || true
 
+      - name: Smoke test — APK produced
+        run: |
+          set -euo pipefail
+          APKS=(build/app/outputs/flutter-apk/*.apk)
+          count=${#APKS[@]}
+          if [ "$count" -lt 1 ]; then
+            echo "::error::No APK artifacts found after debug build"
+            exit 1
+          fi
+          for apk in "${APKS[@]}"; do
+            size=$(wc -c < "$apk")
+            echo "OK: $apk ($size bytes)"
+            if [ "$size" -lt 1000000 ]; then
+              echo "::error::APK too small (<1MB) — likely a failed/empty build: $apk"
+              exit 1
+            fi
+          done
+          echo "Smoke test passed: $count ABI-split APK(s)"
+
   # ---------------------------------------------------------------------------
   # Release build — needs secrets. Manual dispatch only
   # (workflow_dispatch with build_type=release). Stops if any required
@@ -236,3 +255,22 @@ jobs:
 
       - name: List build output
         run: ls -lh build/app/outputs/flutter-apk/ || true
+
+      - name: Smoke test — release APK produced
+        run: |
+          set -euo pipefail
+          APKS=(build/app/outputs/flutter-apk/*.apk)
+          count=${#APKS[@]}
+          if [ "$count" -lt 1 ]; then
+            echo "::error::No APK artifacts found after release build"
+            exit 1
+          fi
+          for apk in "${APKS[@]}"; do
+            size=$(wc -c < "$apk")
+            echo "OK: $apk ($size bytes)"
+            if [ "$size" -lt 1000000 ]; then
+              echo "::error::APK too small (<1MB) — likely a failed/empty build: $apk"
+              exit 1
+            fi
+          done
+          echo "Release smoke test passed: $count ABI-split APK(s)"
