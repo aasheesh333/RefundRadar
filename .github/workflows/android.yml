@@ -49,6 +49,23 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      # google-services Gradle plugin is always applied (Crashlytics native).
+      # Prefer the real secret when present; otherwise write a minimal
+      # placeholder so processDebugGoogleServices doesn't fail the build.
+      - name: Inject google-services.json (debug)
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          DEST=android/app/google-services.json
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > "$DEST"
+            echo "Injected real google-services.json ($(wc -c < "$DEST") bytes)"
+          else
+            # Minimal placeholder — package_name must match applicationId.
+            python3 -c 'import json; json.dump({"project_info":{"project_number":"1234567890","project_id":"refund-radar","storage_bucket":"refund-radar.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:1234567890:android:abcdef123456","android_client_info":{"package_name":"com.dhanuk.refundradar"}},"oauth_client":[],"api_key":[{"current_key":"AIzaSyD-EXAMPLE"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}, open("android/app/google-services.json","w")); print("Wrote placeholder google-services.json")'
+          fi
+          python3 -c "import json; json.load(open('android/app/google-services.json')); print('google-services.json OK')"
+
       - name: Verify analysis
         run: flutter analyze
         continue-on-error: true
@@ -59,6 +76,10 @@ jobs:
 
       - name: Build debug APK
         run: flutter build apk --debug --no-tree-shake-icons
+
+      - name: Cleanup google-services.json
+        if: always()
+        run: rm -f android/app/google-services.json
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
