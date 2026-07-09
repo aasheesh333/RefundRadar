@@ -134,6 +134,7 @@ class _Body extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (disputes.isEmpty) return const _EmptyState();
     final totalOwed = disputes.fold<double>(
         0, (sum, d) => sum + CompensationCalculator.compute(d).compensationDue);
@@ -217,14 +218,14 @@ class _Body extends StatelessWidget {
               onTap: () => context.push('/history'),
               child: Semantics(
                 button: true,
-                label: 'View all disputes',
+                label: l10n?.homeViewAllDisputes ?? 'View all disputes',
                 child: Container(
                   // 48dp minimum tap target; text stays 12px visually.
                   padding: const EdgeInsets.symmetric(
                       horizontal: 4, vertical: 14),
-                  child: const Text(
-                    'View all →',
-                    style: TextStyle(
+                  child: Text(
+                    l10n?.homeViewAllDisputes ?? 'View all →',
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: AppColors.accent,

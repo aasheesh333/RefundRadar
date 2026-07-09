@@ -186,7 +186,63 @@ class AppLocalizations {
     'escalateEdit': {'en': 'Edit', 'hi': 'संपादित करें'},
     'escalateSend': {'en': 'Send escalation →', 'hi': 'एस्केलेशन भेजें →'},
     'escalateCopiedToClipboard': {'en': 'Email copied to clipboard', 'hi': 'ईमेल क्लिपबोर्ड पर कॉपी हुआ'},
-    'escalateDrafted': {'en': 'Drafted — open your mail app: {url}', 'hi': 'तैयार है — अपना मेल� ऐप खोलें: {url}'},
+    'escalateDrafted': {'en': 'Drafted — open your mail app: {url}', 'hi': 'तैयार है — अपना मेल ऐप खोलें: {url}'},
+    // Dispute detail activity log + timeline.
+    'detailTimelineL1': {'en': 'File L1 complaint', 'hi': 'L1 शिकायत दर्ज करें'},
+    'detailTimelineReported': {'en': 'Reported', 'hi': 'रिपोर्ट किया'},
+    'detailTimelineReportedDetail': {'en': 'T+0 · {date}', 'hi': 'T+0 · {date}'},
+    'detailTimelineAck': {'en': 'Bank must acknowledge', 'hi': 'बैंक पावती दे'},
+    'detailTimelineAckDone': {'en': 'T+1 · acknowledged', 'hi': 'T+1 · पावती मिली'},
+    'detailTimelineAckPending': {'en': 'T+1 · by today', 'hi': 'T+1 · आज तक'},
+    'detailTimelineRefund': {'en': 'Refund due', 'hi': 'वापसी देय'},
+    'detailTimelineRefundDone': {'en': 'T+{tat} · refunded', 'hi': 'T+{tat} · वापस हुई'},
+    'detailTimelineRefundMissed': {'en': 'T+{tat} · deadline missed — escalate', 'hi': 'T+{tat} · समय खत्म — बढ़ाएं'},
+    'detailTimelineRefundPending': {'en': 'T+{tat} · {date} (in {days}d)', 'hi': 'T+{tat} · {date} ({days}दिन में)'},
+    'detailTimelineEscalate': {'en': 'Escalate to nodal officer', 'hi': 'नोडल अधिकारी को भेजें'},
+    'detailTimelineOmbudsman': {'en': 'RBI Banking Ombudsman', 'hi': 'RBI बैंकिंग ऑम्बड्समैन'},
+    'detailTimelineL2Detail': {'en': 'Filed · {ticket}', 'hi': 'दर्ज · {ticket}'},
+    'detailTimelineL2Pending': {'en': 'If no refund by T+{tat}', 'hi': 'यदि T+{tat} तक वापसी नहीं'},
+    'detailTimelineL3Detail': {'en': 'Filed · {ticket}', 'hi': 'दर्ज · {ticket}'},
+    'detailTimelineL3Pending': {'en': 'If unresolved after T+10 (30 days)', 'hi': 'यदि T+10 (30 दिन) बाद भी अनसुलझा'},
+    'detailActivityHeader': {'en': 'Activity · {count} events', 'hi': 'गतिविधि · {count} घटनाएं'},
+    'detailActivityTicket': {'en': 'Ticket {ticket} filed', 'hi': 'टिकट {ticket} दर्ज'},
+    'detailActivityTicketMeta': {'en': 'Auto-generated · {date}', 'hi': 'स्वतः तैयार · {date}'},
+    'detailActivityAutoUtr': {'en': 'Auto-detected UTR from SMS', 'hi': 'SMS से UTR ऑटो-पहचान'},
+    'detailActivityMarkedActive': {'en': 'Dispute marked active', 'hi': 'विवाद सक्रिय चिह्नित'},
+    'detailActivityResolved': {'en': 'Dispute resolved', 'hi': 'विवाद सुलझा'},
+    // Dispute form labels + validation.
+    'formEnterAmount': {'en': 'Enter the debited amount', 'hi': 'कटी हुई राशि दर्ज करें'},
+    'formLabelBank': {'en': 'Bank', 'hi': 'बैंक'},
+    'formLabelUtr': {'en': 'UTR / RRN NUMBER', 'hi': 'UTR / RRN नंबर'},
+    'formUtrFound': {'en': '✓ found', 'hi': '✓ मिला'},
+    'formUtrHint12': {'en': '12 digits', 'hi': '12 अंक'},
+    'formLabelAmountDebited': {'en': 'AMOUNT DEBITED', 'hi': 'कटी राशि'},
+    'formLabelTxnDate': {'en': 'TXN DATE', 'hi': 'लेन-देन तिथि'},
+    'formSelectDate': {'en': 'Select date', 'hi': 'तिथि चुनें'},
+    'formLabelDescription': {'en': 'DESCRIPTION (optional)', 'hi': 'विवरण (वैकल्पिक)'},
+    // Home page remaining.
+    'homeViewAllDisputes': {'en': 'View all disputes', 'hi': 'सभी विवाद देखें'},
+    // History page.
+    'historyTitle': {'en': 'History', 'hi': 'इतिहास'},
+    'historyTotalWon': {'en': 'TOTAL WON', 'hi': 'कुल जीत'},
+    'historyWinRate': {'en': 'WIN RATE', 'hi': 'जीत दर'},
+    'historyEmptyTitle': {'en': 'No history yet', 'hi': 'अभी कोई इतिहास नहीं'},
+    'historyEmptySubtitle': {
+      'en': 'Resolved and expired disputes will appear here.',
+      'hi': 'सुलझे और समाप्त विवाद यहाँ दिखेंगे।'
+    },
+    'historyThisYear': {'en': 'This year', 'hi': 'इस वर्ष'},
+    'historyFilterAll': {'en': 'All', 'hi': 'सभी'},
+    'historyFilterWon': {'en': 'Won', 'hi': 'जीते'},
+    'historyFilterLost': {'en': 'Lost', 'hi': 'हारे'},
+    'historyFilterEscalated': {'en': 'Escalated', 'hi': 'बढ़ाए'},
+    // Add banks page.
+    'addBanksTitle': {'en': 'Add your bank', 'hi': 'अपना बैंक जोड़ें'},
+    'addBanksSearchLabel': {'en': 'Search', 'hi': 'खोजें'},
+    'addBanksEmpty': {'en': 'No bank found', 'hi': 'कोई बैंक नहीं मिला'},
+    // Template library.
+    'templateLevelLabel': {'en': 'Level {level}', 'hi': 'स्तर {level}'},
+    'templateProBadge': {'en': 'Pro', 'hi': 'प्रो'},
   };
 
   String _t(String key, {Map<String, String>? args}) {
@@ -327,6 +383,67 @@ class AppLocalizations {
   String get escalateSend => _t('escalateSend');
   String get escalateCopiedToClipboard => _t('escalateCopiedToClipboard');
   String escalateDrafted(String url) => _t('escalateDrafted', args: {'url': url});
+
+  // Dispute detail page activity log + timeline.
+  String get detailTimelineL1 => _t('detailTimelineL1');
+  String get detailTimelineReported => _t('detailTimelineReported');
+  String detailTimelineReportedDetail(String date) => _t('detailTimelineReportedDetail', args: {'date': date});
+  String get detailTimelineAck => _t('detailTimelineAck');
+  String get detailTimelineAckDone => _t('detailTimelineAckDone');
+  String get detailTimelineAckPending => _t('detailTimelineAckPending');
+  String get detailTimelineRefund => _t('detailTimelineRefund');
+  String detailTimelineRefundDone(String tat) => _t('detailTimelineRefundDone', args: {'tat': tat});
+  String detailTimelineRefundMissed(String tat) => _t('detailTimelineRefundMissed', args: {'tat': tat});
+  String detailTimelineRefundPending(String tat, String date, int days) =>
+      _t('detailTimelineRefundPending', args: {'tat': tat, 'date': date, 'days': '$days'});
+  String get detailTimelineEscalate => _t('detailTimelineEscalate');
+  String get detailTimelineOmbudsman => _t('detailTimelineOmbudsman');
+  String detailTimelineL2Detail(String ticket) => _t('detailTimelineL2Detail', args: {'ticket': ticket});
+  String detailTimelineL2Pending(String tat) => _t('detailTimelineL2Pending', args: {'tat': tat});
+  String detailTimelineL3Detail(String ticket) => _t('detailTimelineL3Detail', args: {'ticket': ticket});
+  String get detailTimelineL3Pending => _t('detailTimelineL3Pending');
+  String detailActivityHeader(int count) => _t('detailActivityHeader', args: {'count': '$count'});
+  String detailActivityTicket(String ticket) => _t('detailActivityTicket', args: {'ticket': ticket});
+  String detailActivityTicketMeta(String date) => _t('detailActivityTicketMeta', args: {'date': date});
+  String get detailActivityAutoUtr => _t('detailActivityAutoUtr');
+  String get detailActivityMarkedActive => _t('detailActivityMarkedActive');
+  String get detailActivityResolved => _t('detailActivityResolved');
+
+  // Dispute form validation + labels.
+  String get formEnterAmount => _t('formEnterAmount');
+  String get formLabelBank => _t('formLabelBank');
+  String get formLabelUtr => _t('formLabelUtr');
+  String get formUtrFound => _t('formUtrFound');
+  String get formUtrHint12 => _t('formUtrHint12');
+  String get formLabelAmountDebited => _t('formLabelAmountDebited');
+  String get formLabelTxnDate => _t('formLabelTxnDate');
+  String get formSelectDate => _t('formSelectDate');
+  String get formLabelDescription => _t('formLabelDescription');
+
+  // Home page remaining strings.
+  String get homeViewAllDisputes => _t('homeViewAllDisputes');
+
+  // History page.
+  String get historyTitle => _t('historyTitle');
+  String get historyTotalWon => _t('historyTotalWon');
+  String get historyWinRate => _t('historyWinRate');
+  String get historyEmptyTitle => _t('historyEmptyTitle');
+  String get historyEmptySubtitle => _t('historyEmptySubtitle');
+  String get historyThisYear => _t('historyThisYear');
+  String get historyFilterAll => _t('historyFilterAll');
+  String get historyFilterWon => _t('historyFilterWon');
+  String get historyFilterLost => _t('historyFilterLost');
+  String get historyFilterEscalated => _t('historyFilterEscalated');
+
+  // Add banks page.
+  String get addBanksTitle => _t('addBanksTitle');
+  String get addBanksSearchLabel => _t('addBanksSearchLabel');
+  String get addBanksEmpty => _t('addBanksEmpty');
+
+  // Template library page.
+  String templateLevelLabel(int level) =>
+      _t('templateLevelLabel', args: {'level': '$level'});
+  String get templateProBadge => _t('templateProBadge');
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

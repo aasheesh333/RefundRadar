@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/constants/bank_catalog.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/shared/widgets/onboarding_step_header.dart';
 
 /// Onboarding Add-banks page (mockup Screen 13).
@@ -72,6 +73,7 @@ class _AddBanksPageState extends State<AddBanksPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final banks = _filteredBanks;
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -104,10 +106,10 @@ class _AddBanksPageState extends State<AddBanksPage> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: OnboardingStepHeader(
                       step: 'Setup',
-                      title: 'Add your banks',
+                      title: l10n?.addBanksTitle ?? 'Add your banks',
                     ),
                   ),
                   GestureDetector(
@@ -236,8 +238,9 @@ class _AddBanksPageState extends State<AddBanksPage> {
                             icon: const Icon(Icons.search,
                                 size: 16,
                                 color: AppColors.textSecondaryLight),
-                            label: const Text('Search',
-                                style: TextStyle(
+                            label: Text(
+                                l10n?.addBanksSearchLabel ?? 'Search',
+                                style: const TextStyle(
                                     fontSize: 12,
                                     color: AppColors.textSecondaryLight)),
                           ),

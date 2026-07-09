@@ -7,6 +7,7 @@ import '../../core/providers/theme_provider.dart';
 import '../../data/models/template.dart';
 import '../../data/repositories/rules_engine_repository.dart';
 import '../../data/repositories/template_repository.dart';
+import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/filter_pills.dart';
 import '../../shared/widgets/status_pill.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
@@ -189,6 +190,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     Template t,
     String localeCode,
   ) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (c) => AlertDialog(
@@ -199,13 +201,13 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c),
-            child: const Text('Close'),
+            child: Text(l10n?.commonClose ?? 'Close'),
           ),
           FilledButton(
             onPressed: () => Clipboard.setData(
               ClipboardData(text: t.bodyFor(localeCode)),
             ),
-            child: const Text('Copy'),
+            child: Text(l10n?.ombudsmanCopy ?? 'Copy'),
           ),
         ],
       ),
@@ -232,15 +234,17 @@ class _TemplateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final levelBadge = locked
-        ? const StatusPill(
-            label: 'Pro',
+        ? StatusPill(
+            label: l10n?.templateProBadge ?? 'Pro',
             fg: AppColors.premiumGold,
             bg: AppColors.premiumGoldSoft,
             prefix: '🔒',
           )
         : StatusPill(
-            label: 'Level ${template.escalationLevel}',
+            label: l10n?.templateLevelLabel(template.escalationLevel) ??
+                'Level ${template.escalationLevel}',
             fg: AppColors.accent,
             bg: AppColors.accentSoft,
           );

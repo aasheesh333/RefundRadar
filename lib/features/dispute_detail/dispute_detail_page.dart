@@ -8,6 +8,7 @@ import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/extensions/dispute_type_display.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/rbi_timeline.dart';
@@ -59,6 +60,7 @@ class _DisputeBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final comp = CompensationCalculator.compute(dispute);
     final isFastag = dispute.type == DisputeType.fastag;
     final daysLeft = isFastag
@@ -225,7 +227,7 @@ class _DisputeBody extends ConsumerWidget {
               // RBI timeline card
               RbiTimeline(
                 headerLabel: _timelineHeader(),
-                steps: _timelineSteps(comp),
+                steps: _timelineSteps(comp, l10n),
               ),
               const SizedBox(height: 14),
               // Escalate row
@@ -272,8 +274,9 @@ class _DisputeBody extends ConsumerWidget {
               ],
               // Activity log
               ActivityLog(
-                headerLabel: 'Activity · ${_activityLog().length} events',
-                entries: _activityLog(),
+                headerLabel: l10n?.detailActivityHeader(_activityLog(l10n).length) ??
+                    'Activity · ${_activityLog(l10n).length} events',
+                entries: _activityLog(l10n),
               ),
             ],
           ),
@@ -373,7 +376,7 @@ class _DisputeBody extends ConsumerWidget {
           ? 'Bank timeline (30-day window)'
           : 'RBI timeline (T-day = 0)';
 
-  List<RbiTimelineStep> _timelineSteps(CompensationResult comp) {
+  List<RbiTimelineStep> _timelineSteps(CompensationResult comp, AppLocalizations? l10n) {
     final tat = dispute.type.tatDays ?? 5;
     if (dispute.type == DisputeType.wrongTransfer) {
       return [
@@ -423,59 +426,72 @@ class _DisputeBody extends ConsumerWidget {
     final l3Done = dispute.status == DisputeStatus.ombudsman;
     return [
       RbiTimelineStep(
-          title: 'Reported',
-          detail: 'T+0 · ${_fmtDate(dispute.txnDate)}',
+          title: l10n?.detailTimelineReported ?? 'Reported',
+          detail: l10n?.detailTimelineReportedDetail(_fmtDate(dispute.txnDate)) ??
+              'T+0 · ${_fmtDate(dispute.txnDate)}',
           state: RbiStepState.done),
       RbiTimelineStep(
-          title: 'Bank must acknowledge',
-          detail: ackDone ? 'T+1 · acknowledged' : 'T+1 · by today',
+          title: l10n?.detailTimelineAck ?? 'Bank must acknowledge',
+          detail: ackDone
+              ? (l10n?.detailTimelineAckDone ?? 'T+1 · acknowledged')
+              : (l10n?.detailTimelineAckPending ?? 'T+1 · by today'),
           state: ackDone ? RbiStepState.done : RbiStepState.active),
       RbiTimelineStep(
-          title: 'Refund due',
+          title: l10n?.detailTimelineRefund ?? 'Refund due',
           detail: refundDone
-              ? 'T+$tat · refunded'
+              ? (l10n?.detailTimelineRefundDone('$tat') ?? 'T+$tat · refunded')
               : (refundActive
-                  ? 'T+$tat · deadline missed — escalate'
-                  : 'T+$tat · ${_fmtDate(dispute.txnDate.add(Duration(days: tat)))} (in ${comp.daysElapsed}d)'),
+                  ? (l10n?.detailTimelineRefundMissed('$tat') ??
+                      'T+$tat · deadline missed — escalate')
+                  : (l10n?.detailTimelineRefundPending('$tat',
+                          _fmtDate(dispute.txnDate.add(Duration(days: tat))),
+                          comp.daysElapsed) ??
+                      'T+$tat · ${_fmtDate(dispute.txnDate.add(Duration(days: tat)))} (in ${comp.daysElapsed}d)')),
           state: refundDone
               ? RbiStepState.done
               : (refundActive ? RbiStepState.active : RbiStepState.pending)),
       RbiTimelineStep(
-          title: 'Escalate to nodal officer',
-          detail: l2Done ? 'Filed · ${dispute.ticketNumbers['l2'] ?? "—"}' : 'If no refund by T+$tat',
+          title: l10n?.detailTimelineEscalate ?? 'Escalate to nodal officer',
+          detail: l2Done
+              ? (l10n?.detailTimelineL2Detail(dispute.ticketNumbers['l2'] ?? '—') ??
+                  'Filed · ${dispute.ticketNumbers['l2'] ?? "—"}')
+              : (l10n?.detailTimelineL2Pending('$tat') ?? 'If no refund by T+$tat'),
           state: l2Done ? RbiStepState.done : RbiStepState.pending),
       RbiTimelineStep(
-          title: 'RBI Banking Ombudsman',
+          title: l10n?.detailTimelineOmbudsman ?? 'RBI Banking Ombudsman',
           detail: l3Done
-              ? 'Filed · ${dispute.ticketNumbers['l3'] ?? "—"}'
-              : 'If unresolved after T+10 (30 days)',
+              ? (l10n?.detailTimelineL3Detail(dispute.ticketNumbers['l3'] ?? '—') ??
+                  'Filed · ${dispute.ticketNumbers['l3'] ?? "—"}')
+              : (l10n?.detailTimelineL3Pending ??
+                  'If unresolved after T+10 (30 days)'),
           state: l3Done ? RbiStepState.done : RbiStepState.pending),
     ];
   }
 
-  List<ActivityEntry> _activityLog() {
+  List<ActivityEntry> _activityLog(AppLocalizations? l10n) {
     final entries = <ActivityEntry>[];
     final l1Ticket = dispute.ticketNumbers['l1'];
     if (l1Ticket != null && l1Ticket.isNotEmpty) {
       entries.add(ActivityEntry(
-        label: 'Ticket $l1Ticket filed',
-        meta: 'Auto-generated · ${_fmtDate(dispute.filedDates['l1'] ?? dispute.createdAt)}',
+        label: l10n?.detailActivityTicket(l1Ticket) ?? 'Ticket $l1Ticket filed',
+        meta: l10n?.detailActivityTicketMeta(_fmtDate(dispute.filedDates['l1'] ?? dispute.createdAt)) ??
+            'Auto-generated · ${_fmtDate(dispute.filedDates['l1'] ?? dispute.createdAt)}',
         highlighted: true,
       ));
     }
     if (dispute.txnId.isNotEmpty) {
       entries.add(ActivityEntry(
-        label: 'Auto-detected UTR from SMS',
+        label: l10n?.detailActivityAutoUtr ?? 'Auto-detected UTR from SMS',
         meta: _fmtDate(dispute.txnDate),
       ));
     }
     entries.add(ActivityEntry(
-      label: 'Dispute marked active',
+      label: l10n?.detailActivityMarkedActive ?? 'Dispute marked active',
       meta: _fmtDate(dispute.createdAt),
     ));
     if (dispute.status == DisputeStatus.resolved && dispute.resolvedAt != null) {
       entries.insert(0, ActivityEntry(
-        label: 'Dispute resolved',
+        label: l10n?.detailActivityResolved ?? 'Dispute resolved',
         meta: _fmtDate(dispute.resolvedAt!),
         highlighted: true,
       ));

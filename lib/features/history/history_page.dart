@@ -6,6 +6,7 @@ import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/extensions/dispute_type_display.dart';
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/filter_pills.dart';
@@ -20,14 +21,19 @@ class HistoryPage extends ConsumerStatefulWidget {
   ConsumerState<HistoryPage> createState() => _HistoryPageState();
 }
 
-const _kFilters = ['All', 'Won', 'Lost', 'Escalated'];
-
 class _HistoryPageState extends ConsumerState<HistoryPage> {
   String _filter = 'All';
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final uidAsync = ref.watch(userIdProvider);
+    final filters = [
+      (id: 'All', label: l10n?.historyFilterAll ?? 'All'),
+      (id: 'Won', label: l10n?.historyFilterWon ?? 'Won'),
+      (id: 'Lost', label: l10n?.historyFilterLost ?? 'Lost'),
+      (id: 'Escalated', label: l10n?.historyFilterEscalated ?? 'Escalated'),
+    ];
     return Scaffold(
       backgroundColor: AppColors.bgLight,
       body: SafeArea(
@@ -40,6 +46,7 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
                 disputes: disputes,
                 filter: _filter,
                 onFilter: (f) => setState(() => _filter = f),
+                filters: filters,
               ),
               loading: () => const _Loading(),
               error: (e, _) => BrandedErrorBanner(
@@ -63,14 +70,17 @@ class _Body extends StatelessWidget {
   final List<Dispute> disputes;
   final String filter;
   final ValueChanged<String> onFilter;
+  final List<({String id, String label})> filters;
   const _Body({
     required this.disputes,
     required this.filter,
     required this.onFilter,
+    required this.filters,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final past = disputes
         .where((d) =>
             d.status == DisputeStatus.resolved ||
@@ -108,9 +118,9 @@ class _Body extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'History',
-                style: TextStyle(
+              Text(
+                l10n?.historyTitle ?? 'History',
+                style: const TextStyle(
                   fontFamily: AppTypography.family,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
@@ -138,11 +148,11 @@ class _Body extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
           child: FilterPills(
-            pills: _kFilters
+            pills: filters
                 .map((f) => (
-                      label: f,
-                      selected: filter == f,
-                      onTap: () => onFilter(f),
+                      label: f.label,
+                      selected: filter == f.id,
+                      onTap: () => onFilter(f.id),
                     ))
                 .toList(),
           ),
@@ -156,20 +166,20 @@ class _Body extends StatelessWidget {
               Row(
                 children: [
                   _StatBox(
-                    label: 'TOTAL WON',
+                    label: l10n?.historyTotalWon ?? 'TOTAL WON',
                     value: CompensationCalculator.formatIndian(wonAmount),
                     valueColor: AppColors.accent,
                   ),
                   const SizedBox(width: 24),
                   _StatBox(
-                    label: 'WIN RATE',
+                    label: l10n?.historyWinRate ?? 'WIN RATE',
                     value: '$winRate%',
                     valueColor: AppColors.textPrimaryLight,
                   ),
                 ],
               ),
-              const Text(
-                'This year',
+              Text(
+                l10n?.historyThisYear ?? 'This year',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -439,36 +449,40 @@ class _HistoryCard extends StatelessWidget {
 class _EmptyHistory extends StatelessWidget {
   const _EmptyHistory();
   @override
-  Widget build(BuildContext context) => const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('📜', style: TextStyle(fontSize: 40)),
-              SizedBox(height: 12),
-              Text(
-                'No history yet',
-                style: TextStyle(
-                  fontFamily: AppTypography.family,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimaryLight,
-                ),
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('📜', style: TextStyle(fontSize: 40)),
+            const SizedBox(height: 12),
+            Text(
+              l10n?.historyEmptyTitle ?? 'No history yet',
+              style: const TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimaryLight,
               ),
-              SizedBox(height: 4),
-              Text(
-                'Resolved and expired disputes will appear here.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textSecondaryLight,
-                ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              l10n?.historyEmptySubtitle ??
+                  'Resolved and expired disputes will appear here.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondaryLight,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
+  }
 }
 
 class _Loading extends StatelessWidget {

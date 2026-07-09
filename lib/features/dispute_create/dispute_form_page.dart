@@ -10,6 +10,7 @@ import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/services/sms_parser.dart';
@@ -74,7 +75,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       final amount = double.tryParse(_amountCtrl.text) ?? 0;
       if (amount <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Enter the debited amount')),
+          SnackBar(content: Text(AppLocalizations.of(context)?.formEnterAmount ?? 'Enter the debited amount')),
         );
         return;
       }
@@ -189,6 +190,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final type = DisputeType.fromId(widget.type);
     final rulesAsync = ref.watch(rulesEngineProvider);
     return Scaffold(
@@ -270,7 +272,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                       children: [
                         // BANK
                         FormFieldBox(
-                          label: 'Bank',
+                          label: l10n?.formLabelBank ?? 'Bank',
                           child: rulesAsync.when(
                             data: (rules) => BankPickerTile(
                               bankName: _bankName,
@@ -288,13 +290,13 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                         const SizedBox(height: 10),
                         // UTR
                         FormFieldBox(
-                          label: 'UTR / RRN NUMBER',
+                          label: l10n?.formLabelUtr ?? 'UTR / RRN NUMBER',
                           helper: _utrFound
-                              ? '✓ found'
+                              ? (l10n?.formUtrFound ?? '✓ found')
                               : (type == DisputeType.upiP2p ||
                                       type == DisputeType.upiP2m ||
                                       type == DisputeType.imps
-                                  ? '12 digits'
+                                  ? (l10n?.formUtrHint12 ?? '12 digits')
                                   : null),
                           focused: _utrFound,
                           child: Row(
@@ -339,7 +341,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                         const SizedBox(height: 10),
                         // AMOUNT
                         FormFieldBox(
-                          label: 'AMOUNT DEBITED',
+                          label: l10n?.formLabelAmountDebited ?? 'AMOUNT DEBITED',
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.baseline,
                             textBaseline: TextBaseline.alphabetic,
@@ -379,7 +381,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                         const SizedBox(height: 10),
                         // DATE
                         FormFieldBox(
-                          label: 'TXN DATE',
+                          label: l10n?.formLabelTxnDate ?? 'TXN DATE',
                           child: GestureDetector(
                             onTap: () async {
                               final picked = await showDatePicker(
@@ -395,7 +397,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                 Expanded(
                                   child: Text(
                                     _date == null
-                                        ? 'Select date'
+                                        ? (l10n?.formSelectDate ?? 'Select date')
                                         : _fmtDate(_date!),
                                     style: TextStyle(
                                       fontSize: 14,
@@ -415,7 +417,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                         const SizedBox(height: 10),
                         // DESCRIPTION
                         FormFieldBox(
-                          label: 'DESCRIPTION (optional)',
+                          label: l10n?.formLabelDescription ?? 'DESCRIPTION (optional)',
                           child: TextField(
                             controller: _descCtrl,
                             maxLines: 2,
