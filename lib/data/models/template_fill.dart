@@ -13,7 +13,6 @@ Map<String, String> fillValuesForDispute(Dispute? dispute) {
   }
 
   final amount = dispute.amount.toStringAsFixed(0);
-  final amountInr = 'Rs. $amount';
   final entity = dispute.entityName ?? '';
   final txnId = dispute.txnId;
   final d = dispute.txnDate;

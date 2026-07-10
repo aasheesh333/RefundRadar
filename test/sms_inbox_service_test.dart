@@ -21,16 +21,6 @@ void main() {
 
   group('ListSmsInboxBackend filter path', () {
     test('queryBankLikeMessages filters list', () async {
-      final svc = SmsInboxService(
-        backend: ListSmsInboxBackend(const [
-          InboxSms(id: 'a', address: 'X', body: 'hi'),
-          InboxSms(
-            id: 'b',
-            address: 'SBI',
-            body: 'Rs 100 debited UTR 111122223333 on 05/06/25',
-          ),
-        ]),
-      );
       // Permission may be denied in unit env — inject by skipping permission:
       // hasPermission uses permission_handler; we only unit-test filter helper.
       final bank = const InboxSms(

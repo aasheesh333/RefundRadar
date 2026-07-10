@@ -29,7 +29,8 @@ class OmbudsmanLetterPage extends ConsumerStatefulWidget {
   const OmbudsmanLetterPage({super.key, required this.disputeId});
 
   @override
-  ConsumerState<OmbudsmanLetterPage> createState() => _OmbudsmanLetterPageState();
+  ConsumerState<OmbudsmanLetterPage> createState() =>
+      _OmbudsmanLetterPageState();
 }
 
 class _OmbudsmanLetterPageState extends ConsumerState<OmbudsmanLetterPage> {
@@ -47,7 +48,8 @@ class _OmbudsmanLetterPageState extends ConsumerState<OmbudsmanLetterPage> {
 
   void _generateLetter(Dispute dispute) {
     final comp = CompensationCalculator.compute(dispute);
-    final letter = '''Complaint against: ${dispute.entityName ?? 'Bank'} (Bank / Payment System Participant)
+    final letter =
+        '''Complaint against: ${dispute.entityName ?? 'Bank'} (Bank / Payment System Participant)
 Category: Deficiency in Service - ${_subcategory(dispute.type)}
 
 Facts:
@@ -88,8 +90,11 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
     final uidAsync = ref.watch(userIdProvider);
     return Scaffold(
       appBar: AppBar(
-          title: Text(AppLocalizations.of(context)?.ombudsmanLetterTitle ??
-              'Ombudsman letter')),
+        title: Text(
+          AppLocalizations.of(context)?.ombudsmanLetterTitle ??
+              'Ombudsman letter',
+        ),
+      ),
       body: uidAsync.when(
         loading: () => const SkeletonList(itemCount: 3),
         error: (e, _) => BrandedErrorBanner(
@@ -105,127 +110,150 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
           }
           final disputesAsync = ref.watch(disputesProvider(uid));
           return rulesAsync.when(
-        data: (rules) {
-          return disputesAsync.when(
+            data: (rules) {
+              return disputesAsync.when(
+                loading: () => const SkeletonList(itemCount: 3),
+                error: (e, _) => BrandedErrorBanner(
+                  message: e.toString(),
+                  onRetry: () => ref.invalidate(disputesProvider(uid)),
+                ),
+                data: (disputes) {
+                  Dispute? dispute;
+                  for (final d in disputes) {
+                    if (d.id == widget.disputeId) {
+                      dispute = d;
+                      break;
+                    }
+                  }
+                  if (dispute == null) {
+                    return BrandedErrorBanner(
+                      message: 'Dispute not found.',
+                      onRetry: () => ref.invalidate(disputesProvider(uid)),
+                    );
+                  }
+                  final liveDispute = dispute;
+                  return ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.primary),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppLocalizations.of(
+                                    context,
+                                  )?.ombudsmanPremiumFeature ??
+                                  'Premium feature',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              AppLocalizations.of(
+                                    context,
+                                  )?.ombudsmanPremiumBlurb ??
+                                  'Generate a pre-filled Template C complaint summary that you can paste into cms.rbi.org.in.',
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (_letter.isEmpty)
+                        Center(
+                          child: FilledButton.icon(
+                            onPressed: () => _generateLetter(liveDispute),
+                            icon: const Icon(Icons.auto_fix_high),
+                            label: Text(
+                              AppLocalizations.of(context)?.ombudsmanGenerate ??
+                                  'Generate letter',
+                            ),
+                          ),
+                        )
+                      else ...[
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: SelectableText(_letter),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => Clipboard.setData(
+                                  ClipboardData(text: _letter),
+                                ),
+                                icon: const Icon(Icons.copy),
+                                label: Text(
+                                  AppLocalizations.of(context)?.ombudsmanCopy ??
+                                      'Copy',
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: FilledButton.icon(
+                                onPressed: () => launchExternalUrl(
+                                  rules.officialLinks['rbi_cms'] ??
+                                      'https://cms.rbi.org.in',
+                                ),
+                                icon: const Icon(Icons.open_in_new),
+                                label: Text(
+                                  AppLocalizations.of(
+                                        context,
+                                      )?.ombudsmanOpenCms ??
+                                      'Open cms.rbi.org.in',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        OutlinedButton.icon(
+                          onPressed: () =>
+                              Clipboard.setData(ClipboardData(text: _letter)),
+                          icon: const Icon(Icons.share),
+                          label: Text(
+                            AppLocalizations.of(context)?.ombudsmanShareCopy ??
+                                'Share (copy to clipboard)',
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                      Text(
+                        'Refund Radar is an independent informational tool. '
+                        'It is not affiliated with RBI, NPCI, NHAI, IHMCL, or any bank.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppThemeColors.of(context).textTertiary,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
             loading: () => const SkeletonList(itemCount: 3),
             error: (e, _) => BrandedErrorBanner(
               message: e.toString(),
-              onRetry: () => ref.invalidate(disputesProvider(uid)),
+              onRetry: () => ref.invalidate(rulesEngineProvider),
             ),
-            data: (disputes) {
-              Dispute? dispute;
-              for (final d in disputes) {
-                if (d.id == widget.disputeId) {
-                  dispute = d;
-                  break;
-                }
-              }
-              if (dispute == null) {
-                return BrandedErrorBanner(
-                  message: 'Dispute not found.',
-                  onRetry: () => ref.invalidate(disputesProvider(uid)),
-                );
-              }
-              final liveDispute = dispute;
-              return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)?.ombudsmanPremiumFeature ??
-                          'Premium feature',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w600, color: AppColors.primary),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      AppLocalizations.of(context)?.ombudsmanPremiumBlurb ??
-                          'Generate a pre-filled Template C complaint summary that you can paste into cms.rbi.org.in.',
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              if (_letter.isEmpty)
-                Center(
-                  child: FilledButton.icon(
-                    onPressed: () => _generateLetter(liveDispute),
-                    icon: const Icon(Icons.auto_fix_high),
-                    label: Text(AppLocalizations.of(context)?.ombudsmanGenerate ??
-                        'Generate letter'),
-                  ),
-                )
-              else ...[
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: SelectableText(_letter),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => Clipboard.setData(ClipboardData(text: _letter)),
-                        icon: const Icon(Icons.copy),
-                        label: Text(
-                            AppLocalizations.of(context)?.ombudsmanCopy ?? 'Copy'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: () => launchExternalUrl(rules.officialLinks['rbi_cms'] ?? 'https://cms.rbi.org.in'),
-                        icon: const Icon(Icons.open_in_new),
-                        label: Text(AppLocalizations.of(context)?.ombudsmanOpenCms ??
-                            'Open cms.rbi.org.in'),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: () => Clipboard.setData(ClipboardData(text: _letter)),
-                  icon: const Icon(Icons.share),
-                  label: Text(AppLocalizations.of(context)?.ombudsmanShareCopy ??
-                      'Share (copy to clipboard)'),
-                ),
-              ],
-              const SizedBox(height: 24),
-              Text(
-                'Refund Radar is an independent informational tool. '
-                'It is not affiliated with RBI, NPCI, NHAI, IHMCL, or any bank.',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppThemeColors.of(context).textTertiary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          );
-            },
           );
         },
-        loading: () => const SkeletonList(itemCount: 3),
-        error: (e, _) => BrandedErrorBanner(
-          message: e.toString(),
-          onRetry: () => ref.invalidate(rulesEngineProvider),
-        ),
-          );
-          },
-        ),
       ),
     );
   }

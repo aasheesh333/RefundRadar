@@ -141,7 +141,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
             child: DropdownButtonFormField<String>(
-              value: selected?.id,
+              initialValue: selected?.id,
               decoration: InputDecoration(
                 labelText: 'Fill from dispute',
                 isDense: true,
