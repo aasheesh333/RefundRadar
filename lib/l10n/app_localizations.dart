@@ -7,44 +7,70 @@ class AppLocalizations {
       Localizations.of<AppLocalizations>(context, AppLocalizations);
 
   static const AppLocalizationsDelegate delegate = AppLocalizationsDelegate();
-  static const localizationsDelegates = <LocalizationsDelegate<dynamic>>[delegate];
-
-  static const supportedLocales = <Locale>[
-    Locale('en'),
-    Locale('hi'),
+  static const localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
   ];
+
+  static const supportedLocales = <Locale>[Locale('en'), Locale('hi')];
 
   static const _strings = <String, Map<String, String>>{
     'appName': {'en': 'Refund Radar', 'hi': 'रिफंड रडार'},
-    'tagline': {'en': 'Bank owes you. We track it.', 'hi': 'पैसा अटका है? हम वसूली का रास्ता दिखाएँगे।'},
+    'tagline': {
+      'en': 'Bank owes you. We track it.',
+      'hi': 'पैसा अटका है? हम वसूली का रास्ता दिखाएँगे।',
+    },
     'onboardSkip': {'en': 'Skip', 'hi': 'स्किप'},
     'onboardCta': {'en': 'Start free', 'hi': 'मुफ़्त शुरू करें'},
-    'onboardSlide1Title': {'en': '₹100/day — banks owe YOU\nfor failed UPI', 'hi': '₹100/दिन — बैंक आपको देता\nUPI फेल होने पर'},
-    'onboardSlide1Desc': {'en': 'RBI rules make banks pay compensation for delayed refunds.', 'hi': 'RBI नियमों के तहत देरी पर बैंक देरता है।'},
-    'onboardSlide2Title': {'en': 'FASTag double-cut?\n30 din ka window', 'hi': 'FASTag डबल कट?\n30 दिन की सीमा'},
-    'onboardSlide2Desc': {'en': 'NPCI mandates 30 days to dispute toll deductions.', 'hi': 'NPCI 30 दिन में शिकायत करने देता है।'},
-    'onboardSlide3Title': {'en': 'We guide, you claim\nRBI-rule backed', 'hi': 'हम रास्ता, आप दावा\nRBI नियम समर्थित'},
-    'onboardSlide3Desc': {'en': 'Smart deadlines, pre-made complaints, escalation ladder.', 'hi': 'स्मार्ट समय-सीमा, तैयार शिकायतें, बढ़ते कदम।'},
+    'onboardSlide1Title': {
+      'en': '₹100/day — banks owe YOU\nfor failed UPI',
+      'hi': '₹100/दिन — बैंक आपको देता\nUPI फेल होने पर',
+    },
+    'onboardSlide1Desc': {
+      'en': 'RBI rules make banks pay compensation for delayed refunds.',
+      'hi': 'RBI नियमों के तहत देरी पर बैंक देरता है।',
+    },
+    'onboardSlide2Title': {
+      'en': 'FASTag double-cut?\n30 din ka window',
+      'hi': 'FASTag डबल कट?\n30 दिन की सीमा',
+    },
+    'onboardSlide2Desc': {
+      'en': 'NPCI mandates 30 days to dispute toll deductions.',
+      'hi': 'NPCI 30 दिन में शिकायत करने देता है।',
+    },
+    'onboardSlide3Title': {
+      'en': 'We guide, you claim\nRBI-rule backed',
+      'hi': 'हम रास्ता, आप दावा\nRBI नियम समर्थित',
+    },
+    'onboardSlide3Desc': {
+      'en': 'Smart deadlines, pre-made complaints, escalation ladder.',
+      'hi': 'स्मार्ट समय-सीमा, तैयार शिकायतें, बढ़ते कदम।',
+    },
     'homeOwedTitle': {'en': 'Total Owed', 'hi': 'कुल देय'},
-    'homeOwedSubtitle': {'en': 'across {count} disputes, growing ₹{perDay}/day', 'hi': '{count} विवादों में, ₹{perDay}/दिन बढ़ रहा'},
+    'homeOwedSubtitle': {
+      'en': 'across {count} disputes, growing ₹{perDay}/day',
+      'hi': '{count} विवादों में, ₹{perDay}/दिन बढ़ रहा',
+    },
     'homeNewDispute': {'en': 'New dispute', 'hi': 'नया विवाद'},
     'homeEmptyTitle': {'en': 'No disputes yet', 'hi': 'अभी कोई विवाद नहीं'},
-    'homeEmptySubtitle': {'en': 'Add your first stuck transaction to start tracking compensation.', 'hi': 'पहला अटका पैसा जोड़कर वसूली शुरू करें।'},
+    'homeEmptySubtitle': {
+      'en': 'Add your first stuck transaction to start tracking compensation.',
+      'hi': 'पहला अटका पैसा जोड़कर वसूली शुरू करें।',
+    },
     'homeAddDispute': {'en': 'Add dispute', 'hi': 'विवाद जोड़ें'},
     'homeActiveDisputes': {
       'en': '{count} active disputes',
-      'hi': '{count} सक्रिय विवाद'
+      'hi': '{count} सक्रिय विवाद',
     },
     'homeActiveDisputeOne': {
       'en': '{count} active dispute',
-      'hi': '{count} सक्रिय विवाद'
+      'hi': '{count} सक्रिय विवाद',
     },
     'homeYoureOwed': {'en': "YOU'RE OWED", 'hi': 'आपको मिलना है'},
     'homeDisputeCount': {'en': '{count} disputes', 'hi': '{count} विवाद'},
     'homeDisputeCountOne': {'en': '{count} dispute', 'hi': '{count} विवाद'},
     'cardDeadlineMissed': {
       'en': '⚠ Deadline missed — escalate now',
-      'hi': '⚠ समय-सीमा चूकी — अभी बढ़ाएँ'
+      'hi': '⚠ समय-सीमा चूकी — अभी बढ़ाएँ',
     },
     'cardDaysLeft': {'en': '{days} days left', 'hi': '{days} दिन बाकी'},
     'cardExpired': {'en': 'Expired', 'hi': 'समाप्त'},
@@ -54,35 +80,65 @@ class AppLocalizations {
     'settingsComingSoon': {'en': 'Coming soon', 'hi': 'जल्द आ रहा है'},
     'settingsDailyCompSoon': {
       'en': 'Daily comp clock (Coming soon)',
-      'hi': 'दैनिक मुआवजा घड़ी (जल्द)'
+      'hi': 'दैनिक मुआवजा घड़ी (जल्द)',
     },
     'settingsWeeklyDigestSoon': {
       'en': 'Weekly digest (Coming soon)',
-      'hi': 'साप्ताहिक सारांश (जल्द)'
+      'hi': 'साप्ताहिक सारांश (जल्द)',
     },
-    'disputeTypeUPI': {'en': 'Failed UPI / IMPS / ATM', 'hi': 'UPI / IMPS / ATM फेल'},
-    'disputeTypeFastag': {'en': 'FASTag wrong deduction', 'hi': 'FASTag गलत कटौती'},
-    'disputeTypeBankCharge': {'en': 'Wrong bank charge', 'hi': 'गलत बैंक शुल्क'},
+    'disputeTypeUPI': {
+      'en': 'Failed UPI / IMPS / ATM',
+      'hi': 'UPI / IMPS / ATM फेल',
+    },
+    'disputeTypeFastag': {
+      'en': 'FASTag wrong deduction',
+      'hi': 'FASTag गलत कटौती',
+    },
+    'disputeTypeBankCharge': {
+      'en': 'Wrong bank charge',
+      'hi': 'गलत बैंक शुल्क',
+    },
     'disputeTypeWrongTransfer': {'en': 'Wrong transfer', 'hi': 'गलत ट्रांसफर'},
     'formAmountLabel': {'en': 'Amount (₹)', 'hi': 'राशि (₹)'},
     'formDateLabel': {'en': 'Transaction date', 'hi': 'लेनदेन तिथि'},
-    'formTxnIdLabel': {'en': 'Transaction ID / UTR', 'hi': 'ट्रांजेक्शन आईडी / UTR'},
+    'formTxnIdLabel': {
+      'en': 'Transaction ID / UTR',
+      'hi': 'ट्रांजेक्शन आईडी / UTR',
+    },
     'formEntityLabel': {'en': 'Bank / Issuer', 'hi': 'बैंक / जारीकर्ता'},
     'formPasteSms': {'en': 'Paste from SMS', 'hi': 'SMS से पेस्ट करें'},
-    'formLiveChip': {'en': 'Deadline was {date} → Bank already owes you ₹{amount}', 'hi': 'सीमा {date} थी → बैंक ₹{amount} देने लायक'},
+    'formLiveChip': {
+      'en': 'Deadline was {date} → Bank already owes you ₹{amount}',
+      'hi': 'सीमा {date} थी → बैंक ₹{amount} देने लायक',
+    },
     'formCreateDispute': {'en': 'Create dispute', 'hi': 'विवाद बनाएं'},
-    'detailCompensationCounter': {'en': 'Compensation owed', 'hi': 'देय मुआवजा'},
+    'detailCompensationCounter': {
+      'en': 'Compensation owed',
+      'hi': 'देय मुआवजा',
+    },
     'detailNextAction': {'en': 'Next action', 'hi': 'अगला कदम'},
     'detailMarkFiled': {'en': 'Mark as filed', 'hi': 'दर्ज चिह्नित करें'},
     'detailTicketNumber': {'en': 'Ticket number', 'hi': 'टिकट नंबर'},
     'detailOpenWizard': {'en': 'Open wizard', 'hi': 'विज़ार्ड खोलें'},
-    'detailDangerWindowClosing': {'en': 'Dispute window closing soon!', 'hi': 'विवाद समय खत्म हो रहा!'},
+    'detailDangerWindowClosing': {
+      'en': 'Dispute window closing soon!',
+      'hi': 'विवाद समय खत्म हो रहा!',
+    },
     'wizardStepWhatToDo': {'en': 'What to do', 'hi': 'क्या करें'},
     'wizardStepWhereToGo': {'en': 'Where to go', 'hi': 'कहाँ जाएं'},
-    'wizardCopyComplaint': {'en': 'Copy complaint text', 'hi': 'शिकायत कॉपी करें'},
+    'wizardCopyComplaint': {
+      'en': 'Copy complaint text',
+      'hi': 'शिकायत कॉपी करें',
+    },
     'wizardDocuments': {'en': 'Documents needed', 'hi': 'ज़रूरी दस्तावेज़'},
-    'wizardDoneSetReminder': {'en': 'Done — set reminder', 'hi': 'हो गया — रिमाइंडर लगाएं'},
-    'paywallHeadline': {'en': 'Recover more. Unlimited disputes + 50+ templates.', 'hi': 'और वसूली करें। असीमित विवाद + 50+ टेम्पलेट।'},
+    'wizardDoneSetReminder': {
+      'en': 'Done — set reminder',
+      'hi': 'हो गया — रिमाइंडर लगाएं',
+    },
+    'paywallHeadline': {
+      'en': 'Recover more. Unlimited disputes + 50+ templates.',
+      'hi': 'और वसूली करें। असीमित विवाद + 50+ टेम्पलेट।',
+    },
     'paywallMonthly': {'en': 'Monthly ₹99', 'hi': 'मासिक ₹99'},
     'paywallYearly': {'en': 'Yearly ₹499', 'hi': 'वार्षिक ₹499'},
     'paywallSave': {'en': 'Save 58%', 'hi': '58% बचाएं'},
@@ -92,7 +148,10 @@ class AppLocalizations {
     'paywallPremiumRow': {'en': 'Premium', 'hi': 'प्रीमियम'},
     'paywallActiveDisputes': {'en': 'Active disputes', 'hi': 'सक्रिय विवाद'},
     'paywallTemplates': {'en': 'Templates', 'hi': 'टेम्पलेट'},
-    'paywallOmbudsmanLetter': {'en': 'Ombudsman letter generator', 'hi': 'ऑम्बड्समैन पत्र जनरेटर'},
+    'paywallOmbudsmanLetter': {
+      'en': 'Ombudsman letter generator',
+      'hi': 'ऑम्बड्समैन पत्र जनरेटर',
+    },
     'statusResolved': {'en': 'Resolved', 'hi': 'सुलझा'},
     'statusMissed': {'en': 'Missed', 'hi': 'छूटा'},
     'statusDayOf': {'en': 'Day {day} of {total}', 'hi': 'दिन {day}/{total}'},
@@ -103,116 +162,166 @@ class AppLocalizations {
     'typeImps': {'en': 'IMPS / NEFT failed', 'hi': 'IMPS / NEFT फेल'},
     'typeBankCharge': {'en': 'Bank charge', 'hi': 'बैंक शुल्क'},
     'typeWrongTransfer': {'en': 'Wrong transfer', 'hi': 'गलत ट्रांसफर'},
-    'typeSubUpiP2p': {'en': 'Debit, no credit · double debit', 'hi': 'कटौती, क्रेडिट नहीं · डबल डेबिट'},
+    'typeSubUpiP2p': {
+      'en': 'Debit, no credit · double debit',
+      'hi': 'कटौती, क्रेडिट नहीं · डबल डेबिट',
+    },
     'typeSubUpiP2m': {'en': 'Refund not received', 'hi': 'रिफंड नहीं मिला'},
-    'typeSubAtm': {'en': 'Cash debited, not dispensed', 'hi': 'पैसे कटे, निकले नहीं'},
-    'typeSubFastag': {'en': 'Double debit · failed tag read', 'hi': 'डबल डेबिट · टैग रीड फेल'},
-    'typeSubImps': {'en': 'Money debited, not credited', 'hi': 'पैसे कटे, जमा नहीं'},
+    'typeSubAtm': {
+      'en': 'Cash debited, not dispensed',
+      'hi': 'पैसे कटे, निकले नहीं',
+    },
+    'typeSubFastag': {
+      'en': 'Double debit · failed tag read',
+      'hi': 'डबल डेबिट · टैग रीड फेल',
+    },
+    'typeSubImps': {
+      'en': 'Money debited, not credited',
+      'hi': 'पैसे कटे, जमा नहीं',
+    },
     'typeSubBankCharge': {'en': 'Unauthorised debits', 'hi': 'अनधिकृत कटौती'},
-    'typeSubWrongTransfer': {'en': 'Wrong-account guidance', 'hi': 'गलत खाते की गाइड'},
-    'typeCompPerDay': {'en': '₹{amount}/day compensation', 'hi': '₹{amount}/दिन मुआवजा'},
+    'typeSubWrongTransfer': {
+      'en': 'Wrong-account guidance',
+      'hi': 'गलत खाते की गाइड',
+    },
+    'typeCompPerDay': {
+      'en': '₹{amount}/day compensation',
+      'hi': '₹{amount}/दिन मुआवजा',
+    },
     'wizardCallPrefix': {'en': 'Call', 'hi': 'कॉल'},
-    'wizardLevel1Title': {'en': 'Level 1 - UPI app / bank', 'hi': 'स्तर 1 - UPI ऐप / बैंक'},
+    'wizardLevel1Title': {
+      'en': 'Level 1 - UPI app / bank',
+      'hi': 'स्तर 1 - UPI ऐप / बैंक',
+    },
     'wizardLevel1Body': {
       'en':
           'File complaint in your UPI app (GPay/PhonePe/Paytm) or your bank. Note the ticket number. Bank has up to 30 days to respond.',
       'hi':
-          'अपने UPI ऐप (GPay/PhonePe/Paytm) या बैंक में शिकायत दर्ज करें। टिकट नंबर नोट करें। बैंक को 30 दिन तक जवाब देने का समय है।'
+          'अपने UPI ऐप (GPay/PhonePe/Paytm) या बैंक में शिकायत दर्ज करें। टिकट नंबर नोट करें। बैंक को 30 दिन तक जवाब देने का समय है।',
     },
-    'wizardLevel2Title': {'en': 'Level 2 - NPCI portal', 'hi': 'स्तर 2 - NPCI पोर्टल'},
+    'wizardLevel2Title': {
+      'en': 'Level 2 - NPCI portal',
+      'hi': 'स्तर 2 - NPCI पोर्टल',
+    },
     'wizardLevel2Body': {
       'en':
           'Visit NPCI Dispute Redressal portal. Needs UTR, amount, date, VPA, bank statement.',
       'hi':
-          'NPCI Dispute Redressal पोर्टल पर जाएँ। UTR, राशि, तिथि, VPA, बैंक स्टेटमेंट चाहिए।'
+          'NPCI Dispute Redressal पोर्टल पर जाएँ। UTR, राशि, तिथि, VPA, बैंक स्टेटमेंट चाहिए।',
     },
-    'wizardLevel3Title': {'en': 'Level 3 - RBI Ombudsman', 'hi': 'स्तर 3 - RBI ऑम्बड्समैन'},
+    'wizardLevel3Title': {
+      'en': 'Level 3 - RBI Ombudsman',
+      'hi': 'स्तर 3 - RBI ऑम्बड्समैन',
+    },
     'wizardLevel3Body': {
       'en':
           'File at cms.rbi.org.in within 90 days of bank response window. Category: Deficiency in Service. Free.',
       'hi':
-          'बैंक जवाब सीमा के 90 दिनों में cms.rbi.org.in पर दर्ज करें। श्रेणी: सेवा में कमी। मुफ़्त।'
+          'बैंक जवाब सीमा के 90 दिनों में cms.rbi.org.in पर दर्ज करें। श्रेणी: सेवा में कमी। मुफ़्त।',
     },
     'wizardSaveFailed': {
       'en': 'Could not save ticket. Try again.',
-      'hi': 'टिकट सेव नहीं हुआ। फिर कोशिश करें।'
+      'hi': 'टिकट सेव नहीं हुआ। फिर कोशिश करें।',
     },
     'detailTimelineFastagHeader': {
       'en': 'FASTag timeline (30-day window)',
-      'hi': 'FASTag टाइमलाइन (30-दिन सीमा)'
+      'hi': 'FASTag टाइमलाइन (30-दिन सीमा)',
     },
     'detailTimelineBankHeader': {
       'en': 'Bank timeline (30-day window)',
-      'hi': 'बैंक टाइमलाइन (30-दिन सीमा)'
+      'hi': 'बैंक टाइमलाइन (30-दिन सीमा)',
     },
     'detailTimelineRbiHeader': {
       'en': 'RBI timeline (T-day = 0)',
-      'hi': 'RBI टाइमलाइन (T-दिन = 0)'
+      'hi': 'RBI टाइमलाइन (T-दिन = 0)',
     },
-    'detailTlWtRequest': {'en': 'Request to own bank', 'hi': 'अपने बैंक को अनुरोध'},
+    'detailTlWtRequest': {
+      'en': 'Request to own bank',
+      'hi': 'अपने बैंक को अनुरोध',
+    },
     'detailTlWtRequestDetail': {
       'en': 'Contact your bank to reach the beneficiary',
-      'hi': 'लाभार्थी तक पहुँचने के लिए बैंक से संपर्क करें'
+      'hi': 'लाभार्थी तक पहुँचने के लिए बैंक से संपर्क करें',
     },
     'detailTlWtNpci': {'en': 'NPCI DRM entry', 'hi': 'NPCI DRM दर्ज'},
     'detailTlWtNpciDetail': {
       'en': 'Within 3 days — wrong-transfer portal',
-      'hi': '3 दिनों में — गलत-ट्रांसफर पोर्टल'
+      'hi': '3 दिनों में — गलत-ट्रांसफर पोर्टल',
     },
     'detailTlWtCyber': {'en': 'Cyber cell complaint', 'hi': 'साइबर सेल शिकायत'},
     'detailTlWtCyberDetail': {
       'en': 'If fraud suspected',
-      'hi': 'यदि धोखाधड़ी संदेह हो'
+      'hi': 'यदि धोखाधड़ी संदेह हो',
     },
     'detailTlWtLegal': {'en': 'Legal notice', 'hi': 'कानूनी नोटिस'},
-    'detailTlWtLegalDetail': {'en': 'Final escalation', 'hi': 'अंतिम एस्केलेशन'},
+    'detailTlWtLegalDetail': {
+      'en': 'Final escalation',
+      'hi': 'अंतिम एस्केलेशन',
+    },
     'detailTlFtReported': {'en': 'Reported', 'hi': 'रिपोर्ट किया'},
     'detailTlFtReportedDetail': {
       'en': 'Day 0 · transaction flagged',
-      'hi': 'दिन 0 · लेनदेन चिह्नित'
+      'hi': 'दिन 0 · लेनदेन चिह्नित',
     },
     'detailTlFtIssuer': {'en': 'Issuer bank', 'hi': 'जारीकर्ता बैंक'},
     'detailTlFtIssuerDetail': {
       'en': '{bank} dispute section · 7-10 days',
-      'hi': '{bank} विवाद अनुभाग · 7-10 दिन'
+      'hi': '{bank} विवाद अनुभाग · 7-10 दिन',
     },
     'detailTlFtIssuerGeneric': {
       'en': 'Issuer bank · 7-10 days',
-      'hi': 'जारीकर्ता बैंक · 7-10 दिन'
+      'hi': 'जारीकर्ता बैंक · 7-10 दिन',
     },
     'detailTlFtHelpline': {'en': '1033 Helpline', 'hi': '1033 हेल्पलाइन'},
     'detailTlFtHelplineDetail': {
       'en': 'If no reply in 7 days',
-      'hi': 'यदि 7 दिनों में जवाब नहीं'
+      'hi': 'यदि 7 दिनों में जवाब नहीं',
     },
     'detailTlFtIhmcl': {
       'en': 'IHMCL false-deduction email',
-      'hi': 'IHMCL गलत-कटौती ईमेल'
+      'hi': 'IHMCL गलत-कटौती ईमेल',
     },
     'detailTlFtIhmclDetail': {
       'en': 'falsededuction@ihmcl.com',
-      'hi': 'falsededuction@ihmcl.com'
+      'hi': 'falsededuction@ihmcl.com',
     },
     'detailTlFtOmbudsman': {'en': 'RBI Ombudsman', 'hi': 'RBI ऑम्बड्समैन'},
     'detailTlFtOmbudsmanDetail': {
       'en': 'If unresolved after 30 days',
-      'hi': 'यदि 30 दिनों बाद भी अनसुलझा'
+      'hi': 'यदि 30 दिनों बाद भी अनसुलझा',
     },
     'remindersTitle': {'en': 'Reminders', 'hi': 'रिमाइंडर'},
-    'remindersEmpty': {'en': 'No upcoming reminders', 'hi': 'कोई रिमाइंडर नहीं'},
+    'remindersEmpty': {
+      'en': 'No upcoming reminders',
+      'hi': 'कोई रिमाइंडर नहीं',
+    },
     'settingsLanguage': {'en': 'Language', 'hi': 'भाषा'},
     'settingsTheme': {'en': 'Theme', 'hi': 'थीम'},
     'settingsNotifications': {'en': 'Notifications', 'hi': 'सूचनाएं'},
-    'settingsManageSubscription': {'en': 'Manage subscription', 'hi': 'सदस्यता प्रबंधित करें'},
+    'settingsManageSubscription': {
+      'en': 'Manage subscription',
+      'hi': 'सदस्यता प्रबंधित करें',
+    },
     'settingsPrivacyPolicy': {'en': 'Privacy policy', 'hi': 'गोपनीयता नीति'},
     'settingsDisclaimers': {'en': 'Disclaimers', 'hi': 'अस्वीकरण'},
     'settingsDeleteData': {'en': 'Delete my data', 'hi': 'मेरा डेटा हटाएं'},
-    'settingsDeleteConfirm': {'en': 'Delete all your data? This cannot be undone.', 'hi': 'सारा डेटा हटाएं? यह पूर्ववत नहीं।'},
+    'settingsDeleteConfirm': {
+      'en': 'Delete all your data? This cannot be undone.',
+      'hi': 'सारा डेटा हटाएं? यह पूर्ववत नहीं।',
+    },
     'disclaimerTitle': {'en': 'Disclaimer', 'hi': 'अस्वीकरण'},
-    'disclaimerBody': {'en': 'Refund Radar is an independent informational tool. It is not affiliated with RBI, NPCI, NHAI, IHMCL, or any bank. We never ask for banking passwords, OTPs, or PINs. Complaints are filed by you on official portals. Compensation estimates are based on published RBI/NPCI rules and actual outcomes depend on your bank/regulator.', 'hi': 'रिफंड रडार एक स्वतंत्र जानकारी उपकरण है। यह RBI, NPCI, NHAI, IHMCL या किसी बैंक से संबद्ध नहीं है। हम कभी बैंकिंग पासवर्ड, OTP या PIN नहीं माँगते। शिकायतें आप आधिकारिक पोर्टल पर दर्ज करते हैं।'},
+    'disclaimerBody': {
+      'en':
+          'Refund Radar is an independent informational tool. It is not affiliated with RBI, NPCI, NHAI, IHMCL, or any bank. We never ask for banking passwords, OTPs, or PINs. Complaints are filed by you on official portals. Compensation estimates are based on published RBI/NPCI rules and actual outcomes depend on your bank/regulator.',
+      'hi':
+          'रिफंड रडार एक स्वतंत्र जानकारी उपकरण है। यह RBI, NPCI, NHAI, IHMCL या किसी बैंक से संबद्ध नहीं है। हम कभी बैंकिंग पासवर्ड, OTP या PIN नहीं माँगते। शिकायतें आप आधिकारिक पोर्टल पर दर्ज करते हैं।',
+    },
     'templatesTitle': {'en': 'Template Library', 'hi': 'टेम्पलेट लाइब्रेरी'},
     'templatesSearch': {'en': 'Search templates', 'hi': 'टेम्पलेट खोजें'},
-    'templatesUnlock': {'en': 'Unlock 50+ templates', 'hi': '50+ टेम्पलेट अनलॉक करें'},
+    'templatesUnlock': {
+      'en': 'Unlock 50+ templates',
+      'hi': '50+ टेम्पलेट अनलॉक करें',
+    },
     'templatesLocked': {'en': 'Locked', 'hi': 'लॉक्ड'},
     'loading': {'en': 'Loading...', 'hi': 'लोड हो रहा...'},
     'errorGeneric': {'en': 'Something went wrong', 'hi': 'कुछ गलत हुआ'},
@@ -225,31 +334,49 @@ class AppLocalizations {
     'commonOk': {'en': 'OK', 'hi': 'ओके'},
     'commonOffline': {
       'en': 'You are offline — changes will sync later.',
-      'hi': 'आप ऑफ़लाइन हैं — बदलाव बाद में सिंक होंगे।'
+      'hi': 'आप ऑफ़लाइन हैं — बदलाव बाद में सिंक होंगे।',
     },
-    'commonCopied': {'en': 'Copied to clipboard', 'hi': 'क्लिपबोर्ड पर कॉपी हुआ'},
+    'commonCopied': {
+      'en': 'Copied to clipboard',
+      'hi': 'क्लिपबोर्ड पर कॉपी हुआ',
+    },
     'commonClose': {'en': 'Close', 'hi': 'बंद करें'},
     // Screens still on hardcoded strings (Phase 3 background migration).
     'wizardTitle': {'en': 'Escalation steps', 'hi': 'बढ़ते कदम'},
     'wizardMarkFiled': {'en': 'Mark as filed', 'hi': 'दर्ज चिह्नित करें'},
     'wizardOpenPortal': {'en': 'Open portal', 'hi': 'पोर्टल खोलें'},
-    'wizardTicketNumber': {'en': 'Ticket / complaint number', 'hi': 'टिकट / शिकायत नंबर'},
+    'wizardTicketNumber': {
+      'en': 'Ticket / complaint number',
+      'hi': 'टिकट / शिकायत नंबर',
+    },
     'paywallTitle': {'en': 'Go Premium', 'hi': 'प्रीमियम लें'},
     'ombudsmanLetterTitle': {'en': 'Ombudsman letter', 'hi': 'ओम्बड्समैन पत्र'},
     'ombudsmanGenerate': {'en': 'Generate letter', 'hi': 'पत्र बनाएं'},
     'ombudsmanCopy': {'en': 'Copy', 'hi': 'कॉपी'},
-    'ombudsmanOpenCms': {'en': 'Open cms.rbi.org.in', 'hi': 'cms.rbi.org.in खोलें'},
-    'ombudsmanShareCopy': {'en': 'Share (copy to clipboard)', 'hi': 'शेयर (क्लिपबोर्ड पर कॉपी)'},
+    'ombudsmanOpenCms': {
+      'en': 'Open cms.rbi.org.in',
+      'hi': 'cms.rbi.org.in खोलें',
+    },
+    'ombudsmanShareCopy': {
+      'en': 'Share (copy to clipboard)',
+      'hi': 'शेयर (क्लिपबोर्ड पर कॉपी)',
+    },
     'disputeTypeContinue': {'en': 'Continue →', 'hi': 'जारी रखें →'},
-    'remindersNoneUpcoming': {'en': 'No upcoming reminders', 'hi': 'कोई आगामी रिमाइंडर नहीं'},
-    'remindersTrackNew': {'en': 'Track a new dispute', 'hi': 'नया विवाद ट्रैक करें'},
+    'remindersNoneUpcoming': {
+      'en': 'No upcoming reminders',
+      'hi': 'कोई आगामी रिमाइंडर नहीं',
+    },
+    'remindersTrackNew': {
+      'en': 'Track a new dispute',
+      'hi': 'नया विवाद ट्रैक करें',
+    },
     'remindersEmptySubtitle': {
       'en':
           'Reminders appear when you create or escalate a dispute — '
           'so you never miss a 30-day follow-up window.',
       'hi':
           'विवाद बनाने या बढ़ाने पर रिमाइंडर आते हैं — ताकि 30-दिन '
-          'फॉलो-अप सीमा न चूके।'
+          'फॉलो-अप सीमा न चूके।',
     },
     'addBanksSearchHint': {'en': 'Search your bank', 'hi': 'अपना बैंक खोजें'},
     'settingsDisclaimerTitle': {'en': 'Disclaimer', 'hi': 'अस्वीकरण'},
@@ -259,14 +386,17 @@ class AppLocalizations {
     'settingsAutoDetectUtr': {'en': 'Auto-detect UTR', 'hi': 'UTR ऑटो-पहचान'},
     'settingsSmsPermissionHint': {
       'en': 'SMS permission manages under Android settings.',
-      'hi': 'SMS अनुमति Android सेटिंग्स में मिलती है।'
+      'hi': 'SMS अनुमति Android सेटिंग्स में मिलती है।',
     },
     'settingsOnDeviceLabel': {'en': 'On-device. ', 'hi': 'ऑन-डिवाइस। '},
     'settingsNothingLeaves': {
       'en': 'Nothing leaves your phone.',
-      'hi': 'आपका फ़ोन से कुछ बाहर नहीं जाता।'
+      'hi': 'आपका फ़ोन से कुछ बाहर नहीं जाता।',
     },
-    'settingsDeadlineReminders': {'en': 'Deadline reminders', 'hi': 'समय-सीमा रिमाइंडर'},
+    'settingsDeadlineReminders': {
+      'en': 'Deadline reminders',
+      'hi': 'समय-सीमा रिमाइंडर',
+    },
     'settingsDailyComp': {'en': 'Daily comp clock', 'hi': 'दैनिक मुआवजा घड़ी'},
     'settingsWeeklyDigest': {'en': 'Weekly digest', 'hi': 'साप्ताहिक सारांश'},
     'settingsEnglish': {'en': 'English', 'hi': 'अंग्रेज़ी'},
@@ -281,71 +411,155 @@ class AppLocalizations {
     'settingsLegal': {'en': 'Legal', 'hi': 'क़ानूनी'},
     'settingsLegalRow': {
       'en': 'Disclaimer · Privacy · Delete data',
-      'hi': 'अस्वीकरण · गोपनीयता · डेटा हटाएं'
+      'hi': 'अस्वीकरण · गोपनीयता · डेटा हटाएं',
     },
     'settingsNotAffiliated': {
       'en': 'Not affiliated with RBI/NPCI/banks',
-      'hi': 'RBI/NPCI/बैंक से संबद्ध नहीं'
+      'hi': 'RBI/NPCI/बैंक से संबद्ध नहीं',
     },
     'settingsSignOut': {'en': 'Sign out', 'hi': 'साइन आउट'},
     'settingsSignOutNotImplemented': {
       'en': 'Sign out not implemented.',
-      'hi': 'साइन आउट लागू नहीं।'
+      'hi': 'साइन आउट लागू नहीं।',
     },
     'settingsProBadge': {'en': '⭐ Pro', 'hi': '⭐ प्रो'},
     'settingsLocalProfile': {'en': 'Local profile', 'hi': 'स्थानीय प्रोफ़ाइल'},
-    'settingsRefundRadarUser': {'en': 'Refund Radar user', 'hi': 'रिफंड रडार उपयोगकर्ता'},
+    'settingsRefundRadarUser': {
+      'en': 'Refund Radar user',
+      'hi': 'रिफंड रडार उपयोगकर्ता',
+    },
     // Escalate page.
     'escalateAppBarTitle': {'en': 'Escalate', 'hi': 'कदम बढ़ाएं'},
-    'escalateMaxClaim': {'en': 'Maximum you can claim', 'hi': 'अधिकतम दावा राशि'},
+    'escalateMaxClaim': {
+      'en': 'Maximum you can claim',
+      'hi': 'अधिकतम दावा राशि',
+    },
     'escalateRefundPlusComp': {
       'en': '{refund} refund + {comp} comp ({days} days × ₹100/day)',
-      'hi': '{refund} वापसी + {comp} मुआवजा ({days} दिन × ₹100/दिन)'
+      'hi': '{refund} वापसी + {comp} मुआवजा ({days} दिन × ₹100/दिन)',
     },
     'escalateSendTo': {'en': 'SEND TO', 'hi': 'भेजें'},
     'escalateNodalOfficer': {'en': 'Nodal Officer', 'hi': 'नोडल अधिकारी'},
-    'escalateSlaDays': {'en': '{email} · SLA 10d', 'hi': '{email} · SLA 10 दिन'},
-    'escalateCcOmbudsman': {'en': 'CC RBI Ombudsman', 'hi': 'CC RBI ऑम्बड्समैन'},
+    'escalateSlaDays': {
+      'en': '{email} · SLA 10d',
+      'hi': '{email} · SLA 10 दिन',
+    },
+    'escalateCcOmbudsman': {
+      'en': 'CC RBI Ombudsman',
+      'hi': 'CC RBI ऑम्बड्समैन',
+    },
     'escalateEmailPreview': {'en': 'EMAIL PREVIEW', 'hi': 'ईमेल पूर्वावलोकन'},
-    'escalateEmailSubject': {'en': 'Subject: Escalation — UTR {txnId}', 'hi': 'विषय: एस्केलेशन — UTR {txnId}'},
-    'escalateEmailGreeting': {'en': 'Dear Nodal Officer,', 'hi': 'प्रिय नोडल अधिकारी,'},
-    'escalateEmailAutoDrafted': {'en': '[auto-drafted, tap to edit]', 'hi': '[स्वतः तैयार, संपादित करें]'},
-    'escalateStandardsCompliant': {'en': 'Standards-compliant · view source', 'hi': 'मानक-अनुरूप · स्रोत देखें'},
+    'escalateEmailSubject': {
+      'en': 'Subject: Escalation — UTR {txnId}',
+      'hi': 'विषय: एस्केलेशन — UTR {txnId}',
+    },
+    'escalateEmailGreeting': {
+      'en': 'Dear Nodal Officer,',
+      'hi': 'प्रिय नोडल अधिकारी,',
+    },
+    'escalateEmailAutoDrafted': {
+      'en': '[auto-drafted, tap to edit]',
+      'hi': '[स्वतः तैयार, संपादित करें]',
+    },
+    'escalateStandardsCompliant': {
+      'en': 'Standards-compliant · view source',
+      'hi': 'मानक-अनुरूप · स्रोत देखें',
+    },
     'escalateSendWithinPrefix': {'en': 'Send within ', 'hi': 'भेजें '},
     'escalateSendWithin24h': {'en': '24 hours', 'hi': '24 घंटे'},
     'escalateSendWithinSuffix': {
       'en': ' to claim full {comp} comp retroactively.',
-      'hi': ' अनुपात में पूरा {comp} मुआवजा पाने के लिए।'
+      'hi': ' अनुपात में पूरा {comp} मुआवजा पाने के लिए।',
     },
     'escalateEdit': {'en': 'Edit', 'hi': 'संपादित करें'},
     'escalateSend': {'en': 'Send escalation →', 'hi': 'एस्केलेशन भेजें →'},
-    'escalateCopiedToClipboard': {'en': 'Email copied to clipboard', 'hi': 'ईमेल क्लिपबोर्ड पर कॉपी हुआ'},
-    'escalateDrafted': {'en': 'Drafted — open your mail app: {url}', 'hi': 'तैयार है — अपना मेल ऐप खोलें: {url}'},
+    'escalateCopiedToClipboard': {
+      'en': 'Email copied to clipboard',
+      'hi': 'ईमेल क्लिपबोर्ड पर कॉपी हुआ',
+    },
+    'escalateDrafted': {
+      'en': 'Drafted — open your mail app: {url}',
+      'hi': 'तैयार है — अपना मेल ऐप खोलें: {url}',
+    },
     // Dispute detail activity log + timeline.
-    'detailTimelineL1': {'en': 'File L1 complaint', 'hi': 'L1 शिकायत दर्ज करें'},
+    'detailTimelineL1': {
+      'en': 'File L1 complaint',
+      'hi': 'L1 शिकायत दर्ज करें',
+    },
     'detailTimelineReported': {'en': 'Reported', 'hi': 'रिपोर्ट किया'},
-    'detailTimelineReportedDetail': {'en': 'T+0 · {date}', 'hi': 'T+0 · {date}'},
+    'detailTimelineReportedDetail': {
+      'en': 'T+0 · {date}',
+      'hi': 'T+0 · {date}',
+    },
     'detailTimelineAck': {'en': 'Bank must acknowledge', 'hi': 'बैंक पावती दे'},
-    'detailTimelineAckDone': {'en': 'T+1 · acknowledged', 'hi': 'T+1 · पावती मिली'},
+    'detailTimelineAckDone': {
+      'en': 'T+1 · acknowledged',
+      'hi': 'T+1 · पावती मिली',
+    },
     'detailTimelineAckPending': {'en': 'T+1 · by today', 'hi': 'T+1 · आज तक'},
     'detailTimelineRefund': {'en': 'Refund due', 'hi': 'वापसी देय'},
-    'detailTimelineRefundDone': {'en': 'T+{tat} · refunded', 'hi': 'T+{tat} · वापस हुई'},
-    'detailTimelineRefundMissed': {'en': 'T+{tat} · deadline missed — escalate', 'hi': 'T+{tat} · समय खत्म — बढ़ाएं'},
-    'detailTimelineRefundPending': {'en': 'T+{tat} · {date} (in {days}d)', 'hi': 'T+{tat} · {date} ({days}दिन में)'},
-    'detailTimelineEscalate': {'en': 'Escalate to nodal officer', 'hi': 'नोडल अधिकारी को भेजें'},
-    'detailTimelineOmbudsman': {'en': 'RBI Banking Ombudsman', 'hi': 'RBI बैंकिंग ऑम्बड्समैन'},
-    'detailTimelineL2Detail': {'en': 'Filed · {ticket}', 'hi': 'दर्ज · {ticket}'},
-    'detailTimelineL2Pending': {'en': 'If no refund by T+{tat}', 'hi': 'यदि T+{tat} तक वापसी नहीं'},
-    'detailTimelineL3Detail': {'en': 'Filed · {ticket}', 'hi': 'दर्ज · {ticket}'},
-    'detailTimelineL3Pending': {'en': 'If unresolved after T+10 (30 days)', 'hi': 'यदि T+10 (30 दिन) बाद भी अनसुलझा'},
-    'detailActivityHeader': {'en': 'Activity · {count} events', 'hi': 'गतिविधि · {count} घटनाएं'},
-    'detailActivityTicket': {'en': 'Ticket {ticket} filed', 'hi': 'टिकट {ticket} दर्ज'},
-    'detailActivityTicketMeta': {'en': 'Auto-generated · {date}', 'hi': 'स्वतः तैयार · {date}'},
-    'detailActivityAutoUtr': {'en': 'Auto-detected UTR from SMS', 'hi': 'SMS से UTR ऑटो-पहचान'},
-    'detailActivityMarkedActive': {'en': 'Dispute marked active', 'hi': 'विवाद सक्रिय चिह्नित'},
+    'detailTimelineRefundDone': {
+      'en': 'T+{tat} · refunded',
+      'hi': 'T+{tat} · वापस हुई',
+    },
+    'detailTimelineRefundMissed': {
+      'en': 'T+{tat} · deadline missed — escalate',
+      'hi': 'T+{tat} · समय खत्म — बढ़ाएं',
+    },
+    'detailTimelineRefundPending': {
+      'en': 'T+{tat} · {date} (in {days}d)',
+      'hi': 'T+{tat} · {date} ({days}दिन में)',
+    },
+    'detailTimelineEscalate': {
+      'en': 'Escalate to nodal officer',
+      'hi': 'नोडल अधिकारी को भेजें',
+    },
+    'detailTimelineOmbudsman': {
+      'en': 'RBI Banking Ombudsman',
+      'hi': 'RBI बैंकिंग ऑम्बड्समैन',
+    },
+    'detailTimelineL2Detail': {
+      'en': 'Filed · {ticket}',
+      'hi': 'दर्ज · {ticket}',
+    },
+    'detailTimelineL2Pending': {
+      'en': 'If no refund by T+{tat}',
+      'hi': 'यदि T+{tat} तक वापसी नहीं',
+    },
+    'detailTimelineL3Detail': {
+      'en': 'Filed · {ticket}',
+      'hi': 'दर्ज · {ticket}',
+    },
+    'detailTimelineL3Pending': {
+      'en': 'If unresolved after T+10 (30 days)',
+      'hi': 'यदि T+10 (30 दिन) बाद भी अनसुलझा',
+    },
+    'detailActivityHeader': {
+      'en': 'Activity · {count} events',
+      'hi': 'गतिविधि · {count} घटनाएं',
+    },
+    'detailActivityTicket': {
+      'en': 'Ticket {ticket} filed',
+      'hi': 'टिकट {ticket} दर्ज',
+    },
+    'detailActivityTicketMeta': {
+      'en': 'Auto-generated · {date}',
+      'hi': 'स्वतः तैयार · {date}',
+    },
+    'detailActivityAutoUtr': {
+      'en': 'Auto-detected UTR from SMS',
+      'hi': 'SMS से UTR ऑटो-पहचान',
+    },
+    'detailActivityMarkedActive': {
+      'en': 'Dispute marked active',
+      'hi': 'विवाद सक्रिय चिह्नित',
+    },
     'detailActivityResolved': {'en': 'Dispute resolved', 'hi': 'विवाद सुलझा'},
     // Dispute form labels + validation.
-    'formEnterAmount': {'en': 'Enter the debited amount', 'hi': 'कटी हुई राशि दर्ज करें'},
+    'formEnterAmount': {
+      'en': 'Enter the debited amount',
+      'hi': 'कटी हुई राशि दर्ज करें',
+    },
     'formLabelBank': {'en': 'Bank', 'hi': 'बैंक'},
     'formLabelUtr': {'en': 'UTR / RRN NUMBER', 'hi': 'UTR / RRN नंबर'},
     'formUtrFound': {'en': '✓ found', 'hi': '✓ मिला'},
@@ -355,34 +569,40 @@ class AppLocalizations {
     'formSelectDate': {'en': 'Select date', 'hi': 'तिथि चुनें'},
     'formAuthRequired': {
       'en': 'Could not sign in. Please restart the app and try again.',
-      'hi': 'साइन इन नहीं हो सका। ऐप रीस्टार्ट करके फिर कोशिश करें।'
+      'hi': 'साइन इन नहीं हो सका। ऐप रीस्टार्ट करके फिर कोशिश करें।',
     },
     'formSelectBank': {'en': 'Select a bank', 'hi': 'बैंक चुनें'},
-    'formLabelDescription': {'en': 'DESCRIPTION (optional)', 'hi': 'विवरण (वैकल्पिक)'},
-    'ombudsmanPremiumFeature': {'en': 'Premium feature', 'hi': 'प्रीमियम सुविधा'},
+    'formLabelDescription': {
+      'en': 'DESCRIPTION (optional)',
+      'hi': 'विवरण (वैकल्पिक)',
+    },
+    'ombudsmanPremiumFeature': {
+      'en': 'Premium feature',
+      'hi': 'प्रीमियम सुविधा',
+    },
     'ombudsmanPremiumBlurb': {
       'en':
           'Generate a pre-filled Template C complaint summary that you can paste into cms.rbi.org.in.',
       'hi':
-          'cms.rbi.org.in में पेस्ट करने के लिए पहले से भरा Template C शिकायत सारांश बनाएं।'
+          'cms.rbi.org.in में पेस्ट करने के लिए पहले से भरा Template C शिकायत सारांश बनाएं।',
     },
     'paywallUnlimited': {'en': 'Unlimited', 'hi': 'असीमित'},
     'paywallHindiTemplates': {
       'en': 'Hindi premium templates',
-      'hi': 'हिंदी प्रीमियम टेम्पलेट'
+      'hi': 'हिंदी प्रीमियम टेम्पलेट',
     },
     'paywallRestored': {'en': 'Premium restored 🎉', 'hi': 'प्रीमियम बहाल 🎉'},
     'paywallNoPurchases': {
       'en': 'No purchases found.',
-      'hi': 'कोई खरीद नहीं मिली।'
+      'hi': 'कोई खरीद नहीं मिली।',
     },
     'paywallRestoreFailed': {
       'en': 'Restore failed: {error}',
-      'hi': 'बहाली विफल: {error}'
+      'hi': 'बहाली विफल: {error}',
     },
     'settingsSessionRefreshed': {
       'en': 'Session refreshed.',
-      'hi': 'सत्र रीफ़्रेश हो गया।'
+      'hi': 'सत्र रीफ़्रेश हो गया।',
     },
     // Home page remaining.
     'homeViewAllDisputes': {'en': 'View all disputes', 'hi': 'सभी विवाद देखें'},
@@ -393,7 +613,7 @@ class AppLocalizations {
     'historyEmptyTitle': {'en': 'No history yet', 'hi': 'अभी कोई इतिहास नहीं'},
     'historyEmptySubtitle': {
       'en': 'Resolved and expired disputes will appear here.',
-      'hi': 'सुलझे और समाप्त विवाद यहाँ दिखेंगे।'
+      'hi': 'सुलझे और समाप्त विवाद यहाँ दिखेंगे।',
     },
     'historyThisYear': {'en': 'This year', 'hi': 'इस वर्ष'},
     'historyFilterAll': {'en': 'All', 'hi': 'सभी'},
@@ -407,6 +627,126 @@ class AppLocalizations {
     // Template library.
     'templateLevelLabel': {'en': 'Level {level}', 'hi': 'स्तर {level}'},
     'templateProBadge': {'en': 'Pro', 'hi': 'प्रो'},
+    // Pass 2 residual i18n — dispute form / type page / escalate / wizard docs.
+    'formClipboardEmpty': {
+      'en': 'Clipboard empty — copy an SMS first.',
+      'hi': 'क्लिपबोर्ड खाली — पहले एक SMS कॉपी करें।',
+    },
+    'formSmsPermissionDenied': {
+      'en': 'SMS permission denied. You can still paste an SMS.',
+      'hi': 'SMS अनुमति अस्वीकृत। आप अभी भी SMS पेस्ट कर सकते हैं।',
+    },
+    'formNoBankSms': {
+      'en': 'No bank-like SMS found. Try paste from clipboard.',
+      'hi': 'बैंक जैसा SMS नहीं मिला। क्लिपबोर्ड से पेस्ट करें।',
+    },
+    'formPickBankSms': {'en': 'Pick a bank SMS', 'hi': 'बैंक SMS चुनें'},
+    'formInbox': {'en': 'Inbox', 'hi': 'इनबॉक्स'},
+    'formPaste': {'en': 'Paste', 'hi': 'पेस्ट'},
+    'formStep2Of4': {'en': 'STEP 2 OF 4', 'hi': 'चरण 2 / 4'},
+    'formDisputeDetails': {'en': 'Dispute details', 'hi': 'विवाद विवरण'},
+    'formEstimated': {'en': 'ESTIMATED', 'hi': 'अनुमानित'},
+    'formAddAmountToEstimate': {
+      'en': 'Add amount to estimate',
+      'hi': 'अनुमान के लिए राशि दर्ज करें',
+    },
+    'formClaimAmount': {'en': 'Claim {amount}', 'hi': 'दावा {amount}'},
+    'formClaimAmountCompo': {
+      'en': 'Claim {amount} + compo',
+      'hi': 'दावा {amount} + मुआवजा',
+    },
+    'formClaimAmountCompoDue': {
+      'en': 'Claim {amount} + {comp} compo',
+      'hi': 'दावा {amount} + {comp} मुआवजा',
+    },
+    'formWrongUpiNote': {
+      'en':
+          'Wrong UPI transfers are not covered by RBI compensation. Recovery depends on beneficiary consent via bank/NPCI.',
+      'hi':
+          'गलत UPI ट्रांसफर RBI मुआवजे में शामिल नहीं। वसूली बैंक/NPCI द्वारा लाभार्थी की सहमति पर निर्भर है।',
+    },
+    'formRbiCircularPrefix': {
+      'en': 'RBI Circular DPSS/2018 — T+{days} refund rule applies. ',
+      'hi': 'RBI परिपत्र DPSS/2018 — T+{days} वापसी नियम लागू होता है। ',
+    },
+    'formEligiblePerDayComp': {
+      "en": "You're eligible for ₹100/day comp beyond T+{days}.",
+      'hi': 'आप T+{days} के बाद ₹100/दिन मुआवजे के हक़दार हैं।',
+    },
+    'formSms': {'en': 'SMS', 'hi': 'SMS'},
+    'formFreeLimitReached': {
+      'en': 'Free plan allows 1 active dispute. Upgrade for unlimited.',
+      'hi': 'मुफ़्त योजना में 1 सक्रिय विवाद है। असीमित के लिए अपग्रेड करें।',
+    },
+    'disputeTypeStep1Of4': {'en': 'Step 1 of 4', 'hi': 'चरण 1 / 4'},
+    'disputeTypeWhatHappened': {'en': 'What happened?', 'hi': 'क्या हुआ?'},
+    'disputeTypeChooseCategory': {
+      'en': 'Choose dispute category',
+      'hi': 'विवाद श्रेणी चुनें',
+    },
+    'disputeTypeSelectedDash': {'en': 'Selected: —', 'hi': 'चुना गया: —'},
+    'disputeTypeSelectedName': {
+      'en': 'Selected: {name}',
+      'hi': 'चुना गया: {name}',
+    },
+    'escalateMaxPenaltyLabel': {
+      'en': 'MAXIMUM PENALTY YOU CAN CLAIM',
+      'hi': 'अधिकतम दंड जिसका दावा आप कर सकते हैं',
+    },
+    'escalateT5Missed': {'en': '⚠ T+5 missed', 'hi': '⚠ T+5 चूका'},
+    'escalateNoAmount': {
+      'en': 'No transaction amount on this dispute',
+      'hi': 'इस विवाद में कोई लेन-देन राशि नहीं',
+    },
+    'escalateToLabel': {'en': 'TO:', 'hi': 'प्रति:'},
+    'escalateCcLabel': {'en': 'CC:', 'hi': 'प्रतिलिपि:'},
+    'escalateSubjectLabel': {'en': 'Subject:', 'hi': 'विषय:'},
+    'escalateOpeningMail': {
+      'en': 'Opening mail app…',
+      'hi': 'मेल ऐप खोला जा रहा है…',
+    },
+    'escalateMailFailed': {
+      'en': 'Could not open mail app — email copied instead.',
+      'hi': 'मेल ऐप नहीं खुला — ईमेल कॉपी कर लिया गया।',
+    },
+    'escalateSlaDaysShort': {'en': 'SLA 10d', 'hi': 'SLA 10 दिन'},
+    'wizardDocUtrTxnId': {
+      'en': 'UTR / Transaction ID',
+      'hi': 'UTR / लेन-देन आईडी',
+    },
+    'wizardDocAmount': {'en': 'Amount', 'hi': 'राशि'},
+    'wizardDocDate': {'en': 'Date', 'hi': 'तिथि'},
+    'wizardDocVpa': {'en': 'VPA', 'hi': 'VPA'},
+    'wizardDocBankStatement': {
+      'en': 'Bank statement screenshot',
+      'hi': 'बैंक स्टेटमेंट स्क्रीनशॉट',
+    },
+    'wizardDocBankStatementShort': {
+      'en': 'Bank statement',
+      'hi': 'बैंक स्टेटमेंट',
+    },
+    'wizardDocTransactionProof': {
+      'en': 'Transaction proof',
+      'hi': 'लेन-देन प्रमाण',
+    },
+    'wizardDocComplaintAck': {
+      'en': 'Complaint acknowledgement',
+      'hi': 'शिकायत पावती',
+    },
+    'wizardDocBankReply': {
+      'en': 'Bank reply (if any)',
+      'hi': 'बैंक जवाब (यदि कोई)',
+    },
+    'wizardCouldNotLoadDispute': {
+      'en': 'Could not load dispute. Check connection and try again.',
+      'hi': 'विवाद लोड नहीं हो सका। कनेक्शन जांचें और फिर कोशिश करें।',
+    },
+    'wizardDisputeNotFound': {
+      'en': 'Dispute not found.',
+      'hi': 'विवाद नहीं मिला।',
+    },
+    'typeShortBank': {'en': 'Bank', 'hi': 'बैंक'},
+    'typeShortWrong': {'en': 'Wrong', 'hi': 'गलत'},
   };
 
   String _t(String key, {Map<String, String>? args}) {
@@ -532,7 +872,8 @@ class AppLocalizations {
   String get settingsLegalRow => _t('settingsLegalRow');
   String get settingsNotAffiliated => _t('settingsNotAffiliated');
   String get settingsSignOut => _t('settingsSignOut');
-  String get settingsSignOutNotImplemented => _t('settingsSignOutNotImplemented');
+  String get settingsSignOutNotImplemented =>
+      _t('settingsSignOutNotImplemented');
   String get settingsProBadge => _t('settingsProBadge');
   String get settingsLocalProfile => _t('settingsLocalProfile');
   String get settingsRefundRadarUser => _t('settingsRefundRadarUser');
@@ -540,46 +881,63 @@ class AppLocalizations {
   // Escalate page.
   String get escalateAppBarTitle => _t('escalateAppBarTitle');
   String get escalateMaxClaim => _t('escalateMaxClaim');
-  String escalateRefundPlusComp(String refund, String comp, int days) =>
-      _t('escalateRefundPlusComp', args: {'refund': refund, 'comp': comp, 'days': '$days'});
+  String escalateRefundPlusComp(String refund, String comp, int days) => _t(
+    'escalateRefundPlusComp',
+    args: {'refund': refund, 'comp': comp, 'days': '$days'},
+  );
   String get escalateSendTo => _t('escalateSendTo');
   String get escalateNodalOfficer => _t('escalateNodalOfficer');
-  String escalateSlaDays(String email) => _t('escalateSlaDays', args: {'email': email});
+  String escalateSlaDays(String email) =>
+      _t('escalateSlaDays', args: {'email': email});
   String get escalateCcOmbudsman => _t('escalateCcOmbudsman');
   String get escalateEmailPreview => _t('escalateEmailPreview');
-  String escalateEmailSubject(String txnId) => _t('escalateEmailSubject', args: {'txnId': txnId});
+  String escalateEmailSubject(String txnId) =>
+      _t('escalateEmailSubject', args: {'txnId': txnId});
   String get escalateEmailGreeting => _t('escalateEmailGreeting');
   String get escalateEmailAutoDrafted => _t('escalateEmailAutoDrafted');
   String get escalateStandardsCompliant => _t('escalateStandardsCompliant');
   String get escalateSendWithinPrefix => _t('escalateSendWithinPrefix');
   String get escalateSendWithin24h => _t('escalateSendWithin24h');
-  String escalateSendWithinSuffix(String comp) => _t('escalateSendWithinSuffix', args: {'comp': comp});
+  String escalateSendWithinSuffix(String comp) =>
+      _t('escalateSendWithinSuffix', args: {'comp': comp});
   String get escalateEdit => _t('escalateEdit');
   String get escalateSend => _t('escalateSend');
   String get escalateCopiedToClipboard => _t('escalateCopiedToClipboard');
-  String escalateDrafted(String url) => _t('escalateDrafted', args: {'url': url});
+  String escalateDrafted(String url) =>
+      _t('escalateDrafted', args: {'url': url});
 
   // Dispute detail page activity log + timeline.
   String get detailTimelineL1 => _t('detailTimelineL1');
   String get detailTimelineReported => _t('detailTimelineReported');
-  String detailTimelineReportedDetail(String date) => _t('detailTimelineReportedDetail', args: {'date': date});
+  String detailTimelineReportedDetail(String date) =>
+      _t('detailTimelineReportedDetail', args: {'date': date});
   String get detailTimelineAck => _t('detailTimelineAck');
   String get detailTimelineAckDone => _t('detailTimelineAckDone');
   String get detailTimelineAckPending => _t('detailTimelineAckPending');
   String get detailTimelineRefund => _t('detailTimelineRefund');
-  String detailTimelineRefundDone(String tat) => _t('detailTimelineRefundDone', args: {'tat': tat});
-  String detailTimelineRefundMissed(String tat) => _t('detailTimelineRefundMissed', args: {'tat': tat});
-  String detailTimelineRefundPending(String tat, String date, int days) =>
-      _t('detailTimelineRefundPending', args: {'tat': tat, 'date': date, 'days': '$days'});
+  String detailTimelineRefundDone(String tat) =>
+      _t('detailTimelineRefundDone', args: {'tat': tat});
+  String detailTimelineRefundMissed(String tat) =>
+      _t('detailTimelineRefundMissed', args: {'tat': tat});
+  String detailTimelineRefundPending(String tat, String date, int days) => _t(
+    'detailTimelineRefundPending',
+    args: {'tat': tat, 'date': date, 'days': '$days'},
+  );
   String get detailTimelineEscalate => _t('detailTimelineEscalate');
   String get detailTimelineOmbudsman => _t('detailTimelineOmbudsman');
-  String detailTimelineL2Detail(String ticket) => _t('detailTimelineL2Detail', args: {'ticket': ticket});
-  String detailTimelineL2Pending(String tat) => _t('detailTimelineL2Pending', args: {'tat': tat});
-  String detailTimelineL3Detail(String ticket) => _t('detailTimelineL3Detail', args: {'ticket': ticket});
+  String detailTimelineL2Detail(String ticket) =>
+      _t('detailTimelineL2Detail', args: {'ticket': ticket});
+  String detailTimelineL2Pending(String tat) =>
+      _t('detailTimelineL2Pending', args: {'tat': tat});
+  String detailTimelineL3Detail(String ticket) =>
+      _t('detailTimelineL3Detail', args: {'ticket': ticket});
   String get detailTimelineL3Pending => _t('detailTimelineL3Pending');
-  String detailActivityHeader(int count) => _t('detailActivityHeader', args: {'count': '$count'});
-  String detailActivityTicket(String ticket) => _t('detailActivityTicket', args: {'ticket': ticket});
-  String detailActivityTicketMeta(String date) => _t('detailActivityTicketMeta', args: {'date': date});
+  String detailActivityHeader(int count) =>
+      _t('detailActivityHeader', args: {'count': '$count'});
+  String detailActivityTicket(String ticket) =>
+      _t('detailActivityTicket', args: {'ticket': ticket});
+  String detailActivityTicketMeta(String date) =>
+      _t('detailActivityTicketMeta', args: {'date': date});
   String get detailActivityAutoUtr => _t('detailActivityAutoUtr');
   String get detailActivityMarkedActive => _t('detailActivityMarkedActive');
   String get detailActivityResolved => _t('detailActivityResolved');
@@ -700,8 +1058,7 @@ class AppLocalizations {
       ? _t('homeDisputeCountOne', args: {'count': '$count'})
       : _t('homeDisputeCount', args: {'count': '$count'});
   String get cardDeadlineMissed => _t('cardDeadlineMissed');
-  String cardDaysLeft(int days) =>
-      _t('cardDaysLeft', args: {'days': '$days'});
+  String cardDaysLeft(int days) => _t('cardDaysLeft', args: {'days': '$days'});
   String get cardExpired => _t('cardExpired');
   String get cardGuidanceMode => _t('cardGuidanceMode');
   String get cardEscalateCta => _t('cardEscalateCta');
@@ -709,13 +1066,68 @@ class AppLocalizations {
   String get settingsComingSoon => _t('settingsComingSoon');
   String get settingsDailyCompSoon => _t('settingsDailyCompSoon');
   String get settingsWeeklyDigestSoon => _t('settingsWeeklyDigestSoon');
+
+  // Pass 2 residual i18n getters — dispute form / type page / escalate / wizard.
+  String get formClipboardEmpty => _t('formClipboardEmpty');
+  String get formSmsPermissionDenied => _t('formSmsPermissionDenied');
+  String get formNoBankSms => _t('formNoBankSms');
+  String get formPickBankSms => _t('formPickBankSms');
+  String get formInbox => _t('formInbox');
+  String get formPaste => _t('formPaste');
+  String get formStep2Of4 => _t('formStep2Of4');
+  String get formDisputeDetails => _t('formDisputeDetails');
+  String get formEstimated => _t('formEstimated');
+  String get formAddAmountToEstimate => _t('formAddAmountToEstimate');
+  String formClaimAmount(String amount) =>
+      _t('formClaimAmount', args: {'amount': amount});
+  String formClaimAmountCompo(String amount) =>
+      _t('formClaimAmountCompo', args: {'amount': amount});
+  String formClaimAmountCompoDue(String amount, String comp) =>
+      _t('formClaimAmountCompoDue', args: {'amount': amount, 'comp': comp});
+  String get formWrongUpiNote => _t('formWrongUpiNote');
+  String formRbiCircularPrefix(String days) =>
+      _t('formRbiCircularPrefix', args: {'days': days});
+  String formEligiblePerDayComp(String days) =>
+      _t('formEligiblePerDayComp', args: {'days': days});
+  String get formSms => _t('formSms');
+  String get formFreeLimitReached => _t('formFreeLimitReached');
+
+  String get disputeTypeStep1Of4 => _t('disputeTypeStep1Of4');
+  String get disputeTypeWhatHappened => _t('disputeTypeWhatHappened');
+  String get disputeTypeChooseCategory => _t('disputeTypeChooseCategory');
+  String get disputeTypeSelectedDash => _t('disputeTypeSelectedDash');
+  String disputeTypeSelectedName(String name) =>
+      _t('disputeTypeSelectedName', args: {'name': name});
+
+  String get escalateMaxPenaltyLabel => _t('escalateMaxPenaltyLabel');
+  String get escalateT5Missed => _t('escalateT5Missed');
+  String get escalateNoAmount => _t('escalateNoAmount');
+  String get escalateToLabel => _t('escalateToLabel');
+  String get escalateCcLabel => _t('escalateCcLabel');
+  String get escalateSubjectLabel => _t('escalateSubjectLabel');
+  String get escalateOpeningMail => _t('escalateOpeningMail');
+  String get escalateMailFailed => _t('escalateMailFailed');
+  String get escalateSlaDaysShort => _t('escalateSlaDaysShort');
+
+  String get wizardDocUtrTxnId => _t('wizardDocUtrTxnId');
+  String get wizardDocAmount => _t('wizardDocAmount');
+  String get wizardDocDate => _t('wizardDocDate');
+  String get wizardDocVpa => _t('wizardDocVpa');
+  String get wizardDocBankStatement => _t('wizardDocBankStatement');
+  String get wizardDocBankStatementShort => _t('wizardDocBankStatementShort');
+  String get wizardDocTransactionProof => _t('wizardDocTransactionProof');
+  String get wizardDocComplaintAck => _t('wizardDocComplaintAck');
+  String get wizardDocBankReply => _t('wizardDocBankReply');
+  String get wizardCouldNotLoadDispute => _t('wizardCouldNotLoadDispute');
+  String get wizardDisputeNotFound => _t('wizardDisputeNotFound');
+  String get typeShortBank => _t('typeShortBank');
+  String get typeShortWrong => _t('typeShortWrong');
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const AppLocalizationsDelegate();
   @override
-  bool isSupported(Locale locale) =>
-      ['en', 'hi'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => ['en', 'hi'].contains(locale.languageCode);
   @override
   Future<AppLocalizations> load(Locale locale) async =>
       AppLocalizations(locale);

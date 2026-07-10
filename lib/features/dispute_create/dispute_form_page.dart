@@ -94,7 +94,12 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     if (data?.text == null || data!.text!.trim().isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Clipboard empty — copy an SMS first.')),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)?.formClipboardEmpty ??
+                'Clipboard empty — copy an SMS first.',
+          ),
+        ),
       );
       return;
     }
@@ -107,8 +112,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     if (!granted) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('SMS permission denied. You can still paste an SMS.'),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)?.formSmsPermissionDenied ??
+                'SMS permission denied. You can still paste an SMS.',
+          ),
         ),
       );
       return;
@@ -117,8 +125,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     if (!mounted) return;
     if (messages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No bank-like SMS found. Try paste from clipboard.'),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)?.formNoBankSms ??
+                'No bank-like SMS found. Try paste from clipboard.',
+          ),
         ),
       );
       return;
@@ -137,7 +148,8 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                   child: Text(
-                    'Pick a bank SMS',
+                    AppLocalizations.of(c)?.formPickBankSms ??
+                        'Pick a bank SMS',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -149,11 +161,13 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                   child: ListView.separated(
                     itemCount: messages.length,
                     separatorBuilder: (_, _) => const Divider(height: 1),
-                    itemBuilder: (_, i) {
+                    itemBuilder: (itemCtx, i) {
                       final m = messages[i];
                       return ListTile(
                         title: Text(
-                          m.address.isEmpty ? 'SMS' : m.address,
+                          m.address.isEmpty
+                              ? (AppLocalizations.of(c)?.formSms ?? 'SMS')
+                              : m.address,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -189,7 +203,12 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       final amount = double.tryParse(_amountCtrl.text) ?? 0;
       if (amount <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)?.formEnterAmount ?? 'Enter the debited amount')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.formEnterAmount ??
+                  'Enter the debited amount',
+            ),
+          ),
         );
         return;
       }
@@ -235,7 +254,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                       authErr.toLowerCase().contains('operation-not-allowed'))
                   ? 'Anonymous sign-in is disabled in Firebase Console. Enable it, then reopen the app.'
                   : AppLocalizations.of(context)?.formAuthRequired ??
-                      'Could not sign in. Please restart the app and try again.',
+                        'Could not sign in. Please restart the app and try again.',
             ),
             duration: const Duration(seconds: 6),
           ),
@@ -266,18 +285,18 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
           );
           return;
         }
-        const terminal = {
-          DisputeStatus.resolved,
-          DisputeStatus.expired,
-        };
-        final activeCount =
-            existing.where((d) => !terminal.contains(d.status)).length;
+        const terminal = {DisputeStatus.resolved, DisputeStatus.expired};
+        final activeCount = existing
+            .where((d) => !terminal.contains(d.status))
+            .length;
         if (activeCount >= 1) {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(
-                  'Free plan allows 1 active dispute. Upgrade for unlimited.'),
+                AppLocalizations.of(context)?.formFreeLimitReached ??
+                    'Free plan allows 1 active dispute. Upgrade for unlimited.',
+              ),
               duration: Duration(seconds: 3),
             ),
           );
@@ -309,25 +328,33 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         // queues writes but our `_ensureUserDoc` get() throws first);
         // `permission-denied` = auth race; everything else = transient.
         final s = e.toString().toLowerCase();
-        final msg = s.contains('permission-denied') ||
+        final msg =
+            s.contains('permission-denied') ||
                 s.contains('permission_denied') ||
                 s.contains('unauthenticated')
             ? 'Could not save — sign-in expired. Go Home and tap Retry.'
             : s.contains('unavailable') ||
-                    s.contains('network') ||
-                    s.contains('socket')
-                ? 'You appear to be offline. Reconnect and try again.'
-                : 'Could not save dispute. Check connection and try again.';
+                  s.contains('network') ||
+                  s.contains('socket')
+            ? 'You appear to be offline. Reconnect and try again.'
+            : 'Could not save dispute. Check connection and try again.';
         if (!mounted) return;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(msg)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
         // Surface the underlying failure to Crashlytics so we see the
         // distribution of failure causes in release builds (vs. today
         // where everything is a silent SnackBar).
         try {
-          await FirebaseCrashlytics.instance.recordError(e, st,
-              reason: 'DisputeFormPage._save', fatal: false);
-        } catch (_) {/* Crashlytics not initialised */}
+          await FirebaseCrashlytics.instance.recordError(
+            e,
+            st,
+            reason: 'DisputeFormPage._save',
+            fatal: false,
+          );
+        } catch (_) {
+          /* Crashlytics not initialised */
+        }
         return;
       }
 
@@ -347,7 +374,9 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       }
       // B4 analytics: dispute_created event (spec §10).
       try {
-        ref.read(analyticsServiceProvider).logDisputeCreated(
+        ref
+            .read(analyticsServiceProvider)
+            .logDisputeCreated(
               disputeType: dispute.type.id,
               isPremium: isPremium,
             );
@@ -391,372 +420,382 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         onTap: () => FocusScope.of(context).unfocus(),
         behavior: HitTestBehavior.opaque,
         child: SafeArea(
-        child: Column(
-          children: [
-            // header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
-              child: Row(
-                children: [
-                  AppBackButton(onTap: () => context.pop()),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'STEP 2 OF 4',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.2,
-                            color: tc.textSecondary,
+          child: Column(
+            children: [
+              // header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
+                child: Row(
+                  children: [
+                    AppBackButton(onTap: () => context.pop()),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n?.formStep2Of4 ?? 'STEP 2 OF 4',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                              color: tc.textSecondary,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          'Dispute details',
-                          style: TextStyle(
-                            fontFamily: AppTypography.family,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: tc.textPrimary,
+                          const SizedBox(height: 1),
+                          Text(
+                            l10n?.formDisputeDetails ?? 'Dispute details',
+                            style: TextStyle(
+                              fontFamily: AppTypography.family,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: tc.textPrimary,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: tc.accentSoft,
-                      borderRadius: BorderRadius.circular(AppRadii.pill),
-                    ),
-                    child: Text(
-                      _typeShort(type),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.accent,
+                        ],
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
-                children: [
-                  // grouped form card
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: tc.surface,
-                      border:
-                          Border.all(color: tc.divider, width: 1),
-                      borderRadius: BorderRadius.circular(14),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: tc.accentSoft,
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
+                      ),
+                      child: Text(
+                        _typeShort(type),
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.accent,
+                        ),
+                      ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // BANK
-                        FormFieldBox(
-                          label: l10n?.formLabelBank ?? 'Bank',
-                          child: rulesAsync.when(
-                            data: (rules) => BankPickerTile(
-                              bankName: _bankName,
-                              onTap: () => _pickBank(context, rules),
-                            ),
-                            loading: () => const SizedBox(
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
+                  children: [
+                    // grouped form card
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: tc.surface,
+                        border: Border.all(color: tc.divider, width: 1),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // BANK
+                          FormFieldBox(
+                            label: l10n?.formLabelBank ?? 'Bank',
+                            child: rulesAsync.when(
+                              data: (rules) => BankPickerTile(
+                                bankName: _bankName,
+                                onTap: () => _pickBank(context, rules),
+                              ),
+                              loading: () => const SizedBox(
                                 height: 26,
-                                child: LinearProgressIndicator()),
-                            error: (_, _) => BankPickerTile(
-                              bankName: _bankName,
-                              onTap: () async {
-                                final selected =
-                                    await AddBanksPage.loadSelectedBanks();
-                                if (!context.mounted) return;
-                                await _showBankPicker(
-                                  context,
-                                  mergeOnboardBanksWithFallback(
-                                    selectedIds: selected,
-                                    catalog: BankCatalog.banks,
-                                    fallback: kFallbackBanks,
-                                  ),
-                                );
-                              },
+                                child: LinearProgressIndicator(),
+                              ),
+                              error: (_, _) => BankPickerTile(
+                                bankName: _bankName,
+                                onTap: () async {
+                                  final selected =
+                                      await AddBanksPage.loadSelectedBanks();
+                                  if (!context.mounted) return;
+                                  await _showBankPicker(
+                                    context,
+                                    mergeOnboardBanksWithFallback(
+                                      selectedIds: selected,
+                                      catalog: BankCatalog.banks,
+                                      fallback: kFallbackBanks,
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        // UTR
-                        FormFieldBox(
-                          label: l10n?.formLabelUtr ?? 'UTR / RRN NUMBER',
-                          helper: _utrFound
-                              ? (l10n?.formUtrFound ?? '✓ found')
-                              : (type == DisputeType.upiP2p ||
-                                      type == DisputeType.upiP2m ||
-                                      type == DisputeType.imps
-                                  ? (l10n?.formUtrHint12 ?? '12 digits')
-                                  : null),
-                          focused: _utrFound,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _utrCtrl,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: tc.textPrimary,
-                                    fontFamily: AppTypography.family,
-                                    letterSpacing: 0.5,
-                                  ),
-                                  cursorColor: AppColors.primary,
-                                  keyboardType: TextInputType.text,
-                                  decoration: const InputDecoration(
-                                    isCollapsed: true,
-                                    isDense: true,
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                  onChanged: (_) =>
-                                      setState(() => _utrFound = false),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              GestureDetector(
-                                onTap: _pickFromSmsInbox,
-                                child: const Text(
-                                  'Inbox',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.accent,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              GestureDetector(
-                                onTap: _pasteFromSms,
-                                child: const Text(
-                                  'Paste',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.accent,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        // AMOUNT
-                        FormFieldBox(
-                          label: l10n?.formLabelAmountDebited ?? 'AMOUNT DEBITED',
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.baseline,
-                            textBaseline: TextBaseline.alphabetic,
-                            children: [
-                              Text(
-                                '₹',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: tc.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              Expanded(
-                                child: TextField(
-                                  controller: _amountCtrl,
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
-                                    color: tc.textPrimary,
-                                    fontFamily: AppTypography.family,
-                                  ),
-                                  cursorColor: AppColors.primary,
-                                  keyboardType: TextInputType.number,
-                                  decoration: const InputDecoration(
-                                    isCollapsed: true,
-                                    isDense: true,
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.zero,
-                                  ),
-                                  onChanged: (_) => setState(() {}),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        // DATE
-                        FormFieldBox(
-                          label: l10n?.formLabelTxnDate ?? 'TXN DATE',
-                          child: GestureDetector(
-                            onTap: () async {
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2020),
-                                lastDate: DateTime.now(),
-                              );
-                              if (mounted) setState(() => _date = picked);
-                            },
+                          const SizedBox(height: 10),
+                          // UTR
+                          FormFieldBox(
+                            label: l10n?.formLabelUtr ?? 'UTR / RRN NUMBER',
+                            helper: _utrFound
+                                ? (l10n?.formUtrFound ?? '✓ found')
+                                : (type == DisputeType.upiP2p ||
+                                          type == DisputeType.upiP2m ||
+                                          type == DisputeType.imps
+                                      ? (l10n?.formUtrHint12 ?? '12 digits')
+                                      : null),
+                            focused: _utrFound,
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: Text(
-                                    _date == null
-                                        ? (l10n?.formSelectDate ?? 'Select date')
-                                        : _fmtDate(_date!),
+                                  child: TextField(
+                                    controller: _utrCtrl,
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
-                                      color: _date == null
-                                          ? tc.textTertiary
-                                          : tc.textPrimary,
+                                      color: tc.textPrimary,
+                                      fontFamily: AppTypography.family,
+                                      letterSpacing: 0.5,
+                                    ),
+                                    cursorColor: AppColors.primary,
+                                    keyboardType: TextInputType.text,
+                                    decoration: const InputDecoration(
+                                      isCollapsed: true,
+                                      isDense: true,
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                    onChanged: (_) =>
+                                        setState(() => _utrFound = false),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                GestureDetector(
+                                  onTap: _pickFromSmsInbox,
+                                  child: Text(
+                                    l10n?.formInbox ?? 'Inbox',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.accent,
                                     ),
                                   ),
                                 ),
-                                const Text('📅',
-                                    style: TextStyle(fontSize: 13)),
+                                const SizedBox(width: 10),
+                                GestureDetector(
+                                  onTap: _pasteFromSms,
+                                  child: Text(
+                                    l10n?.formPaste ?? 'Paste',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.accent,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        // DESCRIPTION
-                        FormFieldBox(
-                          label: l10n?.formLabelDescription ?? 'DESCRIPTION (optional)',
-                          child: TextField(
-                            controller: _descCtrl,
-                            maxLines: 2,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: tc.textPrimary,
-                              fontFamily: AppTypography.family,
-                              height: 1.35,
-                            ),
-                            cursorColor: AppColors.primary,
-                            decoration: const InputDecoration(
-                              isCollapsed: true,
-                              isDense: true,
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // RBI info banner
-                  _buildInfoBanner(type),
-                ],
-              ),
-            ),
-            // sticky footer
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-              decoration: BoxDecoration(
-                color: tc.surface,
-                border: Border(
-                  top: BorderSide(color: tc.divider, width: 1),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'ESTIMATED',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                            color: tc.textSecondary,
-                          ),
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          _estimate(type),
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.accent,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  AnimatedOpacity(
-                    opacity: _saving ? 0.6 : 1.0,
-                    duration: const Duration(milliseconds: 150),
-                    child: Container(
-                      height: 52,
-                      padding: const EdgeInsets.symmetric(horizontal: 22),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(AppRadii.md),
-                        boxShadow: AppShadows.button,
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(AppRadii.md),
-                          // onTap is null while _saving — disables the tap
-                          // affordance AND the InkWell ripple (Material rule:
-                          // a null onTap is treated as a disabled ink well).
-                          onTap: _saving ? null : _save,
-                          child: Center(
-                            child: _saving
-                                ? const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.4,
-                                      valueColor:
-                                          AlwaysStoppedAnimation(Colors.white),
-                                    ),
-                                  )
-                                : Text(
-                                    AppLocalizations.of(context)
-                                            ?.formCreateDispute ??
-                                        'Create dispute',
-                                    style: const TextStyle(
+                          const SizedBox(height: 10),
+                          // AMOUNT
+                          FormFieldBox(
+                            label:
+                                l10n?.formLabelAmountDebited ??
+                                'AMOUNT DEBITED',
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [
+                                Text(
+                                  '₹',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: tc.textSecondary,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _amountCtrl,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: tc.textPrimary,
                                       fontFamily: AppTypography.family,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
+                                    ),
+                                    cursorColor: AppColors.primary,
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      isCollapsed: true,
+                                      isDense: true,
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                    onChanged: (_) => setState(() {}),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          // DATE
+                          FormFieldBox(
+                            label: l10n?.formLabelTxnDate ?? 'TXN DATE',
+                            child: GestureDetector(
+                              onTap: () async {
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime(2020),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (mounted) setState(() => _date = picked);
+                              },
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      _date == null
+                                          ? (l10n?.formSelectDate ??
+                                                'Select date')
+                                          : _fmtDate(_date!),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: _date == null
+                                            ? tc.textTertiary
+                                            : tc.textPrimary,
+                                      ),
                                     ),
                                   ),
+                                  const Text(
+                                    '📅',
+                                    style: TextStyle(fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          // DESCRIPTION
+                          FormFieldBox(
+                            label:
+                                l10n?.formLabelDescription ??
+                                'DESCRIPTION (optional)',
+                            child: TextField(
+                              controller: _descCtrl,
+                              maxLines: 2,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: tc.textPrimary,
+                                fontFamily: AppTypography.family,
+                                height: 1.35,
+                              ),
+                              cursorColor: AppColors.primary,
+                              decoration: const InputDecoration(
+                                isCollapsed: true,
+                                isDense: true,
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    // RBI info banner
+                    _buildInfoBanner(type),
+                  ],
+                ),
+              ),
+              // sticky footer
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                decoration: BoxDecoration(
+                  color: tc.surface,
+                  border: Border(top: BorderSide(color: tc.divider, width: 1)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n?.formEstimated ?? 'ESTIMATED',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                              color: tc.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            _estimate(type),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.accent,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    AnimatedOpacity(
+                      opacity: _saving ? 0.6 : 1.0,
+                      duration: const Duration(milliseconds: 150),
+                      child: Container(
+                        height: 52,
+                        padding: const EdgeInsets.symmetric(horizontal: 22),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(AppRadii.md),
+                          boxShadow: AppShadows.button,
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(AppRadii.md),
+                            // onTap is null while _saving — disables the tap
+                            // affordance AND the InkWell ripple (Material rule:
+                            // a null onTap is treated as a disabled ink well).
+                            onTap: _saving ? null : _save,
+                            child: Center(
+                              child: _saving
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.4,
+                                        valueColor: AlwaysStoppedAnimation(
+                                          Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  : Text(
+                                      AppLocalizations.of(
+                                            context,
+                                          )?.formCreateDispute ??
+                                          'Create dispute',
+                                      style: const TextStyle(
+                                        fontFamily: AppTypography.family,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-               ),
-             ),
-           ],
-         ),
-       ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildInfoBanner(DisputeType type) {
     final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     if (type == DisputeType.wrongTransfer) {
       return Container(
         padding: const EdgeInsets.all(10),
@@ -767,11 +806,15 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('⚠', style: TextStyle(fontSize: 12, color: AppColors.alert)),
+            const Text(
+              '⚠',
+              style: TextStyle(fontSize: 12, color: AppColors.alert),
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Wrong UPI transfers are not covered by RBI compensation. Recovery depends on beneficiary consent via bank/NPCI.',
+                l10n?.formWrongUpiNote ??
+                    'Wrong UPI transfers are not covered by RBI compensation. Recovery depends on beneficiary consent via bank/NPCI.',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
@@ -794,7 +837,10 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('✓', style: TextStyle(fontSize: 12, color: AppColors.success)),
+          const Text(
+            '✓',
+            style: TextStyle(fontSize: 12, color: AppColors.success),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: RichText(
@@ -808,11 +854,13 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                 children: [
                   TextSpan(
                     text:
+                        l10n?.formRbiCircularPrefix('${type.tatDays}') ??
                         'RBI Circular DPSS/2018 — T+${type.tatDays} refund rule applies. ',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   TextSpan(
                     text:
+                        l10n?.formEligiblePerDayComp('${type.tatDays}') ??
                         "You're eligible for ₹100/day comp beyond T+${type.tatDays}.",
                   ),
                 ],
@@ -824,37 +872,52 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     );
   }
 
-  String _typeShort(DisputeType t) => switch (t) {
-        DisputeType.upiP2p => 'UPI',
-        DisputeType.upiP2m => 'UPI',
-        DisputeType.atm => 'ATM',
-        DisputeType.imps => 'IMPS',
-        DisputeType.fastag => 'FASTag',
-        DisputeType.bankCharge => 'Bank',
-        DisputeType.wrongTransfer => 'Wrong',
-      };
+  String _typeShort(DisputeType t) {
+    final l10n = AppLocalizations.of(context);
+    return switch (t) {
+      DisputeType.upiP2p => 'UPI',
+      DisputeType.upiP2m => 'UPI',
+      DisputeType.atm => 'ATM',
+      DisputeType.imps => 'IMPS',
+      DisputeType.fastag => 'FASTag',
+      DisputeType.bankCharge => l10n?.typeShortBank ?? 'Bank',
+      DisputeType.wrongTransfer => l10n?.typeShortWrong ?? 'Wrong',
+    };
+  }
 
   String _fmtDate(DateTime d) =>
       '${d.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]} ${d.year}, ${((d.hour % 12) == 0 ? 12 : d.hour % 12)}:${d.minute.toString().padLeft(2, '0')} ${d.hour < 12 ? 'AM' : 'PM'}';
 
   String _estimate(DisputeType type) {
+    final l10n = AppLocalizations.of(context);
     final amount = double.tryParse(_amountCtrl.text);
-    if (amount == null || amount <= 0) return 'Add amount to estimate';
-    if (type.tatDays == null || type.compensationPerDay == null) {
-      return 'Claim ${CompensationCalculator.formatIndian(amount)}';
+    if (amount == null || amount <= 0) {
+      return l10n?.formAddAmountToEstimate ?? 'Add amount to estimate';
     }
-    if (_date == null) return 'Claim ${CompensationCalculator.formatIndian(amount)} + compo';
-    final comp = CompensationCalculator.compute(Dispute(
-      id: 'preview',
-      type: type,
-      amount: amount,
-      txnDate: _date!,
-      txnId: '',
-      createdAt: DateTime.now(),
-    ));
+    final amtStr = CompensationCalculator.formatIndian(amount);
+    if (type.tatDays == null || type.compensationPerDay == null) {
+      return l10n?.formClaimAmount(amtStr) ?? 'Claim $amtStr';
+    }
+    if (_date == null) {
+      return l10n?.formClaimAmountCompo(amtStr) ?? 'Claim $amtStr + compo';
+    }
+    final comp = CompensationCalculator.compute(
+      Dispute(
+        id: 'preview',
+        type: type,
+        amount: amount,
+        txnDate: _date!,
+        txnId: '',
+        createdAt: DateTime.now(),
+      ),
+    );
     return comp.compensationDue > 0
-        ? 'Claim ${CompensationCalculator.formatIndian(amount)} + ${CompensationCalculator.formatIndian(comp.compensationDue)} compo'
-        : 'Claim ${CompensationCalculator.formatIndian(amount)} + compo';
+        ? (l10n?.formClaimAmountCompoDue(
+                amtStr,
+                CompensationCalculator.formatIndian(comp.compensationDue),
+              ) ??
+              'Claim $amtStr + ${CompensationCalculator.formatIndian(comp.compensationDue).toString()} compo')
+        : (l10n?.formClaimAmountCompo(amtStr) ?? 'Claim $amtStr + compo');
   }
 
   Future<void> _pickBank(BuildContext context, RulesEngine rules) async {
@@ -867,11 +930,13 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       }
     } else {
       final selected = await AddBanksPage.loadSelectedBanks();
-      list.addAll(mergeOnboardBanksWithFallback(
-        selectedIds: selected,
-        catalog: BankCatalog.banks,
-        fallback: kFallbackBanks,
-      ));
+      list.addAll(
+        mergeOnboardBanksWithFallback(
+          selectedIds: selected,
+          catalog: BankCatalog.banks,
+          fallback: kFallbackBanks,
+        ),
+      );
     }
     if (!context.mounted) return;
     await _showBankPicker(context, list);
@@ -898,7 +963,9 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                 child: Text(
                   b.name.substring(0, 1).toUpperCase(),
                   style: const TextStyle(
-                      color: AppColors.primary, fontWeight: FontWeight.w700),
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               title: Text(b.name),

@@ -33,6 +33,7 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
   @override
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: tc.bg,
       body: SafeArea(
@@ -47,8 +48,8 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: OnboardingStepHeader(
-                      step: 'Step 1 of 4',
-                      title: 'What happened?',
+                      step: l10n?.disputeTypeStep1Of4 ?? 'Step 1 of 4',
+                      title: l10n?.disputeTypeWhatHappened ?? 'What happened?',
                     ),
                   ),
                 ],
@@ -59,7 +60,7 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Choose dispute category',
+                  l10n?.disputeTypeChooseCategory ?? 'Choose dispute category',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
@@ -70,8 +71,10 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
             ),
             Expanded(
               child: ListView.separated(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 itemCount: _order.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, i) => _Row(
@@ -88,9 +91,7 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
               decoration: BoxDecoration(
                 color: tc.surface,
-                border: Border(
-                  top: BorderSide(color: tc.divider, width: 1),
-                ),
+                border: Border(top: BorderSide(color: tc.divider, width: 1)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -98,8 +99,11 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                 children: [
                   Text(
                     _selected == null
-                        ? 'Selected: —'
-                        : 'Selected: ${_selected!.localizedName(AppLocalizations.of(context))}',
+                        ? (l10n?.disputeTypeSelectedDash ?? 'Selected: —')
+                        : (l10n?.disputeTypeSelectedName(
+                                _selected!.localizedName(l10n),
+                              ) ??
+                              'Selected: ${_selected!.localizedName(AppLocalizations.of(context))}'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -118,7 +122,8 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                       onPressed: _selected == null
                           ? null
                           : () => context.push(
-                                '/disputes/form?type=${_selected!.id}'),
+                              '/disputes/form?type=${_selected!.id}',
+                            ),
                       style: FilledButton.styleFrom(
                         backgroundColor: tc.ctaBackground,
                         foregroundColor: tc.ctaForeground,
@@ -129,8 +134,10 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                           borderRadius: BorderRadius.circular(AppRadii.md),
                         ),
                       ),
-                      child: Text(AppLocalizations.of(context)?.disputeTypeContinue ??
-                          'Continue →'),
+                      child: Text(
+                        AppLocalizations.of(context)?.disputeTypeContinue ??
+                            'Continue →',
+                      ),
                     ),
                   ),
                 ],
@@ -144,11 +151,7 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
 }
 
 class _Row extends StatelessWidget {
-  const _Row({
-    required this.type,
-    required this.selected,
-    required this.onTap,
-  });
+  const _Row({required this.type, required this.selected, required this.onTap});
 
   final DisputeType type;
   final bool selected;
@@ -181,7 +184,9 @@ class _Row extends StatelessWidget {
                 color: type.softColorFor(tc),
                 borderRadius: BorderRadius.circular(AppRadii.sm),
               ),
-              child: Center(child: Text(type.emoji, style: const TextStyle(fontSize: 22))),
+              child: Center(
+                child: Text(type.emoji, style: const TextStyle(fontSize: 22)),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -239,10 +244,7 @@ class _Row extends StatelessWidget {
                     height: 18,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: tc.divider,
-                        width: 2,
-                      ),
+                      border: Border.all(color: tc.divider, width: 2),
                     ),
                   ),
           ],

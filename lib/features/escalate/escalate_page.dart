@@ -142,15 +142,17 @@ class _Body extends StatelessWidget {
               ),
               if (deadlineMissed)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: tc.alertSoft,
                     borderRadius: BorderRadius.circular(AppRadii.pill),
                   ),
-                  child: const Text(
-                    '⚠ T+5 missed',
-                    style: TextStyle(
+                  child: Text(
+                    l10n?.escalateT5Missed ?? '⚠ T+5 missed',
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: AppColors.alert,
@@ -175,7 +177,8 @@ class _Body extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'MAXIMUM PENALTY YOU CAN CLAIM',
+                      l10n?.escalateMaxPenaltyLabel ??
+                          'MAXIMUM PENALTY YOU CAN CLAIM',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
@@ -198,13 +201,16 @@ class _Body extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       refund == 0
-                          ? 'No transaction amount on this dispute'
+                          ? (l10n?.escalateNoAmount ??
+                                'No transaction amount on this dispute')
                           : (l10n?.escalateRefundPlusComp(
                                   CompensationCalculator.formatIndian(refund),
                                   CompensationCalculator.formatIndian(
-                                      comp.compensationDue),
-                                  comp.daysElapsed) ??
-                              '${CompensationCalculator.formatIndian(refund)} refund + ${CompensationCalculator.formatIndian(comp.compensationDue)} comp (${comp.daysElapsed} days × ₹100/day)'),
+                                    comp.compensationDue,
+                                  ),
+                                  comp.daysElapsed,
+                                ) ??
+                                '${CompensationCalculator.formatIndian(refund)} refund + ${CompensationCalculator.formatIndian(comp.compensationDue)} comp (${comp.daysElapsed} days × ₹100/day)'),
                       style: TextStyle(
                         fontSize: 11,
                         color: tc.ctaForeground.withValues(alpha: 0.7),
@@ -223,7 +229,8 @@ class _Body extends StatelessWidget {
                     emojiTile: '🎯',
                     bgTileColor: tc.alertSoft,
                     title: l10n?.escalateNodalOfficer ?? 'Nodal Officer',
-                    detail: l10n?.escalateSlaDays(_nodalEmail(dispute)) ??
+                    detail:
+                        l10n?.escalateSlaDays(_nodalEmail(dispute)) ??
                         '${_nodalEmail(dispute)} · SLA 10d',
                     selected: true,
                   ),
@@ -238,8 +245,8 @@ class _Body extends StatelessWidget {
                           borderRadius: BorderRadius.circular(7),
                         ),
                         child: const Center(
-                            child: Text('✉',
-                                style: TextStyle(fontSize: 13))),
+                          child: Text('✉', style: TextStyle(fontSize: 13)),
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -254,10 +261,7 @@ class _Body extends StatelessWidget {
                           ),
                         ),
                       ),
-                      ToggleSwitch(
-                        value: ccOmbudsman,
-                        onChanged: onToggleCc,
-                      ),
+                      ToggleSwitch(value: ccOmbudsman, onChanged: onToggleCc),
                     ],
                   ),
                 ],
@@ -270,7 +274,9 @@ class _Body extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 8),
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: tc.surfaceAlt,
                       borderRadius: BorderRadius.circular(6),
@@ -290,7 +296,7 @@ class _Body extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'TO: ${_nodalEmail(dispute)}',
+                    '${l10n?.escalateToLabel ?? 'TO:'} ${_nodalEmail(dispute)}',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -299,19 +305,17 @@ class _Body extends StatelessWidget {
                   ),
                   if (ccOmbudsman)
                     Text(
-                      'CC: crpc@rbi.org.in',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: tc.textSecondary,
-                      ),
+                      '${l10n?.escalateCcLabel ?? 'CC:'} crpc@rbi.org.in',
+                      style: TextStyle(fontSize: 11, color: tc.textSecondary),
                     ),
                   const SizedBox(height: 10),
                   Text(
                     l10n?.escalateEmailGreeting ?? 'Dear Nodal Officer,',
                     style: TextStyle(
-                        fontSize: 12,
-                        height: 1.45,
-                        color: tc.textSecondary),
+                      fontSize: 12,
+                      height: 1.45,
+                      color: tc.textSecondary,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -326,7 +330,8 @@ class _Body extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    l10n?.escalateEmailAutoDrafted ?? '[auto-drafted, tap to edit]',
+                    l10n?.escalateEmailAutoDrafted ??
+                        '[auto-drafted, tap to edit]',
                     style: TextStyle(
                       fontSize: 10,
                       fontStyle: FontStyle.italic,
@@ -336,9 +341,10 @@ class _Body extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Text('✓',
-                          style: TextStyle(
-                              fontSize: 10, color: AppColors.accent)),
+                      const Text(
+                        '✓',
+                        style: TextStyle(fontSize: 10, color: AppColors.accent),
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         l10n?.escalateStandardsCompliant ??
@@ -365,9 +371,10 @@ class _Body extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('⚠',
-                          style:
-                              TextStyle(fontSize: 13, color: AppColors.alert)),
+                      const Text(
+                        '⚠',
+                        style: TextStyle(fontSize: 13, color: AppColors.alert),
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: RichText(
@@ -379,15 +386,24 @@ class _Body extends StatelessWidget {
                               height: 1.4,
                             ),
                             children: [
-                              TextSpan(text: l10n?.escalateSendWithinPrefix ?? 'Send within '),
+                              TextSpan(
+                                text:
+                                    l10n?.escalateSendWithinPrefix ??
+                                    'Send within ',
+                              ),
                               TextSpan(
                                 text: l10n?.escalateSendWithin24h ?? '24 hours',
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w700),
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                               TextSpan(
-                                text: l10n?.escalateSendWithinSuffix(
-                                    CompensationCalculator.formatIndian(comp.compensationDue)) ??
+                                text:
+                                    l10n?.escalateSendWithinSuffix(
+                                      CompensationCalculator.formatIndian(
+                                        comp.compensationDue,
+                                      ),
+                                    ) ??
                                     ' to claim full ${CompensationCalculator.formatIndian(comp.compensationDue)} comp retroactively.',
                               ),
                             ],
@@ -405,17 +421,14 @@ class _Body extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
           decoration: BoxDecoration(
             color: tc.surface,
-            border: Border(
-              top: BorderSide(color: tc.divider, width: 1),
-            ),
+            border: Border(top: BorderSide(color: tc.divider, width: 1)),
           ),
           child: Row(
             children: [
               _FooterButton(
                 label: l10n?.ombudsmanCopy ?? 'Copy',
                 color: tc.surfaceAlt,
-                textColor:
-                    tc.isDark ? AppColors.accent : AppColors.primary,
+                textColor: tc.isDark ? AppColors.accent : AppColors.primary,
                 onTap: () => _copyEmail(context),
               ),
               const SizedBox(width: 10),
@@ -435,7 +448,11 @@ class _Body extends StatelessWidget {
     );
   }
 
-  Widget _card(BuildContext context, {required String label, required List<Widget> children}) {
+  Widget _card(
+    BuildContext context, {
+    required String label,
+    required List<Widget> children,
+  }) {
     final tc = AppThemeColors.of(context);
     return Container(
       padding: const EdgeInsets.all(12),
@@ -487,7 +504,12 @@ class _Body extends StatelessWidget {
         'Subject: Escalation — UTR ${dispute.txnId}\n\n${_emailBody()}';
     Clipboard.setData(ClipboardData(text: body));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)?.escalateCopiedToClipboard ?? 'Email copied to clipboard')),
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context)?.escalateCopiedToClipboard ??
+              'Email copied to clipboard',
+        ),
+      ),
     );
   }
 
@@ -502,17 +524,20 @@ class _Body extends StatelessWidget {
       SnackBar(
         content: Text(
           ok
-              ? (AppLocalizations.of(context)?.escalateDrafted(to) ??
-                  'Opening mail app…')
-              : (AppLocalizations.of(context)?.escalateCopiedToClipboard ??
-                  'Could not open mail app — email copied instead.'),
+              ? (AppLocalizations.of(context)?.escalateOpeningMail ??
+                    'Opening mail app…')
+              : (AppLocalizations.of(context)?.escalateMailFailed ??
+                    'Could not open mail app — email copied instead.'),
         ),
       ),
     );
     if (!ok) {
-      await Clipboard.setData(ClipboardData(
-        text: 'To: $to\n${cc != null ? 'CC: $cc\n' : ''}Subject: $subject\n\n$body',
-      ));
+      await Clipboard.setData(
+        ClipboardData(
+          text:
+              'To: $to\n${cc != null ? 'CC: $cc\n' : ''}Subject: $subject\n\n$body',
+        ),
+      );
     }
   }
 }
@@ -544,7 +569,8 @@ class _RecipientRow extends StatelessWidget {
             borderRadius: BorderRadius.circular(7),
           ),
           child: Center(
-              child: Text(emojiTile, style: const TextStyle(fontSize: 13))),
+            child: Text(emojiTile, style: const TextStyle(fontSize: 13)),
+          ),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -563,10 +589,7 @@ class _RecipientRow extends StatelessWidget {
               ),
               Text(
                 detail,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: tc.textSecondary,
-                ),
+                style: TextStyle(fontSize: 10, color: tc.textSecondary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -574,11 +597,14 @@ class _RecipientRow extends StatelessWidget {
           ),
         ),
         if (selected)
-          const Text('✓',
-              style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.accent)),
+          const Text(
+            '✓',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.accent,
+            ),
+          ),
       ],
     );
   }
