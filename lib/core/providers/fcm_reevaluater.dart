@@ -10,38 +10,61 @@ import 'package:refund_radar/services/onesignal_service.dart';
 
 /// FCM topic re-evaluation effect (backlog B5).
 ///
-/// Mount this [ConsumerWidget] once near the top of the tree (inside
+/// Mount this [ConsumerStatefulWidget] once near the top of the tree (inside
 /// `RefundRadarApp`). It renders nothing but keeps [ref.listen] alive for
 /// the whole session: any change to disputes / premium / locale re-runs
-/// `FcmTopicService.reevaluate()` against the 9 spec topics.
+/// `FcmTopicService.reevaluate()` against the 9 spec topics. On cold start,
+/// when uid first becomes non-null, a post-frame callback fires reeval once.
 ///
 /// The re-evaluation is idempotent — subscribe is a no-op on existing
 /// subscriptions, unsubscribe a no-op on absent ones — so calling it on
 /// every input change is fine even when FCM isn't configured (dev/test
 /// builds without real Firebase).
-class FcmReevaluator extends ConsumerWidget {
+class FcmReevaluator extends ConsumerStatefulWidget {
   const FcmReevaluator({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FcmReevaluator> createState() => _FcmReevaluatorState();
+}
+
+class _FcmReevaluatorState extends ConsumerState<FcmReevaluator> {
+  bool _coldStarted = false;
+
+  @override
+  Widget build(BuildContext context) {
     final uidAsync = ref.watch(userIdProvider);
     final uid = uidAsync.valueOrNull;
 
-    if (uid != null) {
-      // All listeners are registered inside the `uid != null` block so that
-      // a uid transition null → non-null re-binds them with the live uid.
-      // (Earlier version registered the premium/locale listeners
-      // unconditionally outside this block — a stale `uid == null` was
-      // captured by closure and reeval could early-return forever.)
-      ref.watch(disputesProvider(uid));
-      ref.listen<AsyncValue<dynamic>>(
-        disputesProvider(uid),
-        (_, _) => _reeval(ref, uid),
-      );
-      ref.listen<bool>(isPremiumProvider, (_, _) => _reeval(ref, uid));
-      ref.listen<Locale>(localeProvider, (_, _) => _reeval(ref, uid));
-      ref.listen<int>(freeDisputesUsedProvider, (_, _) => _reeval(ref, uid));
+    if (uid == null) {
+      // Allow cold-start reeval again after logout / uid cleared.
+      _coldStarted = false;
+      return const SizedBox.shrink();
     }
+
+    // Cold start: uid first available (null → valid). Listeners only fire
+    // on subsequent changes, so schedule an initial reeval once per mount
+    // session when uid becomes non-null.
+    if (!_coldStarted) {
+      _coldStarted = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _reeval(ref, uid);
+      });
+    }
+
+    // All listeners are registered inside the `uid != null` path so that
+    // a uid transition null → non-null re-binds them with the live uid.
+    // (Earlier version registered the premium/locale listeners
+    // unconditionally outside this block — a stale `uid == null` was
+    // captured by closure and reeval could early-return forever.)
+    ref.watch(disputesProvider(uid));
+    ref.listen<AsyncValue<dynamic>>(
+      disputesProvider(uid),
+      (_, _) => _reeval(ref, uid),
+    );
+    ref.listen<bool>(isPremiumProvider, (_, _) => _reeval(ref, uid));
+    ref.listen<Locale>(localeProvider, (_, _) => _reeval(ref, uid));
+    ref.listen<int>(freeDisputesUsedProvider, (_, _) => _reeval(ref, uid));
 
     return const SizedBox.shrink(); // invisible, no UI
   }
