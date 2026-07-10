@@ -203,7 +203,8 @@ class _Body extends StatelessWidget {
                   ),
                   const SizedBox(height: 1),
                   Text(
-                    '${disputes.length} active ${disputes.length == 1 ? 'dispute' : 'disputes'}',
+                    l10n?.homeActiveDisputes(disputes.length) ??
+                        '${disputes.length} active ${disputes.length == 1 ? 'dispute' : 'disputes'}',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
@@ -364,7 +365,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'No disputes yet',
+              AppLocalizations.of(context)?.homeEmptyTitle ?? 'No disputes yet',
               style: TextStyle(
                 fontFamily: AppTypography.family,
                 fontSize: 18,
@@ -374,7 +375,8 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Add your first stuck transaction to start tracking compensation.',
+              AppLocalizations.of(context)?.homeEmptySubtitle ??
+                  'Add your first stuck transaction to start tracking compensation.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
@@ -397,14 +399,15 @@ class _EmptyState extends StatelessWidget {
                 child: InkWell(
                   borderRadius: BorderRadius.circular(AppRadii.md),
                   onTap: () => context.push('/disputes/create'),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.add, color: Colors.white, size: 20),
-                      SizedBox(width: 8),
+                      const Icon(Icons.add, color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
                       Text(
-                        'Add dispute',
-                        style: TextStyle(
+                        AppLocalizations.of(context)?.homeAddDispute ??
+                            'Add dispute',
+                        style: const TextStyle(
                           fontFamily: AppTypography.family,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

@@ -31,6 +31,35 @@ class AppLocalizations {
     'homeEmptyTitle': {'en': 'No disputes yet', 'hi': 'अभी कोई विवाद नहीं'},
     'homeEmptySubtitle': {'en': 'Add your first stuck transaction to start tracking compensation.', 'hi': 'पहला अटका पैसा जोड़कर वसूली शुरू करें।'},
     'homeAddDispute': {'en': 'Add dispute', 'hi': 'विवाद जोड़ें'},
+    'homeActiveDisputes': {
+      'en': '{count} active disputes',
+      'hi': '{count} सक्रिय विवाद'
+    },
+    'homeActiveDisputeOne': {
+      'en': '{count} active dispute',
+      'hi': '{count} सक्रिय विवाद'
+    },
+    'homeYoureOwed': {'en': "YOU'RE OWED", 'hi': 'आपको मिलना है'},
+    'homeDisputeCount': {'en': '{count} disputes', 'hi': '{count} विवाद'},
+    'homeDisputeCountOne': {'en': '{count} dispute', 'hi': '{count} विवाद'},
+    'cardDeadlineMissed': {
+      'en': '⚠ Deadline missed — escalate now',
+      'hi': '⚠ समय-सीमा चूकी — अभी बढ़ाएँ'
+    },
+    'cardDaysLeft': {'en': '{days} days left', 'hi': '{days} दिन बाकी'},
+    'cardExpired': {'en': 'Expired', 'hi': 'समाप्त'},
+    'cardGuidanceMode': {'en': 'Guidance mode', 'hi': 'मार्गदर्शन मोड'},
+    'cardEscalateCta': {'en': 'Escalate →', 'hi': 'बढ़ाएँ →'},
+    'cardViewCta': {'en': 'View →', 'hi': 'देखें →'},
+    'settingsComingSoon': {'en': 'Coming soon', 'hi': 'जल्द आ रहा है'},
+    'settingsDailyCompSoon': {
+      'en': 'Daily comp clock (Coming soon)',
+      'hi': 'दैनिक मुआवजा घड़ी (जल्द)'
+    },
+    'settingsWeeklyDigestSoon': {
+      'en': 'Weekly digest (Coming soon)',
+      'hi': 'साप्ताहिक सारांश (जल्द)'
+    },
     'disputeTypeUPI': {'en': 'Failed UPI / IMPS / ATM', 'hi': 'UPI / IMPS / ATM फेल'},
     'disputeTypeFastag': {'en': 'FASTag wrong deduction', 'hi': 'FASTag गलत कटौती'},
     'disputeTypeBankCharge': {'en': 'Wrong bank charge', 'hi': 'गलत बैंक शुल्क'},
@@ -663,6 +692,23 @@ class AppLocalizations {
   String get detailTlFtIhmclDetail => _t('detailTlFtIhmclDetail');
   String get detailTlFtOmbudsman => _t('detailTlFtOmbudsman');
   String get detailTlFtOmbudsmanDetail => _t('detailTlFtOmbudsmanDetail');
+  String homeActiveDisputes(int count) => count == 1
+      ? _t('homeActiveDisputeOne', args: {'count': '$count'})
+      : _t('homeActiveDisputes', args: {'count': '$count'});
+  String get homeYoureOwed => _t('homeYoureOwed');
+  String homeDisputeCount(int count) => count == 1
+      ? _t('homeDisputeCountOne', args: {'count': '$count'})
+      : _t('homeDisputeCount', args: {'count': '$count'});
+  String get cardDeadlineMissed => _t('cardDeadlineMissed');
+  String cardDaysLeft(int days) =>
+      _t('cardDaysLeft', args: {'days': '$days'});
+  String get cardExpired => _t('cardExpired');
+  String get cardGuidanceMode => _t('cardGuidanceMode');
+  String get cardEscalateCta => _t('cardEscalateCta');
+  String get cardViewCta => _t('cardViewCta');
+  String get settingsComingSoon => _t('settingsComingSoon');
+  String get settingsDailyCompSoon => _t('settingsDailyCompSoon');
+  String get settingsWeeklyDigestSoon => _t('settingsWeeklyDigestSoon');
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

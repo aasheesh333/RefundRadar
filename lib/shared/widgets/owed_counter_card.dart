@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Hero "You're owed" gradient card matching mockup Screen 4.
 /// Dark green gradient background, amber-heavy counter moved to WHITE per
@@ -78,9 +79,9 @@ class _OwedCounterCardState extends State<OwedCounterCard>
         children: [
           Row(
             children: [
-              const Text(
-                "YOU'RE OWED",
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)?.homeYoureOwed ?? "YOU'RE OWED",
+                style: const TextStyle(
                   fontFamily: AppTypography.family,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -131,7 +132,9 @@ class _OwedCounterCardState extends State<OwedCounterCard>
             children: [
               Flexible(
                 child: Text(
-                  '${widget.disputeCount} ${widget.disputeCount == 1 ? 'dispute' : 'disputes'}',
+                  AppLocalizations.of(context)
+                          ?.homeDisputeCount(widget.disputeCount) ??
+                      '${widget.disputeCount} ${widget.disputeCount == 1 ? 'dispute' : 'disputes'}',
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,

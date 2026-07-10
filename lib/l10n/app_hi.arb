@@ -252,5 +252,17 @@
   "detailTlFtIhmcl": "IHMCL गलत-कटौती ईमेल",
   "detailTlFtIhmclDetail": "falsededuction@ihmcl.com",
   "detailTlFtOmbudsman": "RBI ऑम्बड्समैन",
-  "detailTlFtOmbudsmanDetail": "यदि 30 दिनों बाद भी अनसुलझा"
+  "detailTlFtOmbudsmanDetail": "यदि 30 दिनों बाद भी अनसुलझा",
+  "homeActiveDisputes": "{count} सक्रिय विवाद",
+  "homeYoureOwed": "आपको मिलना है",
+  "homeDisputeCount": "{count} विवाद",
+  "cardDeadlineMissed": "⚠ समय-सीमा चूकी — अभी बढ़ाएँ",
+  "cardDaysLeft": "{days} दिन बाकी",
+  "cardExpired": "समाप्त",
+  "cardGuidanceMode": "मार्गदर्शन मोड",
+  "cardEscalateCta": "बढ़ाएँ →",
+  "cardViewCta": "देखें →",
+  "settingsComingSoon": "जल्द आ रहा है",
+  "settingsDailyCompSoon": "दैनिक मुआवजा घड़ी (जल्द)",
+  "settingsWeeklyDigestSoon": "साप्ताहिक सारांश (जल्द)"
 }

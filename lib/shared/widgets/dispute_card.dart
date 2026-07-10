@@ -126,10 +126,11 @@ class DisputeCard extends StatelessWidget {
                               style: BorderStyle.solid),
                         ),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
-                          '⚠ Deadline missed — escalate now',
-                          style: TextStyle(
+                          l10n?.cardDeadlineMissed ??
+                              '⚠ Deadline missed — escalate now',
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
                             color: AppColors.error,
@@ -150,7 +151,10 @@ class DisputeCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          daysLeft > 0 ? '$daysLeft days left' : 'Expired',
+                          daysLeft > 0
+                              ? (l10n?.cardDaysLeft(daysLeft) ??
+                                  '$daysLeft days left')
+                              : (l10n?.cardExpired ?? 'Expired'),
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
@@ -167,7 +171,7 @@ class DisputeCard extends StatelessWidget {
                         child: Text(
                           dispute.type.localizedCompensation(
                                   AppLocalizations.of(context)) ??
-                              'Guidance mode',
+                              (l10n?.cardGuidanceMode ?? 'Guidance mode'),
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -178,7 +182,9 @@ class DisputeCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        deadlineMissed ? 'Escalate →' : 'View →',
+                        deadlineMissed
+                            ? (l10n?.cardEscalateCta ?? 'Escalate →')
+                            : (l10n?.cardViewCta ?? 'View →'),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,

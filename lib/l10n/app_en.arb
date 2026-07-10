@@ -252,5 +252,17 @@
   "detailTlFtIhmcl": "IHMCL false-deduction email",
   "detailTlFtIhmclDetail": "falsededuction@ihmcl.com",
   "detailTlFtOmbudsman": "RBI Ombudsman",
-  "detailTlFtOmbudsmanDetail": "If unresolved after 30 days"
+  "detailTlFtOmbudsmanDetail": "If unresolved after 30 days",
+  "homeActiveDisputes": "{count} active {count, plural, =1{dispute} other{disputes}}",
+  "homeYoureOwed": "YOU'RE OWED",
+  "homeDisputeCount": "{count} {count, plural, =1{dispute} other{disputes}}",
+  "cardDeadlineMissed": "⚠ Deadline missed — escalate now",
+  "cardDaysLeft": "{days} days left",
+  "cardExpired": "Expired",
+  "cardGuidanceMode": "Guidance mode",
+  "cardEscalateCta": "Escalate →",
+  "cardViewCta": "View →",
+  "settingsComingSoon": "Coming soon",
+  "settingsDailyCompSoon": "Daily comp clock (Coming soon)",
+  "settingsWeeklyDigestSoon": "Weekly digest (Coming soon)"
 }

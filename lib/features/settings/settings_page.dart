@@ -236,14 +236,16 @@ class SettingsPage extends ConsumerWidget {
                           onChanged: (v) => setNotifDeadline(ref, v),
                         ),
                         _ToggleItem(
-                          label: l10n?.settingsDailyComp ?? 'Daily comp clock',
-                          value: ref.watch(notifDailyProvider),
-                          onChanged: (v) => setNotifDaily(ref, v),
+                          label: l10n?.settingsDailyCompSoon ??
+                              'Daily comp clock (Coming soon)',
+                          value: false,
+                          onChanged: null,
                         ),
                         _ToggleItem(
-                          label: l10n?.settingsWeeklyDigest ?? 'Weekly digest',
-                          value: ref.watch(notifWeeklyProvider),
-                          onChanged: (v) => setNotifWeekly(ref, v),
+                          label: l10n?.settingsWeeklyDigestSoon ??
+                              'Weekly digest (Coming soon)',
+                          value: false,
+                          onChanged: null,
                         ),
                       ],
                     ),
