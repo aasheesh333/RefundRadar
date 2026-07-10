@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/providers/app_state_provider.dart';
 import '../../core/theme/app_theme_colors.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/hero_emoji_circle.dart';
 import '../../shared/widgets/page_dots.dart';
 
-class OnboardingPage extends StatefulWidget {
+class OnboardingPage extends ConsumerStatefulWidget {
   const OnboardingPage({super.key});
   @override
-  State<OnboardingPage> createState() => _OnboardingPageState();
+  ConsumerState<OnboardingPage> createState() => _OnboardingPageState();
 }
 
-class _OnboardingPageState extends State<OnboardingPage> {
+class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   final PageController _pc = PageController();
   int _page = 0;
 
@@ -33,6 +35,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
     } else {
       context.go('/onboard/sms');
     }
+  }
+
+  void _skip() async {
+    // Skip marks onboarding complete (so it doesn't replay next launch)
+    // and jumps straight to home.
+    await markOnboardingComplete(ref);
+    if (mounted) context.go('/home');
   }
 
   List<_SlideData> _slidesFor(AppLocalizations? l10n, AppThemeColors tc) => [
@@ -82,7 +91,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
               child: Align(
                 alignment: Alignment.topRight,
                 child: TextButton(
-                  onPressed: () => context.go('/home'),
+                  onPressed: _skip,
                   style: TextButton.styleFrom(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

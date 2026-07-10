@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/data/constants/bank_catalog.dart';
@@ -13,7 +15,7 @@ import 'package:refund_radar/shared/widgets/onboarding_step_header.dart';
 /// SharedPreferences (`onboard.banks`) so the dispute-form bank picker can
 /// show those banks first. Nodal-officer email routing still falls back to
 /// RulesEngine.escalationTargets at dispute time.
-class AddBanksPage extends StatefulWidget {
+class AddBanksPage extends ConsumerStatefulWidget {
   const AddBanksPage({super.key});
 
   static const _kPrefKey = 'onboard.banks';
@@ -25,10 +27,10 @@ class AddBanksPage extends StatefulWidget {
   }
 
   @override
-  State<AddBanksPage> createState() => _AddBanksPageState();
+  ConsumerState<AddBanksPage> createState() => _AddBanksPageState();
 }
 
-class _AddBanksPageState extends State<AddBanksPage> {
+class _AddBanksPageState extends ConsumerState<AddBanksPage> {
   final Set<String> _selected = {};
   bool _isSearching = false;
   String _query = '';
@@ -67,9 +69,13 @@ class _AddBanksPageState extends State<AddBanksPage> {
         .toList();
   }
 
-  void _finish() {
+  void _finish() async {
     _persist();
-    context.go('/home');
+    // Mark onboarding complete so the router redirect skips the slides on
+    // every subsequent cold boot. Pass the live ref so the in-memory
+    // provider flips immediately (router redirect reads it).
+    await markOnboardingComplete(ref);
+    if (mounted) context.go('/home');
   }
 
   @override

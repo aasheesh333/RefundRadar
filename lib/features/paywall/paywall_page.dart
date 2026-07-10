@@ -186,6 +186,19 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
     );
   }
 
+  /// Notion-plan INR price per package type (spec §6.2 + user-confirmed
+  /// lifetime): Monthly ₹99 / Yearly ₹499 / Lifetime ₹1,999. We override
+  /// the store's `priceString` (which reflects the store account's locale
+  /// — often USD on the RevenueCat Test Store and overseas accounts) so
+  /// Indian users always see INR. The underlying purchase still charges
+  /// whatever the linked Play Store product costs; this is display-only.
+  String _inrPriceFor(Package p) => switch (p.packageType) {
+        PackageType.monthly => '₹99',
+        PackageType.annual => '₹499',
+        PackageType.lifetime => '₹1,999',
+        _ => p.storeProduct.priceString,
+      };
+
   Widget _buildPlansArea() {
     final tc = AppThemeColors.of(context);
     if (_loading) {
@@ -310,7 +323,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
             Expanded(
               child: _PlanCard(
                 title: monthly.storeProduct.title,
-                price: monthly.storeProduct.priceString,
+                price: _inrPriceFor(monthly),
                 highlighted: false,
                 onTap: _purchasingPackageId == null
                     ? () => _buy(monthly)
@@ -325,7 +338,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
                   final y = yearly!;
                   return _PlanCard(
                     title: y.storeProduct.title,
-                    price: y.storeProduct.priceString,
+                    price: _inrPriceFor(y),
                     highlighted: true,
                     badge: 'Save 58%',
                     onTap: _purchasingPackageId == null
@@ -344,7 +357,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
             final l = lifetime!;
             return _PlanCard(
               title: l.storeProduct.title,
-              price: l.storeProduct.priceString,
+              price: _inrPriceFor(l),
               highlighted: false,
               fullWidth: true,
               onTap: _purchasingPackageId == null

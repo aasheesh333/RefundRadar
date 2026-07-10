@@ -18,6 +18,24 @@ const _kPrefInstallTs = 'app.installTsMs';
 const _kPrefNotifDeadline = 'settings.notif.deadline';
 const _kPrefNotifDaily = 'settings.notif.daily';
 const _kPrefNotifWeekly = 'settings.notif.weekly';
+const _kPrefOnboarded = 'app.hasSeenOnboarding';
+
+/// `true` once the user has seen the onboarding slides + sms/banks flow
+/// and reached home at least once. Persisted so the router can skip
+/// onboarding on subsequent launches. Defaults to `false` (fresh install).
+final hasSeenOnboardingProvider = StateProvider<bool>((ref) => false);
+
+/// Mark onboarding as seen and persist it. Call from the onboarding end
+/// points: the Skip button on the slides, the "Continue" on the add-banks
+/// screen, and any early-exit that lands on /home. Accepts an optional
+/// [ref] so the in-memory provider is also updated (the router reads it).
+Future<void> markOnboardingComplete([dynamic ref]) async {
+  if (ref != null) {
+    ref.read(hasSeenOnboardingProvider.notifier).state = true;
+  }
+  final sp = await SharedPreferences.getInstance();
+  await sp.setBool(_kPrefOnboarded, true);
+}
 
 /// `true` when the user has an active premium subscription (RevenueCat).
 /// Defaults to `false`. Mutated only through `setPremium`.
@@ -126,6 +144,8 @@ Future<void> hydratePersistedAppState(dynamic ref) async {
   final sp = await SharedPreferences.getInstance();
   ref.read(isPremiumProvider.notifier).state =
       sp.getBool(_kPrefPremium) ?? false;
+  ref.read(hasSeenOnboardingProvider.notifier).state =
+      sp.getBool(_kPrefOnboarded) ?? false;
   ref.read(notifDeadlineProvider.notifier).state =
       sp.getBool(_kPrefNotifDeadline) ?? true;
   ref.read(notifDailyProvider.notifier).state =

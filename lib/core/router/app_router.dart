@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/features/onboarding/onboarding_page.dart';
 import 'package:refund_radar/features/sms_permission/sms_permission_page.dart';
 import 'package:refund_radar/features/add_banks/add_banks_page.dart';
@@ -20,6 +21,17 @@ import 'package:refund_radar/features/templates/template_library_page.dart';
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/onboard',
+    redirect: (context, state) {
+      final onboarded = ref.read(hasSeenOnboardingProvider);
+      final goingToOnboard = state.matchedLocation == '/onboard' ||
+          state.matchedLocation.startsWith('/onboard/');
+      if (onboarded && goingToOnboard) {
+        // Already completed onboarding on a previous launch — skip straight
+        // to home so the slides don't replay every cold boot.
+        return '/home';
+      }
+      return null;
+    },
     routes: [
       GoRoute(path: '/onboard', builder: (c, s) => const OnboardingPage()),
       GoRoute(path: '/home', builder: (c, s) => const HomePage()),
