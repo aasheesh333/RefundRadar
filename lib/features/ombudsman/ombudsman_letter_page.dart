@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
@@ -13,6 +15,15 @@ import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 
+/// Paywall location for free users who deep-link (or navigate) to the
+/// ombudsman letter page. Returns to the dispute detail so purchase success
+/// does not re-enter this gated page until premium is active.
+String ombudsmanLetterPaywallLocation(String disputeId) =>
+    '/paywall?return=/disputes/$disputeId&trigger=ombudsman_letter';
+
+/// `true` when the letter page must redirect free users to the paywall.
+bool shouldGateOmbudsmanLetter(bool isPremium) => !isPremium;
+
 class OmbudsmanLetterPage extends ConsumerStatefulWidget {
   final String disputeId;
   const OmbudsmanLetterPage({super.key, required this.disputeId});
@@ -23,6 +34,16 @@ class OmbudsmanLetterPage extends ConsumerStatefulWidget {
 
 class _OmbudsmanLetterPageState extends ConsumerState<OmbudsmanLetterPage> {
   String _letter = '';
+  bool _paywallRedirectScheduled = false;
+
+  void _redirectFreeUserToPaywall() {
+    if (_paywallRedirectScheduled) return;
+    _paywallRedirectScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.go(ombudsmanLetterPaywallLocation(widget.disputeId));
+    });
+  }
 
   void _generateLetter(Dispute dispute) {
     final comp = CompensationCalculator.compute(dispute);
@@ -57,6 +78,12 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = ref.watch(isPremiumProvider);
+    if (shouldGateOmbudsmanLetter(isPremium)) {
+      _redirectFreeUserToPaywall();
+      return const Scaffold(body: SizedBox.shrink());
+    }
+
     final rulesAsync = ref.watch(rulesEngineProvider);
     final uid = ref.watch(userIdProvider).asData?.value;
     final disputesAsync =
