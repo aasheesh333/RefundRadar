@@ -107,6 +107,60 @@ class AppLocalizations {
     },
     'formEntityLabel': {'en': 'Bank / Issuer', 'hi': 'बैंक / जारीकर्ता'},
     'formPasteSms': {'en': 'Paste from SMS', 'hi': 'SMS से पेस्ट करें'},
+    'smsPermissionTitle': {
+      'en': 'Use SMS import to fill disputes faster',
+      'hi': 'विवाद जल्दी भरने के लिए SMS इम्पोर्ट करें',
+    },
+    'smsPermissionSubtitle': {
+      'en':
+          'Android grants inbox access. RefundRadar scans messages on this phone to find likely refund-related bank or merchant SMS and prefill UTR, amount, and date.',
+      'hi':
+          'Android इनबॉक्स एक्सेस देता है। RefundRadar इसी फोन पर संदेश स्कैन करके संभावित रिफंड-संबंधित बैंक या मर्चेंट SMS ढूंढता है और UTR, राशि, तारीख भरता है।',
+    },
+    'smsPermissionHowItWorks1': {
+      'en': 'You approve Android SMS inbox access',
+      'hi': 'आप Android SMS इनबॉक्स एक्सेस मंजूर करते हैं',
+    },
+    'smsPermissionHowItWorks2': {
+      'en': 'RefundRadar filters likely bank/refund messages on-device',
+      'hi': 'RefundRadar फोन पर ही संभावित बैंक/रिफंड संदेश छांटता है',
+    },
+    'smsPermissionHowItWorks3': {
+      'en': 'You choose a message to prefill the dispute form',
+      'hi': 'फॉर्म भरने के लिए आप संदेश चुनते हैं',
+    },
+    'smsPermissionPrivacyNote': {
+      'en':
+          'SMS parsing stays on-device for import. You can skip this and paste an SMS manually later.',
+      'hi':
+          'SMS पार्सिंग इम्पोर्ट के लिए फोन पर ही रहती है। आप इसे छोड़कर बाद में SMS पेस्ट कर सकते हैं।',
+    },
+    'smsPermissionGrant': {
+      'en': 'Allow SMS import',
+      'hi': 'SMS इम्पोर्ट की अनुमति दें',
+    },
+    'smsPermissionSkip': {
+      'en': 'Skip and paste manually',
+      'hi': 'छोड़ें और मैन्युअल पेस्ट करें',
+    },
+    'formSmsPermissionDeniedAction': {
+      'en':
+          'SMS permission denied. Tap Paste to use a copied SMS, or enter details manually.',
+      'hi':
+          'SMS अनुमति नहीं मिली। कॉपी किया SMS उपयोग करने के लिए Paste दबाएं या विवरण मैन्युअल भरें।',
+    },
+    'formNoBankSmsAction': {
+      'en':
+          'No likely refund SMS found. Paste a copied SMS or enter details manually.',
+      'hi':
+          'संभावित रिफंड SMS नहीं मिला। कॉपी किया SMS पेस्ट करें या विवरण मैन्युअल भरें।',
+    },
+    'formSmsInboxFailed': {
+      'en':
+          'Could not read SMS inbox. Paste a copied SMS or enter details manually.',
+      'hi':
+          'SMS इनबॉक्स नहीं पढ़ सका। कॉपी किया SMS पेस्ट करें या विवरण मैन्युअल भरें।',
+    },
     'formLiveChip': {
       'en': 'Deadline was {date} → Bank already owes you ₹{amount}',
       'hi': 'सीमा {date} थी → बैंक ₹{amount} देने लायक',
@@ -790,6 +844,18 @@ class AppLocalizations {
   String get formTxnIdLabel => _t('formTxnIdLabel');
   String get formEntityLabel => _t('formEntityLabel');
   String get formPasteSms => _t('formPasteSms');
+  String get smsPermissionTitle => _t('smsPermissionTitle');
+  String get smsPermissionSubtitle => _t('smsPermissionSubtitle');
+  String get smsPermissionHowItWorks1 => _t('smsPermissionHowItWorks1');
+  String get smsPermissionHowItWorks2 => _t('smsPermissionHowItWorks2');
+  String get smsPermissionHowItWorks3 => _t('smsPermissionHowItWorks3');
+  String get smsPermissionPrivacyNote => _t('smsPermissionPrivacyNote');
+  String get smsPermissionGrant => _t('smsPermissionGrant');
+  String get smsPermissionSkip => _t('smsPermissionSkip');
+  String get formSmsPermissionDeniedAction =>
+      _t('formSmsPermissionDeniedAction');
+  String get formNoBankSmsAction => _t('formNoBankSmsAction');
+  String get formSmsInboxFailed => _t('formSmsInboxFailed');
   String formLiveChip(String date, String amount) =>
       _t('formLiveChip', args: {'date': date, 'amount': amount});
   String get formCreateDispute => _t('formCreateDispute');

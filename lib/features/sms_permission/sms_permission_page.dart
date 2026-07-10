@@ -3,16 +3,18 @@ import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/shared/widgets/onboarding_step_header.dart';
 
-/// Onboarding SMS permission page (mockup Screen 12).
-/// Explains on-device SMS parsing for failed-UPI auto-detection
-/// and exposes the Android runtime SMS permission request.
+/// Onboarding SMS permission page.
+/// Android grants inbox access; RefundRadar filters likely refund-related
+/// messages on-device and keeps manual paste available when users skip.
 class SmsPermissionPage extends StatelessWidget {
   const SmsPermissionPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
     return Scaffold(
       backgroundColor: tc.bg,
@@ -41,8 +43,11 @@ class SmsPermissionPage extends StatelessWidget {
                             width: 48,
                             height: 48,
                             child: Center(
-                              child: Icon(Icons.arrow_back,
-                                  size: 22, color: tc.textPrimary),
+                              child: Icon(
+                                Icons.arrow_back,
+                                size: 22,
+                                color: tc.textPrimary,
+                              ),
                             ),
                           ),
                         ),
@@ -50,10 +55,10 @@ class SmsPermissionPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: OnboardingStepHeader(
                       step: 'Setup',
-                      title: 'Grant SMS permission',
+                      title: l10n?.smsPermissionGrant ?? 'Allow SMS import',
                     ),
                   ),
                 ],
@@ -66,12 +71,11 @@ class SmsPermissionPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Center(
-                      child: _HeroPhone(),
-                    ),
+                    const Center(child: _HeroPhone()),
                     const SizedBox(height: 16),
                     Text(
-                      'Detect failed UPI automatically',
+                      l10n?.smsPermissionTitle ??
+                          'Use SMS import to fill disputes faster',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: AppTypography.family,
@@ -83,8 +87,8 @@ class SmsPermissionPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Reads bank SMS on-device to auto-detect UTR, date, and amount. '
-                      'No messages sent to servers.',
+                      l10n?.smsPermissionSubtitle ??
+                          'Android grants inbox access. RefundRadar scans messages on this phone to find likely refund-related bank or merchant SMS and prefill UTR, amount, and date.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 13,
@@ -119,13 +123,8 @@ class _HeroPhone extends StatelessWidget {
     return Container(
       width: 72,
       height: 72,
-      decoration: BoxDecoration(
-        color: tc.accentSoft,
-        shape: BoxShape.circle,
-      ),
-      child: const Center(
-        child: Text('📱', style: TextStyle(fontSize: 34)),
-      ),
+      decoration: BoxDecoration(color: tc.accentSoft, shape: BoxShape.circle),
+      child: const Center(child: Text('📱', style: TextStyle(fontSize: 34))),
     );
   }
 }
@@ -134,11 +133,24 @@ class _HowItWorksCard extends StatelessWidget {
   const _HowItWorksCard();
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
-    final steps = const [
-      ('1', 'Receive any bank SMS (debit failed, refund processed)'),
-      ('2', 'Local regex parser extracts UTR and amount on-device'),
-      ('3', 'Pre-filled dispute card appears — tap to confirm'),
+    final steps = [
+      (
+        '1',
+        l10n?.smsPermissionHowItWorks1 ??
+            'You approve Android SMS inbox access',
+      ),
+      (
+        '2',
+        l10n?.smsPermissionHowItWorks2 ??
+            'RefundRadar filters likely bank/refund messages on-device',
+      ),
+      (
+        '3',
+        l10n?.smsPermissionHowItWorks3 ??
+            'You choose a message to prefill the dispute form',
+      ),
     ];
     return Container(
       padding: const EdgeInsets.all(12),
@@ -209,6 +221,7 @@ class _PrivacyNote extends StatelessWidget {
   const _PrivacyNote();
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
     return Container(
       padding: const EdgeInsets.all(10),
@@ -221,13 +234,16 @@ class _PrivacyNote extends StatelessWidget {
         children: [
           const Padding(
             padding: EdgeInsets.only(top: 1),
-            child: Text('⚠️',
-                style: TextStyle(fontSize: 12, color: AppColors.premiumGold)),
+            child: Text(
+              '⚠️',
+              style: TextStyle(fontSize: 12, color: AppColors.premiumGold),
+            ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Android allows only Financial SMS from approved bank sender IDs — no personal SMS read.',
+              l10n?.smsPermissionPrivacyNote ??
+                  'SMS parsing stays on-device for import. You can skip this and paste an SMS manually later.',
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
@@ -300,18 +316,22 @@ class _SampleSmsCard extends StatelessWidget {
                   TextSpan(
                     text: 'HD-HDFCBK',
                     style: TextStyle(
-                        fontWeight: FontWeight.w700, color: labelColor),
+                      fontWeight: FontWeight.w700,
+                      color: labelColor,
+                    ),
                   ),
                   const TextSpan(
-                      text:
-                          ' · 08 Jul 2026\nBody: ₹400 debited from A/c ✱✱✱✱1234 for UPI txn. UTR '),
+                    text:
+                        ' · 08 Jul 2026\nBody: ₹400 debited from A/c ✱✱✱✱1234 for UPI txn. UTR ',
+                  ),
                   TextSpan(
                     text: '412981901234',
                     style: TextStyle(
-                        fontWeight: FontWeight.w700, color: labelColor),
+                      fontWeight: FontWeight.w700,
+                      color: labelColor,
+                    ),
                   ),
-                  const TextSpan(
-                      text: '. If failed, complain within 5 days.'),
+                  const TextSpan(text: '. If failed, complain within 5 days.'),
                 ],
               ),
             ),
@@ -326,14 +346,13 @@ class _SmsFooter extends StatelessWidget {
   const _SmsFooter();
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
       decoration: BoxDecoration(
         color: tc.surface,
-        border: Border(
-          top: BorderSide(color: tc.divider, width: 1),
-        ),
+        border: Border(top: BorderSide(color: tc.divider, width: 1)),
       ),
       child: SafeArea(
         top: false,
@@ -356,9 +375,10 @@ class _SmsFooter extends StatelessWidget {
                       return;
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                      SnackBar(
                         content: Text(
-                          'SMS permission denied — you can still paste SMS later.',
+                          l10n?.formSmsPermissionDeniedAction ??
+                              'SMS permission denied. Tap Paste to use a copied SMS, or enter details manually.',
                         ),
                       ),
                     );
@@ -374,9 +394,9 @@ class _SmsFooter extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadii.sm),
                   ),
                 ),
-                child: const Text(
-                  'Grant SMS permission',
-                  style: TextStyle(
+                child: Text(
+                  l10n?.smsPermissionGrant ?? 'Allow SMS import',
+                  style: const TextStyle(
                     fontFamily: AppTypography.family,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -401,7 +421,7 @@ class _SmsFooter extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Maybe later',
+                  l10n?.smsPermissionSkip ?? 'Skip and paste manually',
                   style: TextStyle(
                     fontFamily: AppTypography.family,
                     fontSize: 15,

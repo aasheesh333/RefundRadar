@@ -107,6 +107,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   }
 
   Future<void> _pickFromSmsInbox() async {
+    final l10n = AppLocalizations.of(context);
     final inbox = ref.read(smsInboxServiceProvider);
     final granted = await inbox.requestPermission();
     if (!granted) {
@@ -114,21 +115,35 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            AppLocalizations.of(context)?.formSmsPermissionDenied ??
-                'SMS permission denied. You can still paste an SMS.',
+            l10n?.formSmsPermissionDeniedAction ??
+                'SMS permission denied. Tap Paste to use a copied SMS, or enter details manually.',
           ),
         ),
       );
       return;
     }
-    final messages = await inbox.queryBankLikeMessages();
+    late final List<InboxSms> messages;
+    try {
+      messages = await inbox.queryBankLikeMessages();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n?.formSmsInboxFailed ??
+                'Could not read SMS inbox. Paste a copied SMS or enter details manually.',
+          ),
+        ),
+      );
+      return;
+    }
     if (!mounted) return;
     if (messages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            AppLocalizations.of(context)?.formNoBankSms ??
-                'No bank-like SMS found. Try paste from clipboard.',
+            l10n?.formNoBankSmsAction ??
+                'No likely refund SMS found. Paste a copied SMS or enter details manually.',
           ),
         ),
       );

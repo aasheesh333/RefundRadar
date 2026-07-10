@@ -93,6 +93,14 @@ base64 -i android/app/google-services.json | gh secret set FIREBASE_CONFIG_ANDRO
 - Offline-first via Firestore
 - SMS-paste parser (regex UTR/amount/date)
 
+## SMS permission declaration guidance
+
+Refund Radar uses `READ_SMS` for a core Android feature: importing refund-related bank or merchant SMS to prefill dispute forms with UTR/RRN, amount, and transaction date. Android grants inbox access when the user accepts; Refund Radar filters and parses candidate messages on-device for import. Users can skip SMS permission and paste a copied SMS or enter details manually.
+
+Suggested Play Console declaration summary:
+
+> Refund Radar reads SMS inbox messages after explicit user permission to detect likely failed-transaction/refund messages from banks or merchants and prefill refund dispute forms. SMS parsing happens on-device for this import workflow, reducing manual entry for UTR/RRN, amount, and transaction date. The app also provides a manual paste/data-entry fallback if SMS permission is denied.
+
 ## UI/UX redesign progress
 
 13 HTML mockup screens approved by user (`ss/Screen01.png` … `ss/Screen13.png`); Flutter rewrite flown in passes:
