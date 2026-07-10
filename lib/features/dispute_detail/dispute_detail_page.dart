@@ -525,12 +525,14 @@ class _DisputeBody extends ConsumerWidget {
       '${d.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]}, ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
   Future<void> _toggleResolved(BuildContext context, WidgetRef ref) async {
-    final nextStatus = dispute.status == DisputeStatus.resolved
-        ? DisputeStatus.filedL1
-        : DisputeStatus.resolved;
+    final isResolved = dispute.status == DisputeStatus.resolved;
+    final nextStatus =
+        isResolved ? dispute.reopenTarget() : DisputeStatus.resolved;
     final repo = ref.read(disputeRepositoryProvider);
     final updated = dispute.copyWith(
       status: nextStatus,
+      resolvedAmount:
+          nextStatus == DisputeStatus.resolved ? dispute.amount : null,
       resolvedAt: nextStatus == DisputeStatus.resolved ? DateTime.now() : null,
     );
     await repo.saveDispute(uid, updated);

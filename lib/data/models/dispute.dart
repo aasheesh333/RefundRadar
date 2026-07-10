@@ -67,6 +67,8 @@ class Dispute {
     required this.createdAt,
   });
 
+  static const Object _unset = Object();
+
   Dispute copyWith({
     String? id,
     String? uid,
@@ -80,7 +82,7 @@ class Dispute {
     Map<String, DateTime?>? filedDates,
     Map<String, String?>? ticketNumbers,
     double? resolvedAmount,
-    DateTime? resolvedAt,
+    Object? resolvedAt = _unset,
     List<String>? evidence,
     DateTime? createdAt,
   }) =>
@@ -97,10 +99,19 @@ class Dispute {
         filedDates: filedDates ?? this.filedDates,
         ticketNumbers: ticketNumbers ?? this.ticketNumbers,
         resolvedAmount: resolvedAmount ?? this.resolvedAmount,
-        resolvedAt: resolvedAt ?? this.resolvedAt,
+        resolvedAt: identical(resolvedAt, _unset)
+            ? this.resolvedAt
+            : resolvedAt as DateTime?,
         evidence: evidence ?? this.evidence,
         createdAt: createdAt ?? this.createdAt,
       );
+
+  DisputeStatus reopenTarget() {
+    if (filedDates['ombudsman'] != null) return DisputeStatus.ombudsman;
+    if (filedDates['l2'] != null) return DisputeStatus.filedL2;
+    if (filedDates['l1'] != null) return DisputeStatus.filedL1;
+    return DisputeStatus.draft;
+  }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,

@@ -177,14 +177,61 @@ void main() {
     });
 
     test('can clear optional fields via copyWith not setting them', () {
-      // Note: copyWith can't explicitly set a field to null (the OR pattern
-      // falls through to the existing value). This is documented behaviour
-      // — if a caller needs to null-out an optional field they must
-      // construct a new Dispute or use a slightly different helper.
+      // When resolvedAt is not passed at all, the sentinel keeps the old
+      // value — this is the "preserve" path.
       final d = base(resolvedAt: DateTime(2025, 2, 2));
       final d2 = d.copyWith(status: DisputeStatus.draft);
       // resolvedAt preserved, not cleared
       expect(d2.resolvedAt, d.resolvedAt);
+    });
+
+    test('copyWith(resolvedAt: null) clears the field (sentinel)', () {
+      final d = base(resolvedAt: DateTime(2025, 2, 2));
+      final d2 = d.copyWith(resolvedAt: null);
+      expect(d2.resolvedAt, isNull);
+      // original untouched
+      expect(d.resolvedAt, DateTime(2025, 2, 2));
+    });
+
+    test('copyWith(resolvedAmount: 500) sets it', () {
+      final d = base(resolvedAmount: 0);
+      final d2 = d.copyWith(resolvedAmount: 500.0);
+      expect(d2.resolvedAmount, 500.0);
+    });
+  });
+
+  group('Dispute.reopenTarget', () {
+    test('ombudsman filedDates → ombudsman status', () {
+      final d = base(
+        status: DisputeStatus.resolved,
+        filedDates: {
+          'l1': DateTime(2025, 3, 1),
+          'l2': DateTime(2025, 3, 5),
+          'ombudsman': DateTime(2025, 3, 10),
+        },
+      );
+      expect(d.reopenTarget(), DisputeStatus.ombudsman);
+    });
+
+    test('l2 only → filedL2 status', () {
+      final d = base(
+        status: DisputeStatus.resolved,
+        filedDates: {'l1': DateTime(2025, 3, 1), 'l2': DateTime(2025, 3, 5)},
+      );
+      expect(d.reopenTarget(), DisputeStatus.filedL2);
+    });
+
+    test('l1 only → filedL1 status', () {
+      final d = base(
+        status: DisputeStatus.resolved,
+        filedDates: {'l1': DateTime(2025, 3, 1)},
+      );
+      expect(d.reopenTarget(), DisputeStatus.filedL1);
+    });
+
+    test('no filed dates → draft status', () {
+      final d = base(status: DisputeStatus.resolved, filedDates: {});
+      expect(d.reopenTarget(), DisputeStatus.draft);
     });
   });
 
