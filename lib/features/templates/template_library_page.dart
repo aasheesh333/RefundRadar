@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme_colors.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/providers/app_state_provider.dart';
 import '../../core/providers/theme_provider.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/dispute_provider.dart';
@@ -49,28 +50,28 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     final tc = AppThemeColors.of(context);
     final templatesAsync = ref.watch(templatesProvider);
     final rulesAsync = ref.watch(rulesEngineProvider);
+    final isPremium = ref.watch(isPremiumProvider);
     final locale = ref.watch(localeProvider);
     final uid = ref.watch(userIdProvider).asData?.value;
-    final disputesAsync =
-        uid == null ? null : ref.watch(disputesProvider(uid));
+    final disputesAsync = uid == null ? null : ref.watch(disputesProvider(uid));
     final disputes = disputesAsync?.asData?.value ?? const <Dispute>[];
     return Scaffold(
       backgroundColor: tc.bg,
       body: SafeArea(
         child: templatesAsync.when(
-          data: (templates) =>
-              rulesAsync.when(
-                data: (rules) => _buildBody(
-                  templates: templates,
-                  freeIds: rules.freeTemplateIds.toSet(),
-                  localeCode: locale.languageCode,
-                  disputes: disputes,
-                ),
-    loading: () => const SkeletonList(itemCount: 4),
-    error: (e, _) => BrandedErrorBanner(message: e.toString()),
-    ),
-    loading: () => const SkeletonList(itemCount: 4),
-    error: (e, _) => BrandedErrorBanner(message: e.toString()),
+          data: (templates) => rulesAsync.when(
+            data: (rules) => _buildBody(
+              templates: templates,
+              freeIds: rules.freeTemplateIds.toSet(),
+              isPremiumUser: isPremium,
+              localeCode: locale.languageCode,
+              disputes: disputes,
+            ),
+            loading: () => const SkeletonList(itemCount: 4),
+            error: (e, _) => BrandedErrorBanner(message: e.toString()),
+          ),
+          loading: () => const SkeletonList(itemCount: 4),
+          error: (e, _) => BrandedErrorBanner(message: e.toString()),
         ),
       ),
     );
@@ -89,6 +90,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
   Widget _buildBody({
     required List<Template> templates,
     required Set<String> freeIds,
+    required bool isPremiumUser,
     required String localeCode,
     required List<Dispute> disputes,
   }) {
@@ -97,9 +99,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     final repo = ref.read(templateRepositoryProvider);
     final filtered = _selectedCategory == 'All'
         ? templates
-        : templates
-            .where((t) => t.category == _selectedCategory)
-            .toList();
+        : templates.where((t) => t.category == _selectedCategory).toList();
     final totalCount = templates.length;
 
     return Column(
@@ -184,8 +184,12 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
             separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (c, i) {
               final t = filtered[i];
-              final locked = repo.isLocked(t, freeIds);
-                  return _TemplateCard(
+              final locked = repo.isLocked(
+                t,
+                freeIds,
+                isPremiumUser: isPremiumUser,
+              );
+              return _TemplateCard(
                 template: t,
                 locked: locked,
                 localeCode: localeCode,
@@ -241,18 +245,14 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
       context: context,
       builder: (c) => AlertDialog(
         title: Text(t.titleFor(localeCode)),
-        content: SingleChildScrollView(
-          child: SelectableText(body),
-        ),
+        content: SingleChildScrollView(child: SelectableText(body)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c),
             child: Text(l10n?.commonClose ?? 'Close'),
           ),
           FilledButton(
-            onPressed: () => Clipboard.setData(
-              ClipboardData(text: body),
-            ),
+            onPressed: () => Clipboard.setData(ClipboardData(text: body)),
             child: Text(l10n?.ombudsmanCopy ?? 'Copy'),
           ),
         ],
@@ -290,7 +290,8 @@ class _TemplateCard extends StatelessWidget {
             prefix: '🔒',
           )
         : StatusPill(
-            label: l10n?.templateLevelLabel(template.escalationLevel) ??
+            label:
+                l10n?.templateLevelLabel(template.escalationLevel) ??
                 'Level ${template.escalationLevel}',
             fg: AppColors.accent,
             bg: tc.accentSoft,
@@ -409,16 +410,16 @@ class _TemplateCard extends StatelessWidget {
   }
 
   Color _softColorFor(String category, AppThemeColors tc) => switch (category) {
-        'UPI / IMPS / ATM' => tc.alertSoft,
-        'FASTag' => tc.accentSoft,
-        'Advanced / legal' => tc.premiumGoldSoft,
-        _ => tc.surfaceAlt,
-      };
+    'UPI / IMPS / ATM' => tc.alertSoft,
+    'FASTag' => tc.accentSoft,
+    'Advanced / legal' => tc.premiumGoldSoft,
+    _ => tc.surfaceAlt,
+  };
 
   String _emojiFor(String category, int level) => switch (category) {
-        'UPI / IMPS / ATM' => '📧',
-        'FASTag' => '🚗',
-        'Advanced / legal' => '🏛️',
-        _ => '📄',
-      };
+    'UPI / IMPS / ATM' => '📧',
+    'FASTag' => '🚗',
+    'Advanced / legal' => '🏛️',
+    _ => '📄',
+  };
 }

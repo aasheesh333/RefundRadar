@@ -28,11 +28,14 @@ class TemplateRepository {
     return _cached!;
   }
 
-  /// `locked = id is premium AND id not in live freeTemplateIds`.
-  /// If `freeTemplateIds` is empty (rules engine not yet loaded),
-  /// trust `template.isPremium` as the source of truth.
-  bool isLocked(Template t, Set<String> freeIds) =>
-      t.isPremium && !freeIds.contains(t.id);
+  /// `locked = user is not premium AND id is premium AND id not in live freeTemplateIds`.
+  /// If `freeTemplateIds` is empty, trust `template.isPremium` as the source
+  /// of truth for free users. Premium users always unlock premium templates.
+  bool isLocked(
+    Template t,
+    Set<String> freeIds, {
+    required bool isPremiumUser,
+  }) => !isPremiumUser && t.isPremium && !freeIds.contains(t.id);
 }
 
 final templateRepositoryProvider = Provider<TemplateRepository>(
