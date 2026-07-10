@@ -187,44 +187,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         createdAt: DateTime.now(),
       );
       final repo = ref.read(disputeRepositoryProvider);
-      Dispute? saved;
-      bool rollbackNeeded = false;
+      Dispute saved;
       try {
         saved = await repo.saveDispute(uid, dispute);
-        rollbackNeeded = true; // dispute committed, must clean up on failure
-        // B3: increment free-tier counter (no-op for premium, but cheap).
-        if (!isPremium) {
-          await ref.read(freeDisputesUsedProvider.notifier).increment();
-        }
-        // B4 analytics: dispute_created event (spec §10).
-        ref.read(analyticsServiceProvider).logDisputeCreated(
-              disputeType: dispute.type.id,
-              isPremium: isPremium,
-            );
-        // B6: generate / sync reminders + schedule local notifications.
-        //    Per-reminder try/catch inside the sync helper makes this
-        //    non-fatal: a notification scheduling failure doesn't un-save
-        //    the dispute. Firestore reminder write has its own auth retry.
-        await syncRemindersForDispute(ref, uid, saved);
-        rollbackNeeded = false; // success — no rollback
-        // Home uses a FutureProvider AND reminders has its own provider;
-        // invalidate BOTH or the new dispute's reminders won't show on the
-        // reminders page (only Home invalidated historically — see M-D10).
-        ref.invalidate(disputesProvider(uid));
-        ref.invalidate(remindersProvider(uid));
-        if (mounted) context.go('/home');
       } catch (e, st) {
-        // B-D9 rollback: if saveDispute committed but a subsequent step
-        // (reminders sync / analytics / invalidate) threw, the dispute doc
-        // exists in Firestore but reminders may be partially-committed.
-        // Best-effort delete to avoid an orphaned dispute with no reminders.
-        if (rollbackNeeded && saved != null) {
-          try {
-            await repo.deleteDispute(uid, saved.id);
-          } catch (de, dst) {
-            debugPrint('rollback deleteDispute failed: $de\n$dst');
-          }
-        }
+        // saveDispute itself failed — this is the only real create failure.
         // Friendly copy per error class. `unavailable` = offline (Firestore
         // queues writes but our `_ensureUserDoc` get() throws first);
         // `permission-denied` = auth race; everything else = transient.
@@ -248,7 +215,51 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
           await FirebaseCrashlytics.instance.recordError(e, st,
               reason: 'DisputeFormPage._save', fatal: false);
         } catch (_) {/* Crashlytics not initialised */}
+        return;
       }
+
+      // Side effects below are best-effort: a failure here must NOT un-save
+      // the dispute (the old rollback-via-deleteDispute path silently
+      // destroyed disputes the user thought were saved). Each step is
+      // isolated in its own try/catch so one failing step can't skip the
+      // rest, and none of them can delete the saved dispute.
+
+      // B3: increment free-tier counter (no-op for premium, but cheap).
+      if (!isPremium) {
+        try {
+          await ref.read(freeDisputesUsedProvider.notifier).increment();
+        } catch (e) {
+          debugPrint('best-effort step failed: $e');
+        }
+      }
+      // B4 analytics: dispute_created event (spec §10).
+      try {
+        ref.read(analyticsServiceProvider).logDisputeCreated(
+              disputeType: dispute.type.id,
+              isPremium: isPremium,
+            );
+      } catch (e) {
+        debugPrint('best-effort step failed: $e');
+      }
+      // B6: generate / sync reminders + schedule local notifications.
+      //    Per-reminder try/catch inside the sync helper makes this
+      //    non-fatal: a notification scheduling failure doesn't un-save
+      //    the dispute. Firestore reminder write has its own auth retry.
+      try {
+        await syncRemindersForDispute(ref, uid, saved);
+      } catch (e) {
+        debugPrint('best-effort step failed: $e');
+      }
+      // Home uses a FutureProvider AND reminders has its own provider;
+      // invalidate BOTH or the new dispute's reminders won't show on the
+      // reminders page (only Home invalidated historically — see M-D10).
+      try {
+        ref.invalidate(disputesProvider(uid));
+        ref.invalidate(remindersProvider(uid));
+      } catch (e) {
+        debugPrint('best-effort step failed: $e');
+      }
+      if (mounted) context.go('/home');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
