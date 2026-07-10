@@ -14,6 +14,13 @@ import 'package:refund_radar/shared/widgets/dispute_card.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 
+/// Non-terminal disputes shown on Home (active only).
+List<Dispute> activeHomeDisputes(List<Dispute> disputes) => disputes
+    .where((d) =>
+        d.status != DisputeStatus.resolved &&
+        d.status != DisputeStatus.expired)
+    .toList();
+
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
@@ -42,7 +49,8 @@ class HomePage extends ConsumerWidget {
             }
             final disputesAsync = ref.watch(disputesProvider(uid));
             return disputesAsync.when(
-              data: (disputes) => _Body(disputes: disputes),
+              data: (disputes) =>
+                  _Body(disputes: activeHomeDisputes(disputes)),
               loading: () => const _Loading(),
               error: (e, _) => BrandedErrorBanner(
                 message: _friendlyError(e),
