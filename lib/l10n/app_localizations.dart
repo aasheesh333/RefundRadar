@@ -760,6 +760,10 @@ class AppLocalizations {
       'en': 'No transaction amount on this dispute',
       'hi': 'इस विवाद में कोई लेन-देन राशि नहीं',
     },
+    'escalateTapToExpand': {
+      'en': 'Tap to view full email',
+      'hi': 'पूरा ईमेल देखने के लिए टैप करें',
+    },
     'escalateToLabel': {'en': 'TO:', 'hi': 'प्रति:'},
     'escalateCcLabel': {'en': 'CC:', 'hi': 'प्रतिलिपि:'},
     'escalateSubjectLabel': {'en': 'Subject:', 'hi': 'विषय:'},
@@ -1178,6 +1182,7 @@ class AppLocalizations {
   String get escalateMaxPenaltyLabel => _t('escalateMaxPenaltyLabel');
   String get escalateT5Missed => _t('escalateT5Missed');
   String get escalateNoAmount => _t('escalateNoAmount');
+  String get escalateTapToExpand => _t('escalateTapToExpand');
   String get escalateToLabel => _t('escalateToLabel');
   String get escalateCcLabel => _t('escalateCcLabel');
   String get escalateSubjectLabel => _t('escalateSubjectLabel');

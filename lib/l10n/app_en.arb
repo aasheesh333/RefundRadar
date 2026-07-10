@@ -304,6 +304,7 @@
   "escalateMaxPenaltyLabel": "MAXIMUM PENALTY YOU CAN CLAIM",
   "escalateT5Missed": "⚠ T+5 missed",
   "escalateNoAmount": "No transaction amount on this dispute",
+  "escalateTapToExpand": "Tap to view full email",
   "escalateToLabel": "TO:",
   "escalateCcLabel": "CC:",
   "escalateSubjectLabel": "Subject:",

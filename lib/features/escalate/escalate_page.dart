@@ -4,10 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/core/providers/theme_provider.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
+import 'package:refund_radar/data/constants/bank_catalog.dart';
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/data/models/template.dart';
+import 'package:refund_radar/data/repositories/template_repository.dart';
+import 'package:refund_radar/features/templates/template_library_page.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
@@ -85,7 +90,7 @@ class _EscalatePageState extends ConsumerState<EscalatePage> {
   }
 }
 
-class _Body extends StatelessWidget {
+class _Body extends ConsumerWidget {
   final Dispute dispute;
   final bool ccOmbudsman;
   final ValueChanged<bool> onToggleCc;
@@ -96,14 +101,51 @@ class _Body extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
     final comp = CompensationCalculator.compute(dispute);
     final refund = dispute.amount;
     final maxClaim = refund + comp.compensationDue;
     final deadlineMissed = comp.isExpired;
+    final templatesAsync = ref.watch(templatesProvider);
+    final locale = ref.watch(localeProvider);
+    final localeCode = locale.languageCode;
 
+    return templatesAsync.when(
+      loading: () => const SkeletonList(itemCount: 4),
+      error: (e, _) => BrandedErrorBanner(
+        message: e.toString(),
+        onRetry: () => ref.invalidate(templatesProvider),
+      ),
+      data: (templates) {
+        final match = _matchEscalationTemplate(templates, dispute);
+        return _buildBody(
+          context,
+          l10n: l10n,
+          tc: tc,
+          comp: comp,
+          refund: refund,
+          maxClaim: maxClaim,
+          deadlineMissed: deadlineMissed,
+          localeCode: localeCode,
+          matchedTemplate: match,
+        );
+      },
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context, {
+    required AppLocalizations? l10n,
+    required AppThemeColors tc,
+    required CompensationResult comp,
+    required double refund,
+    required double maxClaim,
+    required bool deadlineMissed,
+    required String localeCode,
+    required Template? matchedTemplate,
+  }) {
     return Column(
       children: [
         // header
@@ -318,15 +360,36 @@ class _Body extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    _emailBody(),
-                    style: TextStyle(
-                      fontSize: 12,
-                      height: 1.45,
-                      color: tc.textSecondary,
+                  GestureDetector(
+                    onTap: () => _showFullEmail(
+                      context,
+                      body: _emailBody(matchedTemplate, localeCode, dispute),
                     ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
+                    child: Text(
+                      _emailBody(matchedTemplate, localeCode, dispute),
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.45,
+                        color: tc.textSecondary,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  GestureDetector(
+                    onTap: () => _showFullEmail(
+                      context,
+                      body: _emailBody(matchedTemplate, localeCode, dispute),
+                    ),
+                    child: Text(
+                      '${l10n?.escalateTapToExpand ?? 'Tap to view full email'} \u25BE',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: tc.textTertiary,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -429,7 +492,11 @@ class _Body extends StatelessWidget {
                 label: l10n?.ombudsmanCopy ?? 'Copy',
                 color: tc.surfaceAlt,
                 textColor: tc.isDark ? AppColors.accent : AppColors.primary,
-                onTap: () => _copyEmail(context),
+                onTap: () => _copyEmail(
+                  context,
+                  matchedTemplate: matchedTemplate,
+                  localeCode: localeCode,
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -438,7 +505,11 @@ class _Body extends StatelessWidget {
                   color: tc.ctaBackground,
                   textColor: tc.ctaForeground,
                   elevation: true,
-                  onTap: () => _sendEmail(context),
+                  onTap: () => _sendEmail(
+                    context,
+                    matchedTemplate: matchedTemplate,
+                    localeCode: localeCode,
+                  ),
                 ),
               ),
             ],
@@ -482,6 +553,8 @@ class _Body extends StatelessWidget {
   }
 
   String _nodalEmail(Dispute d) {
+    final catalog = BankCatalog.nodalEmailFor(d.entityId ?? '');
+    if (catalog != null) return catalog;
     final bank = (d.entityName ?? 'bank').toLowerCase();
     if (bank.contains('hdfc')) return 'nodal.officer@hdfcbank.net';
     if (bank.contains('icici')) return 'nodal.officer@icicibank.com';
@@ -490,18 +563,58 @@ class _Body extends StatelessWidget {
     return 'nodal.officer@yourbank.in';
   }
 
-  String _emailBody() {
+  String _emailBody(Template? matchedTemplate, String localeCode, Dispute d) {
+    if (matchedTemplate != null) {
+      return filledTemplateBody(matchedTemplate, localeCode, d);
+    }
     return 'I am writing to escalate a refund dispute under RBI Master Direction '
-        'DPSS.CO.PD.No.629 — failed transaction UTR ${dispute.txnId} for '
-        '${CompensationCalculator.formatIndian(dispute.amount)} on '
-        '${dispute.txnDate.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][dispute.txnDate.month - 1]} '
-        'remains unresolved past T+${dispute.type.tatDays ?? 5}. I request '
+        'DPSS.CO.PD.No.629 — failed transaction UTR ${d.txnId} for '
+        '${CompensationCalculator.formatIndian(d.amount)} on '
+        '${d.txnDate.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.txnDate.month - 1]} '
+        'remains unresolved past T+${d.type.tatDays ?? 5}. I request '
         'immediate reversal plus ₹100/day compensation…';
   }
 
-  void _copyEmail(BuildContext context) {
-    final body =
-        'Subject: Escalation — UTR ${dispute.txnId}\n\n${_emailBody()}';
+  Template? _matchEscalationTemplate(List<Template> templates, Dispute d) {
+    final category = switch (d.type) {
+      DisputeType.upiP2p ||
+      DisputeType.upiP2m ||
+      DisputeType.atm ||
+      DisputeType.imps => 'UPI / IMPS / ATM',
+      DisputeType.fastag => 'FASTag',
+      DisputeType.bankCharge => 'Bank charges',
+      DisputeType.wrongTransfer => 'Wrong transfer',
+    };
+    for (final t in templates) {
+      if (t.escalationLevel == 2 && t.category == category) return t;
+    }
+    return null;
+  }
+
+  void _showFullEmail(BuildContext context, {required String body}) {
+    final l10n = AppLocalizations.of(context);
+    showDialog(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(l10n?.escalateEmailPreview ?? 'EMAIL PREVIEW'),
+        content: SingleChildScrollView(child: SelectableText(body)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: Text(l10n?.commonClose ?? 'Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _copyEmail(
+    BuildContext context, {
+    required Template? matchedTemplate,
+    required String localeCode,
+  }) {
+    final body = 'Subject: Escalation — UTR ${dispute.txnId}\n\n'
+        '${_emailBody(matchedTemplate, localeCode, dispute)}';
     Clipboard.setData(ClipboardData(text: body));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -513,9 +626,13 @@ class _Body extends StatelessWidget {
     );
   }
 
-  Future<void> _sendEmail(BuildContext context) async {
+  Future<void> _sendEmail(
+    BuildContext context, {
+    required Template? matchedTemplate,
+    required String localeCode,
+  }) async {
     final subject = 'Escalation — UTR ${dispute.txnId}';
-    final body = _emailBody();
+    final body = _emailBody(matchedTemplate, localeCode, dispute);
     final to = _nodalEmail(dispute);
     final cc = ccOmbudsman ? 'crpc@rbi.org.in' : null;
     final ok = await launchEmail(to, subject: subject, body: body, cc: cc);
