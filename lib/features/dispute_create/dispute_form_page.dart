@@ -175,6 +175,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         }
       }
 
+      final desc = _descCtrl.text.trim();
       final dispute = Dispute(
         id: '',
         uid: uid,
@@ -185,6 +186,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         entityName: _bankName.isEmpty ? null : _bankName,
         entityId: _selectedEntityId.isEmpty ? null : _selectedEntityId,
         createdAt: DateTime.now(),
+        description: desc.isEmpty ? null : desc,
       );
       final repo = ref.read(disputeRepositoryProvider);
       Dispute saved;

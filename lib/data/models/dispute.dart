@@ -48,6 +48,7 @@ class Dispute {
   final DateTime? resolvedAt;
   final List<String> evidence;
   final DateTime createdAt;
+  final String? description;
 
   const Dispute({
     required this.id,
@@ -65,6 +66,7 @@ class Dispute {
     this.resolvedAt,
     this.evidence = const [],
     required this.createdAt,
+    this.description,
   });
 
   static const Object _unset = Object();
@@ -85,6 +87,7 @@ class Dispute {
     Object? resolvedAt = _unset,
     List<String>? evidence,
     DateTime? createdAt,
+    Object? description = _unset,
   }) =>
       Dispute(
         id: id ?? this.id,
@@ -104,6 +107,9 @@ class Dispute {
             : resolvedAt as DateTime?,
         evidence: evidence ?? this.evidence,
         createdAt: createdAt ?? this.createdAt,
+        description: identical(description, _unset)
+            ? this.description
+            : description as String?,
       );
 
   DisputeStatus reopenTarget() {
@@ -129,6 +135,7 @@ class Dispute {
         'resolvedAt': resolvedAt?.toIso8601String(),
         'evidence': evidence,
         'createdAt': createdAt.toIso8601String(),
+        'description': description,
       };
 
   factory Dispute.fromJson(Map<String, dynamic> json) => Dispute(
@@ -151,5 +158,6 @@ class Dispute {
         resolvedAt: DateTime.tryParse(json['resolvedAt'] ?? ''),
         evidence: List<String>.from(json['evidence'] ?? []),
         createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+        description: json['description'] as String?,
       );
 }
