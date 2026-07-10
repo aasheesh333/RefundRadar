@@ -38,6 +38,7 @@ class _Pill extends StatelessWidget {
       onTap: pill.onTap,
       borderRadius: BorderRadius.circular(AppRadii.pill),
       child: Container(
+        constraints: const BoxConstraints(minHeight: 48),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: selected ? AppColors.primary : tc.surface,
@@ -47,13 +48,15 @@ class _Pill extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(AppRadii.pill),
         ),
-        child: Text(
-          pill.label,
-          style: TextStyle(
-            fontFamily: AppTypography.family,
-            fontSize: 12,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-            color: selected ? Colors.white : tc.textSecondary,
+        child: Center(
+          child: Text(
+            pill.label,
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 12,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+              color: selected ? Colors.white : tc.textSecondary,
+            ),
           ),
         ),
       ),
