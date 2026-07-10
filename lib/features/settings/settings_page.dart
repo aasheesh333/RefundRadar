@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/data/repositories/reminder_repository.dart';
+import 'package:refund_radar/features/settings/settings_actions.dart';
 import '../../core/providers/app_state_provider.dart';
 import '../../core/providers/auth_provider.dart';
 import '../../core/providers/theme_provider.dart';
@@ -319,7 +322,7 @@ class SettingsPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 10),
                   InkWell(
-                    onTap: () => _showDisclaimerDialog(context),
+                    onTap: () => _showLegalDialog(context, ref),
                     child: _Card(
                       label: l10n?.settingsLegal ?? 'Legal',
                       child: Text(
@@ -367,21 +370,7 @@ class SettingsPage extends ConsumerWidget {
                     SizedBox(
                       height: 48,
                       child: TextButton(
-                        onPressed: () async {
-                          // Anonymous re-auth: clears stale session + mints a
-                          // fresh uid so Firestore rules re-bind cleanly.
-                          await ref.read(reauthProvider)();
-                          ref.invalidate(userIdProvider);
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                l10n?.settingsSessionRefreshed ??
-                                    'Session refreshed.',
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: () => _confirmSignOut(context, ref),
                         style: TextButton.styleFrom(
                           backgroundColor: tc.errorSoft,
                           foregroundColor: AppColors.error,
@@ -411,9 +400,43 @@ class SettingsPage extends ConsumerWidget {
     );
   }
 
+  void _showLegalDialog(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    showDialog<void>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(l10n?.settingsLegal ?? 'Legal'),
+        content: Text(
+          l10n?.settingsLegalRow ??
+              'Disclaimer · Privacy · Delete data',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(c);
+              _showDisclaimerDialog(context);
+            },
+            child: Text(l10n?.settingsDisclaimerTitle ?? 'Disclaimer'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(c);
+              _confirmDeleteData(context, ref);
+            },
+            child: Text(l10n?.settingsDeleteData ?? 'Delete my data'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: Text(l10n?.commonCancel ?? 'Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showDisclaimerDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (c) => AlertDialog(
         title: Text(l10n?.settingsDisclaimerTitle ?? 'Disclaimer'),
@@ -433,6 +456,94 @@ class SettingsPage extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _confirmDeleteData(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(l10n?.settingsDeleteData ?? 'Delete my data'),
+        content: Text(
+          l10n?.settingsDeleteConfirm ??
+              'Delete all your data? This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: Text(l10n?.commonCancel ?? 'Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: Text(l10n?.settingsDeleteData ?? 'Delete my data'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final uid = ref.read(userIdProvider).asData?.value;
+    if (uid == null || uid.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n?.commonError ?? 'Something went wrong'),
+        ),
+      );
+      return;
+    }
+
+    try {
+      await executeDeleteAllUserData(
+        uid: uid,
+        deleteAllUserData: (id) =>
+            ref.read(disputeRepositoryProvider).deleteAllUserData(id),
+        deleteAllRemindersAndNotifications: (id) =>
+            deleteAllRemindersAndNotifications(ref, id),
+      );
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(kDeleteDataSuccessBody)),
+      );
+      context.go('/onboard');
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n?.commonError ?? 'Something went wrong'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(l10n?.settingsSignOut ?? 'Sign out'),
+        content: const Text(kSignOutWarningBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: Text(l10n?.commonCancel ?? 'Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: Text(l10n?.settingsSignOut ?? 'Sign out'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    // Anonymous re-auth: signs out then mints a fresh uid — cloud data under
+    // the previous uid becomes unreachable (warned above).
+    await ref.read(reauthProvider)();
+    ref.invalidate(userIdProvider);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text(kSignOutCompletedBody)),
     );
   }
 }
