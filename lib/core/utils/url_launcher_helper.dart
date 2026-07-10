@@ -1,12 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-Future<void> launchExternalUrl(String url) async {
+Future<bool> launchExternalUrl(String url) async {
   final uri = Uri.parse(url);
-  await launchUrl(uri, mode: LaunchMode.externalApplication);
+  return _tryLaunch(uri);
 }
 
-Future<void> launchPhone(String phone) async {
-  await launchUrl(Uri.parse('tel:$phone'));
+Future<bool> launchPhone(String phone) async {
+  return _tryLaunch(Uri.parse('tel:$phone'));
 }
 
 Future<bool> launchEmail(
@@ -16,8 +17,20 @@ Future<bool> launchEmail(
   String? cc,
 }) async {
   final uri = EmailUtil.build(email, subject: subject, body: body, cc: cc);
-  if (await canLaunchUrl(uri)) {
-    return launchUrl(uri);
+  return _tryLaunch(uri);
+}
+
+Future<bool> _tryLaunch(Uri uri) async {
+  try {
+    final launchable = await canLaunchUrl(uri);
+    if (launchable ||
+        uri.scheme == 'mailto' ||
+        uri.scheme == 'tel' ||
+        uri.scheme == 'https') {
+      return await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  } catch (e, st) {
+    debugPrint('_tryLaunch failed for ${uri.toString()}: $e\n$st');
   }
   return false;
 }
