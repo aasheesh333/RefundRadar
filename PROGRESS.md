@@ -548,4 +548,4 @@ Decisions: real SMS inbox (READ_SMS + platform channel); delete data → empty H
 - Replaced Dart `String.hashCode` notification IDs with stable app-owned IDs.
 - Reminder dismissal now cancels matching scheduled local notifications best-effort.
 - Premium users now see premium templates unlocked consistently.
-- Verification: targeted tests passed; `flutter analyze` passed; GitHub Actions full Analyze + Test pending after push.
+- Verification: targeted tests passed; `flutter analyze` passed; GitHub Actions 'Analyze + Test' job succeeded (run 29099634269).

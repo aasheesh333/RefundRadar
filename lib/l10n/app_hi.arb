@@ -279,8 +279,6 @@
   "settingsDailyCompSoon": "दैनिक मुआवजा घड़ी (जल्द)",
   "settingsWeeklyDigestSoon": "साप्ताहिक सारांश (जल्द)",
   "formClipboardEmpty": "क्लिपबोर्ड खाली — पहले एक SMS कॉपी करें।",
-  "formSmsPermissionDenied": "SMS अनुमति अस्वीकृत। आप अभी भी SMS पेस्ट कर सकते हैं।",
-  "formNoBankSms": "बैंक जैसा SMS नहीं मिला। क्लिपबोर्ड से पेस्ट करें।",
   "formPickBankSms": "बैंक SMS चुनें",
   "formInbox": "इनबॉक्स",
   "formPaste": "पेस्ट",

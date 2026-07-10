@@ -694,14 +694,6 @@ class AppLocalizations {
       'en': 'Clipboard empty — copy an SMS first.',
       'hi': 'क्लिपबोर्ड खाली — पहले एक SMS कॉपी करें।',
     },
-    'formSmsPermissionDenied': {
-      'en': 'SMS permission denied. You can still paste an SMS.',
-      'hi': 'SMS अनुमति अस्वीकृत। आप अभी भी SMS पेस्ट कर सकते हैं।',
-    },
-    'formNoBankSms': {
-      'en': 'No bank-like SMS found. Try paste from clipboard.',
-      'hi': 'बैंक जैसा SMS नहीं मिला। क्लिपबोर्ड से पेस्ट करें।',
-    },
     'formPickBankSms': {'en': 'Pick a bank SMS', 'hi': 'बैंक SMS चुनें'},
     'formInbox': {'en': 'Inbox', 'hi': 'इनबॉक्स'},
     'formPaste': {'en': 'Paste', 'hi': 'पेस्ट'},
@@ -1145,8 +1137,6 @@ class AppLocalizations {
 
   // Pass 2 residual i18n getters — dispute form / type page / escalate / wizard.
   String get formClipboardEmpty => _t('formClipboardEmpty');
-  String get formSmsPermissionDenied => _t('formSmsPermissionDenied');
-  String get formNoBankSms => _t('formNoBankSms');
   String get formPickBankSms => _t('formPickBankSms');
   String get formInbox => _t('formInbox');
   String get formPaste => _t('formPaste');

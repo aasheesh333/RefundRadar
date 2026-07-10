@@ -2,8 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+
+const _kPrefMigratedFnv1aIds = 'migrated_fnv1a_ids';
 
 class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
@@ -84,6 +87,26 @@ class NotificationService {
 
   Future<void> cancelAll() async {
     await _plugin.cancelAll();
+  }
+
+  /// One-time upgrade guard: previous builds keyed scheduled-notification ids
+  /// with `reminder.id.hashCode & 0x7FFFFFFF`, which differs from the current
+  /// FNV-1a derivation used by [cancelForReminder] / [cancelForDispute]. On the
+  /// first launch after the id change, those orphaned OS alarms can't be
+  /// individually cancelled, so before [repairScheduledNotifications] re-arms
+  /// the new stable ids we wipe the entire alarm queue exactly once. Guarded
+  /// by a SharedPreferences bool so it runs only once per upgrade boundary and
+  /// never blocks app start on failure.
+  Future<void> migrateNotificationIdsIfNeeded() async {
+    try {
+      final sp = await SharedPreferences.getInstance();
+      final migrated = sp.getBool(_kPrefMigratedFnv1aIds) ?? false;
+      if (migrated) return;
+      await _plugin.cancelAll();
+      await sp.setBool(_kPrefMigratedFnv1aIds, true);
+    } catch (e) {
+      debugPrint('migrateNotificationIdsIfNeeded failed: $e');
+    }
   }
 }
 

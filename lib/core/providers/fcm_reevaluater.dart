@@ -54,6 +54,9 @@ class _FcmReevaluatorState extends ConsumerState<FcmReevaluator> {
         try {
           await ref.read(notificationServiceProvider).requestPermission();
         } catch (_) {}
+        try {
+          await ref.read(notificationServiceProvider).migrateNotificationIdsIfNeeded();
+        } catch (_) {}
         await repairScheduledNotifications(ref, uid);
       });
     }
