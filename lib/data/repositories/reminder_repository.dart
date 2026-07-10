@@ -288,3 +288,22 @@ Future<void> deleteAllRemindersAndNotifications(dynamic ref, String uid) async {
     debugPrint('cancelAll notifications failed for $uid: $e\n$st');
   }
 }
+
+/// Dismiss one reminder and cancel its matching local notification.
+/// Firestore dismissal is the source of truth. Local notification cancellation
+/// is best-effort after the row is marked dismissed, so a platform failure does
+/// not resurrect a dismissed reminder in the UI.
+Future<void> dismissReminderAndCancelNotification(
+  dynamic ref,
+  String uid,
+  String reminderId,
+) async {
+  final repo = ref.read(reminderRepositoryProvider) as ReminderRepository;
+  await repo.dismiss(uid, reminderId);
+  try {
+    final notifications = ref.read(notificationServiceProvider) as NotificationService;
+    await notifications.cancelForReminder(reminderId);
+  } catch (e, st) {
+    debugPrint('cancelForReminder failed for $reminderId: $e\n$st');
+  }
+}

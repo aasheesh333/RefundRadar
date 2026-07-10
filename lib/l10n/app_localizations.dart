@@ -295,6 +295,14 @@ class AppLocalizations {
       'en': 'No upcoming reminders',
       'hi': 'कोई रिमाइंडर नहीं',
     },
+    'remindersDismissed': {
+      'en': 'Reminder dismissed',
+      'hi': 'रिमाइंडर हटाया गया',
+    },
+    'remindersDismissFailed': {
+      'en': 'Could not dismiss reminder. Check connection and try again.',
+      'hi': 'रिमाइंडर नहीं हट सका। कनेक्शन जांचें और फिर कोशिश करें।',
+    },
     'settingsLanguage': {'en': 'Language', 'hi': 'भाषा'},
     'settingsTheme': {'en': 'Theme', 'hi': 'थीम'},
     'settingsNotifications': {'en': 'Notifications', 'hi': 'सूचनाएं'},
@@ -806,6 +814,8 @@ class AppLocalizations {
   String get paywallOmbudsmanLetter => _t('paywallOmbudsmanLetter');
   String get remindersTitle => _t('remindersTitle');
   String get remindersEmpty => _t('remindersEmpty');
+  String get remindersDismissed => _t('remindersDismissed');
+  String get remindersDismissFailed => _t('remindersDismissFailed');
   String get settingsLanguage => _t('settingsLanguage');
   String get settingsTheme => _t('settingsTheme');
   String get settingsNotifications => _t('settingsNotifications');

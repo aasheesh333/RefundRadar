@@ -182,10 +182,32 @@ class _ReminderCard extends ConsumerWidget {
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () async {
-                        await ref
-                            .read(reminderRepositoryProvider)
-                            .dismiss(reminder.uid, reminder.id);
-                        ref.invalidate(remindersProvider(reminder.uid));
+                        final messenger = ScaffoldMessenger.of(context);
+                        final l10n = AppLocalizations.of(context);
+                        try {
+                          await dismissReminderAndCancelNotification(
+                            ref,
+                            reminder.uid,
+                            reminder.id,
+                          );
+                          ref.invalidate(remindersProvider(reminder.uid));
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                l10n?.remindersDismissed ?? 'Reminder dismissed',
+                              ),
+                            ),
+                          );
+                        } catch (_) {
+                          messenger.showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                l10n?.remindersDismissFailed ??
+                                    'Could not dismiss reminder. Check connection and try again.',
+                              ),
+                            ),
+                          );
+                        }
                       },
                       child: Semantics(
                         button: true,

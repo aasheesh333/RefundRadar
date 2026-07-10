@@ -62,6 +62,8 @@
   "remindersNoneUpcoming": "No upcoming reminders",
   "remindersTrackNew": "Track a new dispute",
   "remindersEmptySubtitle": "Reminders appear when you create or escalate a dispute — so you never miss a 30-day follow-up window.",
+  "remindersDismissed": "Reminder dismissed",
+  "remindersDismissFailed": "Could not dismiss reminder. Check connection and try again.",
   "addBanksSearchHint": "Search your bank",
   "settingsDisclaimerTitle": "Disclaimer",
   "settingsSmsDetection": "SMS detection",

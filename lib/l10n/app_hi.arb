@@ -62,6 +62,8 @@
   "remindersNoneUpcoming": "कोई आगामी रिमाइंडर नहीं",
   "remindersTrackNew": "नया विवाद ट्रैक करें",
   "remindersEmptySubtitle": "विवाद बनाने या बढ़ाने पर रिमाइंडर आते हैं — ताकि 30-दिन फॉलो-अप सीमा न चूके।",
+  "remindersDismissed": "रिमाइंडर हटाया गया",
+  "remindersDismissFailed": "रिमाइंडर नहीं हट सका। कनेक्शन जांचें और फिर कोशिश करें।",
   "addBanksSearchHint": "अपना बैंक खोजें",
   "settingsDisclaimerTitle": "अस्वीकरण",
   "settingsSmsDetection": "SMS पहचान",
