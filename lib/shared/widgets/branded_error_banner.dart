@@ -100,8 +100,8 @@ class BrandedErrorBanner extends StatelessWidget {
                 FilledButton.tonalIcon(
                   onPressed: onRetry,
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    backgroundColor: tc.ctaBackground,
+                    foregroundColor: tc.ctaForeground,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

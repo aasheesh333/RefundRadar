@@ -290,8 +290,8 @@ class _AddBanksPageState extends ConsumerState<AddBanksPage> {
                       child: FilledButton(
                         onPressed: _selected.isEmpty ? null : _finish,
                         style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
+                          backgroundColor: tc.ctaBackground,
+                          foregroundColor: tc.ctaForeground,
                           disabledBackgroundColor:
                               tc.divider,
                           disabledForegroundColor: tc.textSecondary,

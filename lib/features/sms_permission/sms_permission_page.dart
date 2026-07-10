@@ -368,8 +368,8 @@ class _SmsFooter extends StatelessWidget {
                   if (context.mounted) context.go('/onboard/banks');
                 },
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  backgroundColor: tc.ctaBackground,
+                  foregroundColor: tc.ctaForeground,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadii.sm),
                   ),

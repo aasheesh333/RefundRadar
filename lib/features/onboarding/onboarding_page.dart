@@ -137,8 +137,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                     child: FilledButton(
                       onPressed: _next,
                       style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
+                        backgroundColor: tc.ctaBackground,
+                        foregroundColor: tc.ctaForeground,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppRadii.md),
                         ),

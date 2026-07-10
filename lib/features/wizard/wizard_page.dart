@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
-import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/template_fill.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
@@ -311,8 +311,10 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                               if (context.mounted) context.go('/reminders');
                             },
                             style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
+                              backgroundColor:
+                                  AppThemeColors.of(context).ctaBackground,
+                              foregroundColor:
+                                  AppThemeColors.of(context).ctaForeground,
                             ),
                             child: Text(AppLocalizations.of(context)?.wizardDoneSetReminder ??
                                 'Done — set reminder'),

@@ -167,32 +167,32 @@ class _Body extends StatelessWidget {
               // max-claim hero
               Container(
                 padding: const EdgeInsets.all(16),
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.all(Radius.circular(14)),
+                decoration: BoxDecoration(
+                  color: tc.ctaBackground,
+                  borderRadius: const BorderRadius.all(Radius.circular(14)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'MAXIMUM PENALTY YOU CAN CLAIM',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1,
-                        color: Color(0x99FFFFFF),
+                        color: tc.ctaForeground.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       CompensationCalculator.formatIndian(maxClaim),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: AppTypography.family,
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
                         height: 1,
-                        color: Colors.white,
-                        fontFeatures: [FontFeature.tabularFigures()],
+                        color: tc.ctaForeground,
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -205,9 +205,9 @@ class _Body extends StatelessWidget {
                                       comp.compensationDue),
                                   comp.daysElapsed) ??
                               '${CompensationCalculator.formatIndian(refund)} refund + ${CompensationCalculator.formatIndian(comp.compensationDue)} comp (${comp.daysElapsed} days × ₹100/day)'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xB3FFFFFF),
+                        color: tc.ctaForeground.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -422,8 +422,8 @@ class _Body extends StatelessWidget {
               Expanded(
                 child: _FooterButton(
                   label: l10n?.escalateSend ?? 'Send escalation →',
-                  color: AppColors.primary,
-                  textColor: Colors.white,
+                  color: tc.ctaBackground,
+                  textColor: tc.ctaForeground,
                   elevation: true,
                   onTap: () => _sendEmail(context),
                 ),
