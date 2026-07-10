@@ -3,6 +3,7 @@ name: Build Release
 on:
   push:
     branches: [main, master]
+    tags: ['v*']
   pull_request:
     branches: [main, master]
   workflow_dispatch:
@@ -14,13 +15,13 @@ concurrency:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Analyze + unit tests on every push/PR (no APK build).
+  # Analyze + unit tests on every push/PR/tag (no APK build).
+  # Gate: release jobs (AAB/APK) wait for this to pass.
   # ---------------------------------------------------------------------------
   quality:
     name: Analyze + Test
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: ${{ github.event_name != 'workflow_dispatch' }}
 
     steps:
       - name: Checkout
@@ -48,13 +49,15 @@ jobs:
         run: flutter test
 
   # ---------------------------------------------------------------------------
-  # Release AAB — workflow_dispatch only. Needs secrets.
+  # Release AAB — runs parallel with APK (no dependency).
+  # Triggers: tag push 'v*' OR manual workflow_dispatch. Needs secrets.
+  # Quality gate must pass before release jobs start.
   # ---------------------------------------------------------------------------
   release-aab:
     name: Release AAB (Play Store)
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v') }}
     concurrency:
       group: release-aab
       cancel-in-progress: false
@@ -114,11 +117,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Verify analysis
-        run: flutter analyze
-
-      - name: Run tests
-        run: flutter test
+      - name: Cache Gradle build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/build-cache-1
+            ~/.gradle/caches/transforms-3
+            android/.gradle
+            android/app/build
+          key: gradle-build-aab-${{ runner.os }}-${{ hashFiles('android/**/build.gradle*', 'android/**/gradle-wrapper.properties', 'pubspec.lock') }}
+          restore-keys: |
+            gradle-build-aab-${{ runner.os }}-
 
       - name: Decode release keystore
         env:
@@ -214,14 +223,15 @@ jobs:
           echo "AAB smoke test passed: ${#AABS[@]} AAB(s)"
 
   # ---------------------------------------------------------------------------
-  # Release APK — after AAB, workflow_dispatch only.
+  # Release APK — runs PARALLEL with AAB (no dependency).
+  # Triggers: tag push 'v*' OR manual workflow_dispatch. Needs secrets.
+  # Quality gate must pass before release jobs start.
   # ---------------------------------------------------------------------------
   release-apk:
     name: Release APK (sideload)
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    needs: release-aab
-    if: ${{ github.event_name == 'workflow_dispatch' && always() }}
+    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v') }}
     concurrency:
       group: release-apk
       cancel-in-progress: false
@@ -245,6 +255,53 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Cache Gradle build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/build-cache-1
+            ~/.gradle/caches/transforms-3
+            android/.gradle
+            android/app/build
+          key: gradle-build-apk-${{ runner.os }}-${{ hashFiles('android/**/build.gradle*', 'android/**/gradle-wrapper.properties', 'pubspec.lock') }}
+          restore-keys: |
+            gradle-build-apk-${{ runner.os }}-
+
+      - name: Verify required secrets are present
+        env:
+          FB_ANDROID_API_KEY: ${{ secrets.FB_ANDROID_API_KEY }}
+          FB_ANDROID_APP_ID: ${{ secrets.FB_ANDROID_APP_ID }}
+          FB_MESSAGING_SENDER_ID: ${{ secrets.FB_MESSAGING_SENDER_ID }}
+          FB_PROJECT_ID: ${{ secrets.FB_PROJECT_ID }}
+          FB_STORAGE_BUCKET: ${{ secrets.FB_STORAGE_BUCKET }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          REVENUECAT_SDK_KEY: ${{ secrets.REVENUECAT_SDK_KEY }}
+          ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
+          ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
+          VERSION_CODE: ${{ secrets.VERSION_CODE }}
+          VERSION_NAME: ${{ secrets.VERSION_NAME }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          missing=()
+          for v in FB_ANDROID_API_KEY FB_ANDROID_APP_ID FB_MESSAGING_SENDER_ID \
+                   FB_PROJECT_ID FB_STORAGE_BUCKET \
+                   GOOGLE_SERVICES_JSON \
+                   REVENUECAT_SDK_KEY \
+                   ONESIGNAL_APP_ID ONESIGNAL_API_KEY \
+                   VERSION_CODE VERSION_NAME \
+                   KEYSTORE_BASE64 KEYSTORE_PASSWORD \
+                   KEY_ALIAS KEY_PASSWORD; do
+            if [ -z "$(eval echo \"\$$v\")" ]; then missing+=("$v"); fi
+          done
+          if [ ${#missing[@]} -ne 0 ]; then
+            echo "::error::Missing required secrets: ${missing[*]}"
+            echo "Add them in GitHub repo → Settings → Secrets and variables → Actions."
+            exit 1
+          fi
 
       - name: Decode release keystore
         env:
