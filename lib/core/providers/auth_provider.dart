@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:refund_radar/services/revenue_cat_service.dart';
 
 final firebaseAuthProvider =
     Provider<FirebaseAuth>((ref) => FirebaseAuth.instance);
@@ -17,9 +21,13 @@ final lastAuthErrorProvider = StateProvider<String?>((ref) => null);
 /// available before Firestore/Storage calls run. Without the token refresh,
 /// the first Firestore read can race auth and return `permission-denied`
 /// even though Anonymous sign-in is enabled.
+///
+/// After a successful auth, best-effort links RevenueCat to the Firebase
+/// uid via [RevenueCatService.syncWithFirebaseUid] — fire-and-forget so
+/// startup / re-auth never block on RC identity.
 Future<User?> ensureAnonymousUser(FirebaseAuth auth, {Ref? ref}) async {
   try {
-    return await Future(() async {
+    final user = await Future(() async {
       var user = auth.currentUser;
       if (user == null) {
         final cred = await auth.signInAnonymously();
@@ -32,6 +40,18 @@ Future<User?> ensureAnonymousUser(FirebaseAuth auth, {Ref? ref}) async {
       ref?.read(lastAuthErrorProvider.notifier).state = null;
       return user;
     }).timeout(const Duration(seconds: 12));
+
+    final uid = user?.uid;
+    if (uid != null && ref != null) {
+      unawaited(
+        ref.read(revenueCatServiceProvider).syncWithFirebaseUid(uid).catchError(
+          (Object e) {
+            debugPrint('RevenueCat uid sync skipped: $e');
+          },
+        ),
+      );
+    }
+    return user;
   } catch (e, st) {
     debugPrint('ensureAnonymousUser failed: $e\n$st');
     // Preserve the failure reason so Home can show WHY auth failed (e.g.
