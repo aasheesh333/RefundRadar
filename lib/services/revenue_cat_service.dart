@@ -153,6 +153,44 @@ class RevenueCatService {
       return false;
     }
   }
+
+  /// Link RevenueCat's app-user-id to the Firebase anonymous uid via
+  /// [Purchases.logIn], then refresh the local premium flag.
+  ///
+  /// Safe to call after every anonymous sign-in / re-auth. Never throws —
+  /// failures (including [PurchasesErrorCode.operationAlreadyInProgressError])
+  /// are swallowed so startup / auth never blocks on RC identity.
+  Future<void> syncWithFirebaseUid(String uid) async {
+    final trimmed = uid.trim();
+    if (trimmed.isEmpty || !_configured) return;
+    try {
+      final result = await Purchases.logIn(trimmed);
+      final premium =
+          result.customerInfo.entitlements.active.containsKey('Premium');
+      await persistPremium(_ref, premium);
+      _ref.read(analyticsServiceProvider).setPremiumUserProperty(premium);
+    } on PlatformException catch (e) {
+      final code = PurchasesErrorHelper.getErrorCode(e);
+      if (shouldSwallowLogInError(code)) {
+        debugPrint('RevenueCat: logIn non-fatal: $code');
+      }
+    } catch (e) {
+      debugPrint('RevenueCat: syncWithFirebaseUid failed: $e');
+    }
+  }
+}
+
+/// Whether a [Purchases.logIn] error is non-fatal and must not block auth.
+///
+/// [PurchasesErrorCode.operationAlreadyInProgressError] is always ignored;
+/// other codes are also non-fatal for identity sync so startup never hangs.
+bool shouldSwallowLogInError(PurchasesErrorCode code) {
+  switch (code) {
+    case PurchasesErrorCode.operationAlreadyInProgressError:
+      return true;
+    default:
+      return true;
+  }
 }
 
 /// Typed error for "RevenueCat hasn't been configured — call configure()
