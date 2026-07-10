@@ -85,18 +85,27 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
     }
 
     final rulesAsync = ref.watch(rulesEngineProvider);
-    final uid = ref.watch(userIdProvider).asData?.value;
-    final disputesAsync =
-        uid == null ? null : ref.watch(disputesProvider(uid));
+    final uidAsync = ref.watch(userIdProvider);
     return Scaffold(
       appBar: AppBar(
           title: Text(AppLocalizations.of(context)?.ombudsmanLetterTitle ??
               'Ombudsman letter')),
-      body: rulesAsync.when(
-        data: (rules) {
-          if (uid == null || disputesAsync == null) {
-            return const SkeletonList(itemCount: 3);
+      body: uidAsync.when(
+        loading: () => const SkeletonList(itemCount: 3),
+        error: (e, _) => BrandedErrorBanner(
+          message: e.toString(),
+          onRetry: () => ref.invalidate(userIdProvider),
+        ),
+        data: (uid) {
+          if (uid == null || uid.isEmpty) {
+            return BrandedErrorBanner(
+              message: 'Could not sign in. Tap retry.',
+              onRetry: () => ref.invalidate(userIdProvider),
+            );
           }
+          final disputesAsync = ref.watch(disputesProvider(uid));
+          return rulesAsync.when(
+        data: (rules) {
           return disputesAsync.when(
             loading: () => const SkeletonList(itemCount: 3),
             error: (e, _) => BrandedErrorBanner(
@@ -213,6 +222,9 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
         error: (e, _) => BrandedErrorBanner(
           message: e.toString(),
           onRetry: () => ref.invalidate(rulesEngineProvider),
+        ),
+          );
+          },
         ),
       ),
     );

@@ -24,15 +24,25 @@ class DisputeDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tc = AppThemeColors.of(context);
-    final uid = ref.watch(userIdProvider).asData?.value;
-    if (uid == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    final disputesAsync = ref.watch(disputesProvider(uid));
+    final uidAsync = ref.watch(userIdProvider);
     return Scaffold(
       backgroundColor: tc.bg,
       body: SafeArea(
-        child: disputesAsync.when(
+        child: uidAsync.when(
+          loading: () => const SkeletonList(itemCount: 3),
+          error: (e, _) => BrandedErrorBanner(
+            message: e.toString(),
+            onRetry: () => ref.invalidate(userIdProvider),
+          ),
+          data: (uid) {
+            if (uid == null || uid.isEmpty) {
+              return BrandedErrorBanner(
+                message: 'Could not sign in. Tap retry.',
+                onRetry: () => ref.invalidate(userIdProvider),
+              );
+            }
+            final disputesAsync = ref.watch(disputesProvider(uid));
+            return disputesAsync.when(
           data: (disputes) {
             Dispute? dispute;
             for (final d in disputes) {
@@ -54,6 +64,8 @@ class DisputeDetailPage extends ConsumerWidget {
             message: e.toString(),
             onRetry: () => ref.invalidate(disputesProvider(uid)),
           ),
+            );
+          },
         ),
       ),
     );

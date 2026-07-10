@@ -32,42 +32,56 @@ class _EscalatePageState extends ConsumerState<EscalatePage> {
   @override
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
-    final uid = ref.watch(userIdProvider).asData?.value;
-    if (uid == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    final disputesAsync = ref.watch(disputesProvider(uid));
+    final uidAsync = ref.watch(userIdProvider);
     return Scaffold(
       backgroundColor: tc.bg,
       body: SafeArea(
-        child: disputesAsync.when(
-          data: (disputes) {
-            Dispute? dispute;
-            for (final d in disputes) {
-              if (d.id == widget.disputeId) {
-                dispute = d;
-                break;
-              }
-            }
-            if (dispute == null) {
-              return BrandedErrorBanner(
-                message: 'Dispute not found.',
-                onRetry: () => ref.invalidate(disputesProvider(uid)),
-              );
-            }
-            return _Body(
-              dispute: dispute,
-              ccOmbudsman: _ccOmbudsman,
-              onToggleCc: (v) => setState(() => _ccOmbudsman = v),
-            );
-          },
+        child: uidAsync.when(
           loading: () => const Center(
             child: CircularProgressIndicator(color: AppColors.primary),
           ),
           error: (e, _) => BrandedErrorBanner(
             message: e.toString(),
-            onRetry: () => ref.invalidate(disputesProvider(uid)),
+            onRetry: () => ref.invalidate(userIdProvider),
           ),
+          data: (uid) {
+            if (uid == null || uid.isEmpty) {
+              return BrandedErrorBanner(
+                message: 'Could not sign in. Tap retry.',
+                onRetry: () => ref.invalidate(userIdProvider),
+              );
+            }
+            final disputesAsync = ref.watch(disputesProvider(uid));
+            return disputesAsync.when(
+              data: (disputes) {
+                Dispute? dispute;
+                for (final d in disputes) {
+                  if (d.id == widget.disputeId) {
+                    dispute = d;
+                    break;
+                  }
+                }
+                if (dispute == null) {
+                  return BrandedErrorBanner(
+                    message: 'Dispute not found.',
+                    onRetry: () => ref.invalidate(disputesProvider(uid)),
+                  );
+                }
+                return _Body(
+                  dispute: dispute,
+                  ccOmbudsman: _ccOmbudsman,
+                  onToggleCc: (v) => setState(() => _ccOmbudsman = v),
+                );
+              },
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
+              error: (e, _) => BrandedErrorBanner(
+                message: e.toString(),
+                onRetry: () => ref.invalidate(disputesProvider(uid)),
+              ),
+            );
+          },
         ),
       ),
     );
