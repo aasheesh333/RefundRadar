@@ -15,11 +15,36 @@ import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/services/sms_parser.dart';
+import 'package:refund_radar/data/constants/bank_catalog.dart';
+import 'package:refund_radar/features/add_banks/add_banks_page.dart';
 import 'package:refund_radar/features/dispute_create/create_dispute_auth_guard.dart';
 import 'package:refund_radar/features/dispute_create/fallback_banks.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/form_field_box.dart';
 import 'package:refund_radar/shared/widgets/bank_picker_tile.dart';
+
+/// Merges onboarding-selected bank IDs (catalog names first) with [fallback].
+/// Pure helper for the form picker and unit tests.
+List<({String name, String id})> mergeOnboardBanksWithFallback({
+  required List<String> selectedIds,
+  required List<BankEntry> catalog,
+  required List<({String name, String id})> fallback,
+}) {
+  final byId = {for (final b in catalog) b.id: b};
+  final out = <({String name, String id})>[];
+  final seen = <String>{};
+  for (final id in selectedIds) {
+    final entry = byId[id];
+    if (entry == null) continue;
+    if (seen.add(id)) {
+      out.add((name: entry.name, id: entry.id));
+    }
+  }
+  for (final b in fallback) {
+    if (seen.add(b.id)) out.add(b);
+  }
+  return out;
+}
 
 class DisputeFormPage extends ConsumerStatefulWidget {
   final String type;
@@ -363,8 +388,19 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                 child: LinearProgressIndicator()),
                             error: (_, _) => BankPickerTile(
                               bankName: _bankName,
-                              onTap: () =>
-                                  _showBankPicker(context, kFallbackBanks),
+                              onTap: () async {
+                                final selected =
+                                    await AddBanksPage.loadSelectedBanks();
+                                if (!context.mounted) return;
+                                await _showBankPicker(
+                                  context,
+                                  mergeOnboardBanksWithFallback(
+                                    selectedIds: selected,
+                                    catalog: BankCatalog.banks,
+                                    fallback: kFallbackBanks,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -732,8 +768,14 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         list.add((name: i['name'] as String, id: i['id'] as String));
       }
     } else {
-      list.addAll(kFallbackBanks);
+      final selected = await AddBanksPage.loadSelectedBanks();
+      list.addAll(mergeOnboardBanksWithFallback(
+        selectedIds: selected,
+        catalog: BankCatalog.banks,
+        fallback: kFallbackBanks,
+      ));
     }
+    if (!context.mounted) return;
     await _showBankPicker(context, list);
   }
 
