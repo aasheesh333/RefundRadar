@@ -152,6 +152,36 @@ void main() {
       expect(out.first.fireAt, DateTime(2025, 5, 1));
     });
 
+    test('schedules when status == ombudsman with wizard-shaped filedDates (ombudsman key)', () {
+      final d = base(
+        status: DisputeStatus.ombudsman,
+        filedDates: {
+          'l1': DateTime(2025, 1, 1),
+          'l2': DateTime(2025, 2, 1),
+          'ombudsman': DateTime(2025, 4, 1),
+        },
+      );
+      final out = gen.forDispute(d, now: now);
+      expect(out, hasLength(1));
+      expect(out.first.stage, ReminderStage.ombudsmanFollowup);
+      expect(out.first.id, 'd1_ombudsman_followup');
+    });
+
+    test('schedules when status == ombudsman with legacy l3 key (fallback)', () {
+      final d = base(
+        status: DisputeStatus.ombudsman,
+        filedDates: {
+          'l1': DateTime(2025, 1, 1),
+          'l2': DateTime(2025, 2, 1),
+          'l3': DateTime(2025, 4, 1),
+        },
+      );
+      final out = gen.forDispute(d, now: now);
+      expect(out, hasLength(1));
+      expect(out.first.stage, ReminderStage.ombudsmanFollowup);
+      expect(out.first.id, 'd1_ombudsman_followup');
+    });
+
     test('skips when resolved (status wins over ombudsman)', () {
       final d = base(
         status: DisputeStatus.resolved,

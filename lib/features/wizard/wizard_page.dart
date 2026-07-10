@@ -41,7 +41,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
   }
 
   String _ticketKeyForLevel(int level) {
-    if (level >= 2) return 'l3';
+    if (level >= 2) return 'ombudsman';
     if (level == 1) return 'l2';
     return 'l1';
   }

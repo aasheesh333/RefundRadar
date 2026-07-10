@@ -52,7 +52,7 @@ class ReminderGenerator {
     }
 
     // ----- Ombudsman follow-up: 30 days after ombudsman filing -----
-    final ombudsmanFiled = d.filedDates['ombudsman'];
+    final ombudsmanFiled = d.filedDates['ombudsman'] ?? d.filedDates['l3'];
     if (ombudsmanFiled != null &&
         d.status == DisputeStatus.ombudsman &&
         d.status != DisputeStatus.resolved) {
