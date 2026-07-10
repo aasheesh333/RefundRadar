@@ -472,3 +472,46 @@ Tasks 1–8 from `docs/superpowers/plans/2026-07-09-production-uiux-bugfix.md`.
 **Gate (Task 8)**
 - `flutter analyze`: 0 issues
 - `flutter test`: 115/115 pass (95 base + theme soft + shared soft + primary CTA + create-auth tests)
+
+---
+
+## 11. Production full sweep — 2026-07-10 ✅ CODE LANDED (verify via GitHub Actions)
+
+Spec: `docs/superpowers/specs/2026-07-10-production-full-sweep-design.md`  
+Plan: `docs/superpowers/plans/2026-07-10-production-full-sweep.md`  
+Head: `690fa96` (main ahead of origin; push + Actions for analyze/test)
+
+### Blockers
+| ID | Fix | Notes |
+|----|-----|--------|
+| B1 | Wizard `filedDates` key `ombudsman` + generator `ombudsman ?? l3` | `ee6a058` |
+| B2 | Unique notification id per reminder stage | `c4b3ec7` |
+| B3 | No deleteDispute rollback after successful save | Wave A merge |
+| B4 | `flutter_timezone` + setLocalLocation / Asia/Kolkata fallback | Wave A |
+
+### Data / product
+| ID | Fix |
+|----|-----|
+| M1–M2 | Resolve sets `resolvedAmount`; `copyWith` clears `resolvedAt`; `reopenTarget()` |
+| M3 | Home non-terminal only |
+| M4 | History Escalated filter (open + past with filed dates) |
+| M5 | Android mailto/tel/https queries + launcher fallback |
+| M6 | Ombudsman page premium gate (deep-link safe) |
+| M7 | Dispute `description` persisted from form |
+| M8 | `Template.fill` on preview/copy |
+| M9 | Form bank picker prefers onboard selection |
+| M10 | RevenueCat `Purchases.logIn(firebaseUid)` |
+| M11 | FCM reeval on cold start |
+| M12 | Daily/weekly notif toggles disabled (Coming soon) |
+| Settings | Real Delete data + sign-out data-loss confirm |
+
+### UX
+| ID | Fix |
+|----|-----|
+| U1 | Detail/escalate/ombudsman auth `.when` + BrandedErrorBanner retry |
+| U2 | Home empty/cards/owed residual i18n (en+hi) |
+| U3 | Filter pills + radio rows ≥48dp |
+
+### Verify
+- **Do not run heavy local flutter test/build** (host OOM risk) — use GitHub Actions on push/dispatch.
+- After push: Actions → analyze + test + release jobs as configured.
