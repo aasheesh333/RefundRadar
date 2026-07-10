@@ -18,7 +18,7 @@ final disputeRepositoryProvider =
         await reminderRepo.deleteForDispute(uid, disputeId);
       } catch (_) {/* logged upstream */}
       try {
-        await ref.read(notificationServiceProvider).cancelForDispute(disputeId);
+        await ref.read(notificationServiceProvider).cancelForDispute(allReminderIdsForDispute(disputeId));
       } catch (_) {/* logged upstream */}
     },
     onDeleteAllUserData: (uid) async {

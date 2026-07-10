@@ -164,6 +164,20 @@ final remindersProvider = StreamProvider.family<List<Reminder>, String>((ref, ui
       .map((qs) => qs.docs.map((d) => Reminder.fromJson(d.data()..['id'] = d.id)).toList());
 });
 
+/// Pure helper used by `syncRemindersForDispute` + `deleteRemindersForDispute`
+/// to compute the full set of reminder IDs that could ever exist for a
+/// given dispute. Reminder IDs follow the deterministic pattern
+/// `'<disputeId>_<stage.id>'` (see `Reminder.id` + `ReminderGenerator._make`),
+/// so this is the exhaustive union — no extra Firestore round-trip needed.
+/// Returning every possible id lets us cancel stale notifications without
+/// needing a snapshot of what was scheduled previously, which closes the
+/// previous bug where `NotificationService` derived the local-notification
+/// id from `disputeId.hashCode` only and `zonedSchedule` calls for the same
+/// dispute collided onto a single slot.
+List<String> allReminderIdsForDispute(String disputeId) {
+  return ReminderStage.values.map((s) => '${disputeId}_${s.id}').toList();
+}
+
 /// Sync reminders for a dispute AND schedule their local notifications.
 /// Call this from dispute_create + dispute_detail whenever the lifecycle
 /// stage changes.
@@ -179,11 +193,11 @@ Future<void> syncRemindersForDispute(dynamic ref, String uid, Dispute dispute) a
   await repo.syncForDispute(uid, dispute);
 
   final notifications = ref.read(notificationServiceProvider) as NotificationService;
-  await notifications.cancelForDispute(dispute.id);
+  await notifications.cancelForDispute(allReminderIdsForDispute(dispute.id));
   for (final r in const ReminderGenerator().forDispute(dispute)) {
     try {
       await notifications.scheduleDeadlineReminder(
-        disputeId: dispute.id,
+        reminderId: r.id,
         title: r.title,
         body: r.body,
         fireAt: r.fireAt,
@@ -209,9 +223,17 @@ Future<void> deleteRemindersForDispute(dynamic ref, String uid, String disputeId
   try {
     final notifications =
         ref.read(notificationServiceProvider) as NotificationService;
-    await notifications.cancelForDispute(disputeId);
-  } catch (e, st) {
-    debugPrint('cancelForDispute notifications failed for $disputeId: $e\n$st');
+    await notifications.cancelForDispute(allReminderIdsForDispute(disputeId));
+  } catch (_) {
+    // Last-ditch cleanup: if we somehow failed to enumerate the per-stage
+    // ids (shouldn't happen — it's a pure local computation), blow away
+    // every scheduled notification so a deleted dispute doesn't leave
+    // orphan alarms pinned to the OS scheduler.
+    try {
+      await ref.read(notificationServiceProvider).cancelAll();
+    } catch (e, st) {
+      debugPrint('cancelAll notifications failed for $disputeId: $e\n$st');
+    }
   }
 }
 
