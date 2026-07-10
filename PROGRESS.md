@@ -541,3 +541,11 @@ Decisions: real SMS inbox (READ_SMS + platform channel); delete data → empty H
 - Full i18n of SMS page / banks / escalate email / wizard document lists (partial EN remains)
 - Dark CTA migration on all non-home surfaces
 - Play Console SMS core-feature declaration for listing
+
+### 2026-07-10 — Production hardening with SMS
+
+- Kept real SMS inbox import and updated permission copy/docs to truthfully describe Android inbox access, on-device filtering, and paste fallback.
+- Replaced Dart `String.hashCode` notification IDs with stable app-owned IDs.
+- Reminder dismissal now cancels matching scheduled local notifications best-effort.
+- Premium users now see premium templates unlocked consistently.
+- Verification: targeted tests passed; `flutter analyze` passed; GitHub Actions full Analyze + Test pending after push.
