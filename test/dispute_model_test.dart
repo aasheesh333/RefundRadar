@@ -19,6 +19,7 @@ void main() {
     DateTime? createdAt,
     DateTime? txnDate,
     String txnId = 'UTR12345',
+    String? description,
   }) =>
       Dispute(
         id: id,
@@ -34,6 +35,7 @@ void main() {
         resolvedAt: resolvedAt,
         evidence: evidence ?? const [],
         createdAt: createdAt ?? fixedCreated,
+        description: description,
       );
 
   group('Dispute.toJson / fromJson round-trip', () {
@@ -107,6 +109,22 @@ void main() {
       expect(back.resolvedAmount, 1450);
       expect(back.resolvedAt, DateTime(2025, 5, 1));
       expect(back.evidence, ['doc1.pdf', 'doc2.jpg']);
+    });
+
+    test('round-trips description when set', () {
+      final d = base(description: 'Unauthorized UPI debit');
+      final j = d.toJson();
+      expect(j['description'], 'Unauthorized UPI debit');
+      final back = Dispute.fromJson(j);
+      expect(back.description, 'Unauthorized UPI debit');
+    });
+
+    test('round-trips description when null', () {
+      final d = base(description: null);
+      final j = d.toJson();
+      expect(j['description'], isNull);
+      final back = Dispute.fromJson(j);
+      expect(back.description, isNull);
     });
 
     test('round-trips DateTime ISO strings (no microsecond loss)', () {
