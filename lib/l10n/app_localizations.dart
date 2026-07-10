@@ -732,6 +732,14 @@ class AppLocalizations {
       'en': 'Free plan allows 1 active dispute. Upgrade for unlimited.',
       'hi': 'मुफ़्त योजना में 1 सक्रिय विवाद है। असीमित के लिए अपग्रेड करें।',
     },
+    'formUtrRequired': {
+      'en': 'Enter the UTR / transaction ID',
+      'hi': 'UTR दर्ज करें',
+    },
+    'formAmountCap': {
+      'en': 'Amount must be ≤ ₹5,00,000',
+      'hi': 'राशि ₹5,00,000 से कम होनी चाहिए',
+    },
     'disputeTypeStep1Of4': {'en': 'Step 1 of 4', 'hi': 'चरण 1 / 4'},
     'disputeTypeWhatHappened': {'en': 'What happened?', 'hi': 'क्या हुआ?'},
     'disputeTypeChooseCategory': {
@@ -1157,6 +1165,8 @@ class AppLocalizations {
       _t('formEligiblePerDayComp', args: {'days': days});
   String get formSms => _t('formSms');
   String get formFreeLimitReached => _t('formFreeLimitReached');
+  String get formUtrRequired => _t('formUtrRequired');
+  String get formAmountCap => _t('formAmountCap');
 
   String get disputeTypeStep1Of4 => _t('disputeTypeStep1Of4');
   String get disputeTypeWhatHappened => _t('disputeTypeWhatHappened');

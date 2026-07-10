@@ -227,11 +227,33 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         );
         return;
       }
+      if (amount > 500000) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.formAmountCap ??
+                  'Amount must be ≤ ₹5,00,000',
+            ),
+          ),
+        );
+        return;
+      }
       if (_bankName.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               AppLocalizations.of(context)?.formSelectBank ?? 'Select a bank',
+            ),
+          ),
+        );
+        return;
+      }
+      if (_utrCtrl.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)?.formUtrRequired ??
+                  'Enter the UTR / transaction ID',
             ),
           ),
         );
@@ -327,7 +349,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         type: DisputeType.fromId(widget.type),
         amount: amount,
         txnDate: _date ?? DateTime.now(),
-        txnId: _utrCtrl.text,
+        txnId: _utrCtrl.text.trim(),
         entityName: _bankName.isEmpty ? null : _bankName,
         entityId: _selectedEntityId.isEmpty ? null : _selectedEntityId,
         createdAt: DateTime.now(),
@@ -561,7 +583,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                       letterSpacing: 0.5,
                                     ),
                                     cursorColor: AppColors.primary,
-                                    keyboardType: TextInputType.text,
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    maxLength: 22,
                                     decoration: const InputDecoration(
                                       isCollapsed: true,
                                       isDense: true,
@@ -629,6 +655,9 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                     ),
                                     cursorColor: AppColors.primary,
                                     keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
                                     decoration: const InputDecoration(
                                       isCollapsed: true,
                                       isDense: true,
@@ -689,6 +718,8 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                             child: TextField(
                               controller: _descCtrl,
                               maxLines: 2,
+                              maxLength: 500,
+                              maxLengthEnforcement: MaxLengthEnforcement.enforced,
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,

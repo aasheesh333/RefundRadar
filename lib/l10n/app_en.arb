@@ -294,6 +294,8 @@
   "formEligiblePerDayComp": "You're eligible for ₹100/day comp beyond T+{days}.",
   "formSms": "SMS",
   "formFreeLimitReached": "Free plan allows 1 active dispute. Upgrade for unlimited.",
+  "formUtrRequired": "Enter the UTR / transaction ID",
+  "formAmountCap": "Amount must be ≤ ₹5,00,000",
   "disputeTypeStep1Of4": "Step 1 of 4",
   "disputeTypeWhatHappened": "What happened?",
   "disputeTypeChooseCategory": "Choose dispute category",
