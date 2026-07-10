@@ -515,3 +515,29 @@ Head: `690fa96` (main ahead of origin; push + Actions for analyze/test)
 ### Verify
 - **Do not run heavy local flutter test/build** (host OOM risk) — use GitHub Actions on push/dispatch.
 - After push: Actions → analyze + test + release jobs as configured.
+
+---
+
+## 12. Production Pass 2 — 2026-07-10 (full remaining bugs + UI)
+
+Decisions: real SMS inbox (READ_SMS + platform channel); delete data → empty Home + snackbar; full production scope.
+
+### Landed in this pass
+| Area | Fix |
+|------|-----|
+| Templates | `fillValuesForDispute` covers asset tokens + aliases; dispute picker on library; filled preview/copy |
+| Wizard | Level from status/filedDates; mark-filed → `syncRemindersForDispute`; complaint text filled |
+| Notifications | Honor `notifDeadlineProvider`; `repairScheduledNotifications` on cold start |
+| Model | `resolvedAmount` clearable via sentinel; fromJson missing → null |
+| Settings | Delete awaits uid; resets free counter; lands `/home` |
+| Escalate | Skeleton loading; Edit→Copy label |
+| FCM | `requestPermission` + `getToken` before topic reeval |
+| SMS inbox | `SmsInboxService` + MainActivity channel; form Inbox + Paste; dropped RECEIVE_SMS |
+| Dark CTA | `AppThemeColors.ctaBackground/Foreground` on home FAB/empty |
+| Touch | TextButton minHeight 48 |
+| Settings badge | Dark upgrade uses accent |
+
+### Still residual (next polish if needed)
+- Full i18n of SMS page / banks / escalate email / wizard document lists (partial EN remains)
+- Dark CTA migration on all non-home surfaces
+- Play Console SMS core-feature declaration for listing

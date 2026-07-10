@@ -1,85 +1,118 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/template.dart';
-import 'package:refund_radar/features/templates/template_library_page.dart';
+import 'package:refund_radar/data/models/template_fill.dart';
 
 void main() {
-  const body =
-      'UTR {UTR} AMOUNT {AMOUNT} INR {AMOUNT_INR} DATE {DATE} '
-      'BANK {BANK} ENTITY {ENTITY} TICKET {TICKET}';
-
-  group('templateFillValues', () {
-    test('empty strings when no dispute', () {
-      final values = templateFillValues(null);
-      expect(values['UTR'], '');
-      expect(values['AMOUNT'], '');
-      expect(values['AMOUNT_INR'], '');
-      expect(values['DATE'], '');
-      expect(values['BANK'], '');
-      expect(values['ENTITY'], '');
-      expect(values['TICKET'], '');
+  group('fillValuesForDispute', () {
+    test('null dispute empties known tokens', () {
+      final m = fillValuesForDispute(null);
+      expect(m['UTR'], '');
+      expect(m['BANK_NAME'], '');
+      expect(m['COMPENSATION_DUE'], '');
     });
 
-    test('maps dispute fields into common tokens', () {
+    test('fills core and alias tokens from dispute', () {
       final d = Dispute(
         id: 'd1',
+        uid: 'u1',
         type: DisputeType.upiP2p,
-        amount: 1500,
-        txnDate: DateTime(2025, 3, 12),
-        txnId: 'UTR999',
+        amount: 500,
+        txnDate: DateTime(2026, 1, 10),
+        txnId: '123456789012',
         entityName: 'HDFC Bank',
-        ticketNumbers: const {'l1': 'TKT-42'},
-        createdAt: DateTime(2025, 1, 1),
+        ticketNumbers: const {'l1': 'TKT-9'},
+        filedDates: {'l1': DateTime(2026, 1, 12)},
+        createdAt: DateTime(2026, 1, 11),
       );
-      final values = templateFillValues(d);
-      expect(values['UTR'], 'UTR999');
-      expect(values['AMOUNT'], '1500');
-      expect(values['AMOUNT_INR'], '1500');
-      expect(values['DATE'], '12/3/2025');
-      expect(values['BANK'], 'HDFC Bank');
-      expect(values['ENTITY'], 'HDFC Bank');
-      expect(values['TICKET'], 'TKT-42');
+      final m = fillValuesForDispute(d);
+      expect(m['UTR'], '123456789012');
+      expect(m['TXN_ID'], '123456789012');
+      expect(m['AMOUNT'], '500');
+      expect(m['amount'], '500');
+      expect(m['BANK_NAME'], 'HDFC Bank');
+      expect(m['ENTITY_NAME'], 'HDFC Bank');
+      expect(m['TICKET_NO'], 'TKT-9');
+      expect(m['TXN_DATE'], '10/01/2026');
+      expect(m['DATE'], '10/01/2026');
     });
 
-    test('ticket empty when none present', () {
+    test('filledBody replaces asset-style tokens', () {
       final d = Dispute(
         id: 'd1',
-        type: DisputeType.upiP2p,
+        type: DisputeType.upiP2m,
         amount: 100,
-        txnDate: DateTime(2025, 1, 1),
-        txnId: 'X',
-        createdAt: DateTime(2025, 1, 1),
+        txnDate: DateTime(2026, 3, 1),
+        txnId: '999988887777',
+        entityName: 'SBI',
+        createdAt: DateTime(2026, 3, 2),
       );
-      expect(templateFillValues(d)['TICKET'], '');
+      const body =
+          'UTR: {UTR} Bank: {BANK_NAME} Amt: {AMOUNT} Date: {TXN_DATE}';
+      final out = filledBody(body, d);
+      expect(out, contains('999988887777'));
+      expect(out, contains('SBI'));
+      expect(out, isNot(contains('{UTR}')));
+      expect(out, isNot(contains('{BANK_NAME}')));
+    });
+
+    test('Template.fill leaves unknown tokens', () {
+      expect(Template.fill('X {FOO} Y', {'UTR': '1'}), 'X {FOO} Y');
     });
   });
 
-  group('filled template body', () {
-    test('fill with empty values strips common placeholders', () {
-      final filled = Template.fill(body, templateFillValues(null));
-      expect(filled, 'UTR  AMOUNT  INR  DATE  BANK  ENTITY  TICKET ');
-      expect(filled.contains('{UTR}'), isFalse);
-      expect(filled.contains('{AMOUNT}'), isFalse);
-      expect(filled.contains('{DATE}'), isFalse);
+  group('wizardLevelFromDispute', () {
+    Dispute base({
+      DisputeStatus status = DisputeStatus.draft,
+      Map<String, DateTime?> filed = const {},
+    }) =>
+        Dispute(
+          id: 'x',
+          type: DisputeType.upiP2p,
+          amount: 1,
+          txnDate: DateTime(2026, 1, 1),
+          txnId: '1',
+          status: status,
+          filedDates: filed,
+          createdAt: DateTime(2026, 1, 1),
+        );
+
+    test('draft with no filings → 0', () {
+      expect(wizardLevelFromDispute(base()), 0);
     });
 
-    test('fill with dispute substitutes values', () {
-      final d = Dispute(
-        id: 'd1',
-        type: DisputeType.upiP2p,
-        amount: 2500,
-        txnDate: DateTime(2025, 6, 1),
-        txnId: 'UTRABC',
-        entityName: 'SBI',
-        ticketNumbers: const {'l1': 'N-1'},
-        createdAt: DateTime(2025, 1, 1),
+    test('filedL1 → 1 (next L2)', () {
+      expect(
+        wizardLevelFromDispute(base(
+          status: DisputeStatus.filedL1,
+          filed: {'l1': DateTime(2026, 1, 2)},
+        )),
+        1,
       );
-      final filled = Template.fill(body, templateFillValues(d));
-      expect(filled, contains('UTRABC'));
-      expect(filled, contains('2500'));
-      expect(filled, contains('1/6/2025'));
-      expect(filled, contains('SBI'));
-      expect(filled, contains('N-1'));
+    });
+
+    test('filedL2 → 2 (next ombudsman)', () {
+      expect(
+        wizardLevelFromDispute(base(status: DisputeStatus.filedL2)),
+        2,
+      );
+    });
+
+    test('ombudsman → 2', () {
+      expect(
+        wizardLevelFromDispute(base(status: DisputeStatus.ombudsman)),
+        2,
+      );
+    });
+
+    test('legacy l3 filed date → 2', () {
+      expect(
+        wizardLevelFromDispute(base(
+          status: DisputeStatus.filedL1,
+          filed: {'l3': DateTime(2026, 2, 1)},
+        )),
+        2,
+      );
     });
   });
 }

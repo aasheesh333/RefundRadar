@@ -216,6 +216,25 @@ void main() {
       final d2 = d.copyWith(resolvedAmount: 500.0);
       expect(d2.resolvedAmount, 500.0);
     });
+
+    test('copyWith(resolvedAmount: null) clears the field', () {
+      final d = base(resolvedAmount: 900);
+      final d2 = d.copyWith(resolvedAmount: null);
+      expect(d2.resolvedAmount, isNull);
+      expect(d.resolvedAmount, 900);
+    });
+
+    test('fromJson missing resolvedAmount is null not zero', () {
+      final d = Dispute.fromJson({
+        'id': 'x',
+        'type': 'upi_p2p',
+        'amount': 10,
+        'txnDate': DateTime(2026, 1, 1).toIso8601String(),
+        'txnId': '1',
+        'createdAt': DateTime(2026, 1, 1).toIso8601String(),
+      });
+      expect(d.resolvedAmount, isNull);
+    });
   });
 
   group('Dispute.reopenTarget', () {

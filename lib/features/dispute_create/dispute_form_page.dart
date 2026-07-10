@@ -14,6 +14,7 @@ import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
+import 'package:refund_radar/services/sms_inbox_service.dart';
 import 'package:refund_radar/services/sms_parser.dart';
 import 'package:refund_radar/data/constants/bank_catalog.dart';
 import 'package:refund_radar/features/add_banks/add_banks_page.dart';
@@ -75,10 +76,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     super.dispose();
   }
 
-  void _pasteFromSms() async {
-    final data = await Clipboard.getData('text/plain');
-    if (data?.text == null) return;
-    final parsed = SmsParser.parse(data!.text!);
+  void _applyParsed(SmsParseResult parsed) {
     setState(() {
       if (parsed.utr != null) {
         _utrCtrl.text = parsed.utr!;
@@ -89,6 +87,94 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       }
       if (parsed.date != null) _date = parsed.date;
     });
+  }
+
+  Future<void> _pasteFromSms() async {
+    final data = await Clipboard.getData('text/plain');
+    if (data?.text == null || data!.text!.trim().isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Clipboard empty — copy an SMS first.')),
+      );
+      return;
+    }
+    _applyParsed(SmsParser.parse(data.text!));
+  }
+
+  Future<void> _pickFromSmsInbox() async {
+    final inbox = ref.read(smsInboxServiceProvider);
+    final granted = await inbox.requestPermission();
+    if (!granted) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('SMS permission denied. You can still paste an SMS.'),
+        ),
+      );
+      return;
+    }
+    final messages = await inbox.queryBankLikeMessages();
+    if (!mounted) return;
+    if (messages.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No bank-like SMS found. Try paste from clipboard.'),
+        ),
+      );
+      return;
+    }
+    final picked = await showModalBottomSheet<InboxSms>(
+      context: context,
+      isScrollControlled: true,
+      builder: (c) {
+        final tc = AppThemeColors.of(c);
+        return SafeArea(
+          child: SizedBox(
+            height: MediaQuery.of(c).size.height * 0.55,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: Text(
+                    'Pick a bank SMS',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: tc.textPrimary,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: messages.length,
+                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    itemBuilder: (_, i) {
+                      final m = messages[i];
+                      return ListTile(
+                        title: Text(
+                          m.address.isEmpty ? 'SMS' : m.address,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          m.body,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onTap: () => Navigator.pop(c, m),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (picked == null || !mounted) return;
+    _applyParsed(SmsParser.parse(picked.body));
   }
 
   void _save() async {
@@ -442,9 +528,21 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                               ),
                               const SizedBox(width: 6),
                               GestureDetector(
+                                onTap: _pickFromSmsInbox,
+                                child: const Text(
+                                  'Inbox',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.accent,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              GestureDetector(
                                 onTap: _pasteFromSms,
                                 child: const Text(
-                                  'SMS',
+                                  'Paste',
                                   style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,

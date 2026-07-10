@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,7 @@ import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/data/models/template_fill.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/features/dispute_create/create_dispute_auth_guard.dart';
@@ -27,6 +29,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
   final _ticketController = TextEditingController();
   int _currentLevel = 0;
   bool _saving = false;
+  bool _levelHydrated = false;
 
   @override
   void dispose() {
@@ -110,7 +113,13 @@ class _WizardPageState extends ConsumerState<WizardPage> {
         filedDates: nextFiled,
       );
       await ref.read(disputeRepositoryProvider).saveDispute(uid, updated);
+      try {
+        await syncRemindersForDispute(ref, uid, updated);
+      } catch (e) {
+        debugPrint('wizard mark-filed reminder sync failed: $e');
+      }
       ref.invalidate(disputesProvider(uid));
+      ref.invalidate(remindersProvider(uid));
       if (mounted) {
         setState(() {
           if (_currentLevel < 2) _currentLevel++;
@@ -145,7 +154,30 @@ class _WizardPageState extends ConsumerState<WizardPage> {
         behavior: HitTestBehavior.opaque,
         child: rulesAsync.when(
         data: (rules) {
-          final steps = _buildSteps(rules);
+          final uid = ref.watch(userIdProvider).asData?.value;
+          Dispute? liveDispute;
+          if (uid != null) {
+            final list = ref.watch(disputesProvider(uid)).asData?.value;
+            if (list != null) {
+              for (final d in list) {
+                if (d.id == widget.disputeId) {
+                  liveDispute = d;
+                  break;
+                }
+              }
+            }
+          }
+          if (liveDispute != null && !_levelHydrated) {
+            final next = wizardLevelFromDispute(liveDispute);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted || _levelHydrated) return;
+              setState(() {
+                _levelHydrated = true;
+                _currentLevel = next;
+              });
+            });
+          }
+          final steps = _buildSteps(rules, liveDispute);
           return StepperTimeline(
             items: List.generate(steps.length, (i) {
               final active = i == _currentLevel;
@@ -305,8 +337,19 @@ class _WizardPageState extends ConsumerState<WizardPage> {
     );
   }
 
-  List<_Step> _buildSteps(RulesEngine rules) {
+  List<_Step> _buildSteps(RulesEngine rules, Dispute? dispute) {
     final l10n = AppLocalizations.of(context);
+    final l2Raw =
+        'Dear NPCI Team,\n\nUTR: {UTR}\nAmount: Rs. {AMOUNT}\nDate: {TXN_DATE}\nVPA: {VPA}\n\n'
+        'I have not received credit / refund and the bank has not resolved within 30 days.\n'
+        'Please escalate this dispute.';
+    final l3Raw = 'Complaint against: {ENTITY_NAME} (Bank)\n'
+        'Category: Deficiency in Service - failed transaction not reversed\n\n'
+        'Facts:\n1. On {TXN_DATE}, Rs. {AMOUNT} debited, beneficiary not credited.\n'
+        '2. Complained on {COMPLAINT_DATE} (ticket {TICKET_NO}).\n'
+        '3. No reply for 30 days.\n'
+        '4. Under RBI TAT Harmonisation circular, entitled to reversal + Rs.100/day.\n\n'
+        'Relief: Refund Rs. {AMOUNT} + compensation Rs. {COMPENSATION_DUE}.';
     return [
       _Step(
         title: l10n?.wizardLevel1Title ?? 'Level 1 - UPI app / bank',
@@ -330,10 +373,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
             'Visit NPCI Dispute Redressal portal. Needs UTR, amount, date, VPA, bank statement.',
         url: rules.officialLinks['upi_complaints'],
         phone: null,
-        complaintText:
-            'Dear NPCI Team,\n\nUTR: {UTR}\nAmount: Rs. {AMOUNT}\nDate: {TXN_DATE}\nVPA: {VPA}\n\n'
-            'I have not received credit / refund and the bank has not resolved within 30 days.\n'
-            'Please escalate this dispute.',
+        complaintText: filledBody(l2Raw, dispute),
         documents: ['UTR', 'Amount', 'Date', 'VPA', 'Bank statement'],
       ),
       _Step(
@@ -343,13 +383,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                 'Category: Deficiency in Service. Free.',
         url: rules.officialLinks['rbi_cms'],
         phone: '14448',
-        complaintText: 'Complaint against: {ENTITY_NAME} (Bank)\n'
-            'Category: Deficiency in Service - failed transaction not reversed\n\n'
-            'Facts:\n1. On {TXN_DATE}, Rs. {AMOUNT} debited, beneficiary not credited.\n'
-            '2. Complained on {COMPLAINT_DATE} (ticket {TICKET_NO}).\n'
-            '3. No reply for 30 days.\n'
-            '4. Under RBI TAT Harmonisation circular, entitled to reversal + Rs.100/day.\n\n'
-            'Relief: Refund Rs. {AMOUNT} + compensation Rs. {COMPENSATION_DUE}.',
+        complaintText: filledBody(l3Raw, dispute),
         documents: [
           'Transaction proof',
           'Complaint acknowledgement',

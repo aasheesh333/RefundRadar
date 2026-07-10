@@ -12,6 +12,7 @@ import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
+import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/widgets/toggle_switch.dart';
 
 /// Escalate page — mockup Screen 8. Dark green hero with "Maximum penalty
@@ -37,9 +38,7 @@ class _EscalatePageState extends ConsumerState<EscalatePage> {
       backgroundColor: tc.bg,
       body: SafeArea(
         child: uidAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
-          ),
+          loading: () => const SkeletonList(itemCount: 4),
           error: (e, _) => BrandedErrorBanner(
             message: e.toString(),
             onRetry: () => ref.invalidate(userIdProvider),
@@ -73,9 +72,7 @@ class _EscalatePageState extends ConsumerState<EscalatePage> {
                   onToggleCc: (v) => setState(() => _ccOmbudsman = v),
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ),
+              loading: () => const SkeletonList(itemCount: 4),
               error: (e, _) => BrandedErrorBanner(
                 message: e.toString(),
                 onRetry: () => ref.invalidate(disputesProvider(uid)),
@@ -415,7 +412,7 @@ class _Body extends StatelessWidget {
           child: Row(
             children: [
               _FooterButton(
-                label: l10n?.escalateEdit ?? 'Edit',
+                label: l10n?.ombudsmanCopy ?? 'Copy',
                 color: tc.surfaceAlt,
                 textColor:
                     tc.isDark ? AppColors.accent : AppColors.primary,

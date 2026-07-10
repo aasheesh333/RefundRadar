@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/reminder.dart';
 import 'package:refund_radar/data/repositories/reminder_generator.dart';
@@ -194,6 +195,8 @@ Future<void> syncRemindersForDispute(dynamic ref, String uid, Dispute dispute) a
 
   final notifications = ref.read(notificationServiceProvider) as NotificationService;
   await notifications.cancelForDispute(allReminderIdsForDispute(dispute.id));
+  final deadlinesOn = ref.read(notifDeadlineProvider) as bool? ?? true;
+  if (!deadlinesOn) return;
   for (final r in const ReminderGenerator().forDispute(dispute)) {
     try {
       await notifications.scheduleDeadlineReminder(
@@ -206,6 +209,36 @@ Future<void> syncRemindersForDispute(dynamic ref, String uid, Dispute dispute) a
       // Don't lose the whole reminder set because one scheduling call threw.
       debugPrint('scheduleDeadlineReminder failed for ${r.id}: $e\n$st');
     }
+  }
+}
+
+/// Re-arm local notifications for all future, non-dismissed reminders.
+/// Call after cold start / reboot so OS-cleared alarms return.
+Future<void> repairScheduledNotifications(dynamic ref, String uid) async {
+  final deadlinesOn = ref.read(notifDeadlineProvider) as bool? ?? true;
+  if (!deadlinesOn) return;
+  try {
+    final repo = ref.read(reminderRepositoryProvider) as ReminderRepository;
+    final all = await repo.loadReminders(uid);
+    final now = DateTime.now();
+    final notifications =
+        ref.read(notificationServiceProvider) as NotificationService;
+    for (final r in all) {
+      if (r.dismissed == true) continue;
+      if (!r.fireAt.isAfter(now)) continue;
+      try {
+        await notifications.scheduleDeadlineReminder(
+          reminderId: r.id,
+          title: r.title,
+          body: r.body,
+          fireAt: r.fireAt,
+        );
+      } catch (e, st) {
+        debugPrint('repair schedule failed for ${r.id}: $e\n$st');
+      }
+    }
+  } catch (e, st) {
+    debugPrint('repairScheduledNotifications failed: $e\n$st');
   }
 }
 

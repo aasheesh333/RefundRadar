@@ -45,6 +45,10 @@ class FcmTopicService {
     // users to the `free_limit_hit` push segment.
     int freeDisputesUsed = 0,
   }) async {
+    try {
+      await _fcm.requestPermission();
+      await _fcm.getToken();
+    } catch (_) {}
     final active = <String, bool>{
       'dormant_no_dispute': installedHours >= 48 && activeDisputes == 0,
       'active_dispute': activeDisputes >= 1,

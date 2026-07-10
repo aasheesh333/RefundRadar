@@ -541,12 +541,17 @@ class _DisputeBody extends ConsumerWidget {
     final nextStatus =
         isResolved ? dispute.reopenTarget() : DisputeStatus.resolved;
     final repo = ref.read(disputeRepositoryProvider);
-    final updated = dispute.copyWith(
-      status: nextStatus,
-      resolvedAmount:
-          nextStatus == DisputeStatus.resolved ? dispute.amount : null,
-      resolvedAt: nextStatus == DisputeStatus.resolved ? DateTime.now() : null,
-    );
+    final updated = nextStatus == DisputeStatus.resolved
+        ? dispute.copyWith(
+            status: nextStatus,
+            resolvedAmount: dispute.amount,
+            resolvedAt: DateTime.now(),
+          )
+        : dispute.copyWith(
+            status: nextStatus,
+            resolvedAmount: null,
+            resolvedAt: null,
+          );
     await repo.saveDispute(uid, updated);
     // B6: lifecycle changed → re-sync reminders + local notifications.
     await syncRemindersForDispute(ref, uid, updated);

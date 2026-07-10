@@ -5,8 +5,10 @@ import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/theme_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/services/fcm_topics.dart';
 import 'package:refund_radar/services/onesignal_service.dart';
+import 'package:refund_radar/services/notification_service.dart';
 
 /// FCM topic re-evaluation effect (backlog B5).
 ///
@@ -46,9 +48,13 @@ class _FcmReevaluatorState extends ConsumerState<FcmReevaluator> {
     // session when uid becomes non-null.
     if (!_coldStarted) {
       _coldStarted = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
-        _reeval(ref, uid);
+        await _reeval(ref, uid);
+        try {
+          await ref.read(notificationServiceProvider).requestPermission();
+        } catch (_) {}
+        await repairScheduledNotifications(ref, uid);
       });
     }
 

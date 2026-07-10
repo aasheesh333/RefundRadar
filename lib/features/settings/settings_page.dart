@@ -155,7 +155,9 @@ class SettingsPage extends ConsumerWidget {
                           fontWeight: FontWeight.w600,
                           color: isPremium
                               ? AppColors.premiumGold
-                              : AppColors.primary,
+                              : (tc.isDark
+                                  ? AppColors.accent
+                                  : AppColors.primary),
                         ),
                       ),
                     ),
@@ -485,8 +487,18 @@ class SettingsPage extends ConsumerWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final uid = ref.read(userIdProvider).asData?.value;
+    String? uid = ref.read(userIdProvider).asData?.value;
     if (uid == null || uid.isEmpty) {
+      try {
+        uid = await ref
+            .read(userIdProvider.future)
+            .timeout(const Duration(seconds: 10));
+      } catch (_) {
+        uid = null;
+      }
+    }
+    if (uid == null || uid.isEmpty) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n?.commonError ?? 'Something went wrong'),
@@ -503,11 +515,14 @@ class SettingsPage extends ConsumerWidget {
         deleteAllRemindersAndNotifications: (id) =>
             deleteAllRemindersAndNotifications(ref, id),
       );
+      await ref.read(freeDisputesUsedProvider.notifier).reset();
+      ref.invalidate(disputesProvider(uid));
+      ref.invalidate(remindersProvider(uid));
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(kDeleteDataSuccessBody)),
       );
-      context.go('/onboard');
+      context.go('/home');
     } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

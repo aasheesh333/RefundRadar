@@ -83,7 +83,7 @@ class Dispute {
     String? entityId,
     Map<String, DateTime?>? filedDates,
     Map<String, String?>? ticketNumbers,
-    double? resolvedAmount,
+    Object? resolvedAmount = _unset,
     Object? resolvedAt = _unset,
     List<String>? evidence,
     DateTime? createdAt,
@@ -101,7 +101,11 @@ class Dispute {
         entityId: entityId ?? this.entityId,
         filedDates: filedDates ?? this.filedDates,
         ticketNumbers: ticketNumbers ?? this.ticketNumbers,
-        resolvedAmount: resolvedAmount ?? this.resolvedAmount,
+        resolvedAmount: identical(resolvedAmount, _unset)
+            ? this.resolvedAmount
+            : (resolvedAmount == null
+                ? null
+                : (resolvedAmount as num).toDouble()),
         resolvedAt: identical(resolvedAt, _unset)
             ? this.resolvedAt
             : resolvedAt as DateTime?,
@@ -154,7 +158,9 @@ class Dispute {
         ticketNumbers: (json['ticketNumbers'] as Map<String, dynamic>?)?.map(
                 (k, v) => MapEntry(k, v as String?)) ??
             <String, String?>{},
-        resolvedAmount: (json['resolvedAmount'] ?? 0).toDouble(),
+        resolvedAmount: json['resolvedAmount'] == null
+            ? null
+            : (json['resolvedAmount'] as num).toDouble(),
         resolvedAt: DateTime.tryParse(json['resolvedAt'] ?? ''),
         evidence: List<String>.from(json['evidence'] ?? []),
         createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),

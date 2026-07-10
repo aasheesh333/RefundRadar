@@ -87,11 +87,13 @@ class HomePage extends ConsumerWidget {
           child: Semantics(
             button: true,
             label: AppLocalizations.of(context)?.homeNewDispute ?? 'New dispute',
-            child: Container(
+            child: Builder(builder: (context) {
+              final tc = AppThemeColors.of(context);
+              return Container(
               height: 52,
               padding: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: tc.ctaBackground,
                 borderRadius: BorderRadius.circular(AppRadii.pill),
                 boxShadow: AppShadows.fab,
               ),
@@ -103,23 +105,24 @@ class HomePage extends ConsumerWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.add, color: Colors.white, size: 20),
+                      Icon(Icons.add, color: tc.ctaForeground, size: 20),
                       const SizedBox(width: 8),
                       Text(
                         AppLocalizations.of(context)?.homeNewDispute ??
                             'New dispute',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: AppTypography.family,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: tc.ctaForeground,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
+            );
+            }),
           ),
         ),
       ),
@@ -386,11 +389,13 @@ class _EmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Container(
+            Builder(builder: (context) {
+              final cta = AppThemeColors.of(context);
+              return Container(
               height: 52,
               padding: const EdgeInsets.symmetric(horizontal: 24),
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: cta.ctaBackground,
                 borderRadius: BorderRadius.circular(AppRadii.md),
                 boxShadow: AppShadows.button,
               ),
@@ -402,23 +407,24 @@ class _EmptyState extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.add, color: Colors.white, size: 20),
+                      Icon(Icons.add, color: cta.ctaForeground, size: 20),
                       const SizedBox(width: 8),
                       Text(
                         AppLocalizations.of(context)?.homeAddDispute ??
                             'Add dispute',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: AppTypography.family,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: cta.ctaForeground,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
+            );
+            }),
           ],
         ),
       ),

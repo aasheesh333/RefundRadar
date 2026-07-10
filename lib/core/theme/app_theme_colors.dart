@@ -35,4 +35,11 @@ class AppThemeColors {
       isDark ? const Color(0xFF3E1A1A) : AppColors.errorSoft;
   Color get premiumGoldSoft =>
       isDark ? const Color(0xFF3A3018) : AppColors.premiumGoldSoft;
+
+  /// Primary action fill: accent in dark (matches filledButtonTheme), primary in light.
+  Color get ctaBackground => isDark ? AppColors.accent : AppColors.primary;
+
+  /// Foreground on [ctaBackground].
+  Color get ctaForeground =>
+      isDark ? AppColors.primaryDark : const Color(0xFFFFFFFF);
 }

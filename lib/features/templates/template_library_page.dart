@@ -5,8 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme_colors.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/providers/theme_provider.dart';
+import '../../core/providers/auth_provider.dart';
+import '../../core/providers/dispute_provider.dart';
 import '../../data/models/dispute.dart';
 import '../../data/models/template.dart';
+import '../../data/models/template_fill.dart';
 import '../../data/repositories/rules_engine_repository.dart';
 import '../../data/repositories/template_repository.dart';
 import '../../l10n/app_localizations.dart';
@@ -15,44 +18,11 @@ import '../../shared/widgets/status_pill.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 
-/// Common placeholder map for [Template.fill]. Prefer empty strings so
-/// letters remain usable when no dispute context is selected.
-Map<String, String> templateFillValues(Dispute? dispute) {
-  if (dispute == null) {
-    return const {
-      'UTR': '',
-      'AMOUNT': '',
-      'AMOUNT_INR': '',
-      'DATE': '',
-      'BANK': '',
-      'ENTITY': '',
-      'TICKET': '',
-    };
-  }
-  final amount = dispute.amount.toStringAsFixed(0);
-  final entity = dispute.entityName ?? '';
-  String ticket = '';
-  for (final v in dispute.ticketNumbers.values) {
-    if (v != null && v.isNotEmpty) {
-      ticket = v;
-      break;
-    }
-  }
-  final d = dispute.txnDate;
-  final date = '${d.day}/${d.month}/${d.year}';
-  return {
-    'UTR': dispute.txnId,
-    'AMOUNT': amount,
-    'AMOUNT_INR': amount,
-    'DATE': date,
-    'BANK': entity,
-    'ENTITY': entity,
-    'TICKET': ticket,
-  };
-}
+Map<String, String> templateFillValues(Dispute? dispute) =>
+    fillValuesForDispute(dispute);
 
 String filledTemplateBody(Template t, String localeCode, Dispute? dispute) {
-  return Template.fill(t.bodyFor(localeCode), templateFillValues(dispute));
+  return filledBody(t.bodyFor(localeCode), dispute);
 }
 
 class TemplateLibraryPage extends ConsumerStatefulWidget {
@@ -64,6 +34,7 @@ class TemplateLibraryPage extends ConsumerStatefulWidget {
 
 class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
   String _selectedCategory = 'All';
+  String? _selectedDisputeId;
   static const _categories = [
     'All',
     'UPI / IMPS / ATM',
@@ -79,6 +50,10 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     final templatesAsync = ref.watch(templatesProvider);
     final rulesAsync = ref.watch(rulesEngineProvider);
     final locale = ref.watch(localeProvider);
+    final uid = ref.watch(userIdProvider).asData?.value;
+    final disputesAsync =
+        uid == null ? null : ref.watch(disputesProvider(uid));
+    final disputes = disputesAsync?.asData?.value ?? const <Dispute>[];
     return Scaffold(
       backgroundColor: tc.bg,
       body: SafeArea(
@@ -89,6 +64,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                   templates: templates,
                   freeIds: rules.freeTemplateIds.toSet(),
                   localeCode: locale.languageCode,
+                  disputes: disputes,
                 ),
     loading: () => const SkeletonList(itemCount: 4),
     error: (e, _) => BrandedErrorBanner(message: e.toString()),
@@ -100,11 +76,23 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     );
   }
 
+  Dispute? _selectedDispute(List<Dispute> disputes) {
+    if (disputes.isEmpty) return null;
+    if (_selectedDisputeId != null) {
+      for (final d in disputes) {
+        if (d.id == _selectedDisputeId) return d;
+      }
+    }
+    return disputes.first;
+  }
+
   Widget _buildBody({
     required List<Template> templates,
     required Set<String> freeIds,
     required String localeCode,
+    required List<Dispute> disputes,
   }) {
+    final selected = _selectedDispute(disputes);
     final tc = AppThemeColors.of(context);
     final repo = ref.read(templateRepositoryProvider);
     final filtered = _selectedCategory == 'All'
@@ -149,6 +137,31 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
             ],
           ),
         ),
+        if (disputes.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+            child: DropdownButtonFormField<String>(
+              value: selected?.id,
+              decoration: InputDecoration(
+                labelText: 'Fill from dispute',
+                isDense: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.md),
+                ),
+              ),
+              items: [
+                for (final d in disputes)
+                  DropdownMenuItem(
+                    value: d.id,
+                    child: Text(
+                      '${d.entityName ?? d.type.id} · ₹${d.amount.toStringAsFixed(0)}',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+              ],
+              onChanged: (id) => setState(() => _selectedDisputeId = id),
+            ),
+          ),
         // filter pills
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
@@ -182,7 +195,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                       '/paywall?return=/templates&trigger=template_locked',
                     );
                   } else {
-                    _showTemplatePreview(c, t, localeCode, dispute: null);
+                    _showTemplatePreview(c, t, localeCode, dispute: selected);
                   }
                 },
               );

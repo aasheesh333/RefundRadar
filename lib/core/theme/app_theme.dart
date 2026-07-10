@@ -123,7 +123,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primary,
-          minimumSize: const Size(0, 44),
+          minimumSize: const Size(0, 48),
           textStyle: AppTypography.bodyMedium(color: AppColors.primary),
         ),
       ),
@@ -286,7 +286,7 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.accent,
-          minimumSize: const Size(0, 44),
+          minimumSize: const Size(0, 48),
           textStyle: AppTypography.bodyMedium(color: AppColors.accent),
         ),
       ),
