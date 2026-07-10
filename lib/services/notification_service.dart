@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -10,19 +11,20 @@ class NotificationService {
   Future<void> init() async {
     tz.initializeTimeZones();
     try {
-      final tzName = await _resolveLocalTzName();
+      final tzName = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(tzName));
     } catch (e) {
-      debugPrint('tz setLocalLocation failed, falling back: $e');
+      debugPrint('tz setLocalLocation failed: $e');
+      try {
+        tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
+      } catch (e2) {
+        debugPrint('tz setLocalLocation failed: $e2');
+      }
     }
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosInit = DarwinInitializationSettings();
     const settings = InitializationSettings(android: androidInit, iOS: iosInit);
     await _plugin.initialize(settings);
-  }
-
-  Future<String> _resolveLocalTzName() async {
-    return tz.local.name;
   }
 
   Future<void> requestPermission() async {
