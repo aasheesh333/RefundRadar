@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme_colors.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/providers/theme_provider.dart';
+import '../../data/models/dispute.dart';
 import '../../data/models/template.dart';
 import '../../data/repositories/rules_engine_repository.dart';
 import '../../data/repositories/template_repository.dart';
@@ -13,6 +14,46 @@ import '../../shared/widgets/filter_pills.dart';
 import '../../shared/widgets/status_pill.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
+
+/// Common placeholder map for [Template.fill]. Prefer empty strings so
+/// letters remain usable when no dispute context is selected.
+Map<String, String> templateFillValues(Dispute? dispute) {
+  if (dispute == null) {
+    return const {
+      'UTR': '',
+      'AMOUNT': '',
+      'AMOUNT_INR': '',
+      'DATE': '',
+      'BANK': '',
+      'ENTITY': '',
+      'TICKET': '',
+    };
+  }
+  final amount = dispute.amount.toStringAsFixed(0);
+  final entity = dispute.entityName ?? '';
+  String ticket = '';
+  for (final v in dispute.ticketNumbers.values) {
+    if (v != null && v.isNotEmpty) {
+      ticket = v;
+      break;
+    }
+  }
+  final d = dispute.txnDate;
+  final date = '${d.day}/${d.month}/${d.year}';
+  return {
+    'UTR': dispute.txnId,
+    'AMOUNT': amount,
+    'AMOUNT_INR': amount,
+    'DATE': date,
+    'BANK': entity,
+    'ENTITY': entity,
+    'TICKET': ticket,
+  };
+}
+
+String filledTemplateBody(Template t, String localeCode, Dispute? dispute) {
+  return Template.fill(t.bodyFor(localeCode), templateFillValues(dispute));
+}
 
 class TemplateLibraryPage extends ConsumerStatefulWidget {
   const TemplateLibraryPage({super.key});
@@ -131,7 +172,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
             itemBuilder: (c, i) {
               final t = filtered[i];
               final locked = repo.isLocked(t, freeIds);
-              return _TemplateCard(
+                  return _TemplateCard(
                 template: t,
                 locked: locked,
                 localeCode: localeCode,
@@ -141,7 +182,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                       '/paywall?return=/templates&trigger=template_locked',
                     );
                   } else {
-                    _showTemplatePreview(c, t, localeCode);
+                    _showTemplatePreview(c, t, localeCode, dispute: null);
                   }
                 },
               );
@@ -178,15 +219,17 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
   void _showTemplatePreview(
     BuildContext context,
     Template t,
-    String localeCode,
-  ) {
+    String localeCode, {
+    Dispute? dispute,
+  }) {
     final l10n = AppLocalizations.of(context);
+    final body = filledTemplateBody(t, localeCode, dispute);
     showDialog(
       context: context,
       builder: (c) => AlertDialog(
         title: Text(t.titleFor(localeCode)),
         content: SingleChildScrollView(
-          child: SelectableText(t.bodyFor(localeCode)),
+          child: SelectableText(body),
         ),
         actions: [
           TextButton(
@@ -195,7 +238,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
           ),
           FilledButton(
             onPressed: () => Clipboard.setData(
-              ClipboardData(text: t.bodyFor(localeCode)),
+              ClipboardData(text: body),
             ),
             child: Text(l10n?.ombudsmanCopy ?? 'Copy'),
           ),
@@ -243,10 +286,10 @@ class _TemplateCard extends StatelessWidget {
     // Body preview: locked templates get a blur-style masked preview. We use
     // a simple 2-line UIL-clip; actual on-screen blur is by ObscureText in
     // the full preview dialog. For now, locked preview shows a generic
-    // placeholder hint.
+    // placeholder hint. Unlocked cards fill common tokens (empty without dispute).
     final preview = locked
         ? 'Tap to unlock with Premium — 50+ RBI-compliant templates.'
-        : template.bodyFor(localeCode);
+        : filledTemplateBody(template, localeCode, null);
 
     return InkWell(
       onTap: onTap,
