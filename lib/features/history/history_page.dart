@@ -13,6 +13,48 @@ import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/filter_pills.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 
+/// True when dispute is open at L2/ombudsman, or past with L2/ombudsman/l3 filing.
+bool isEscalatedDispute(Dispute d) {
+  if (d.status == DisputeStatus.filedL2 ||
+      d.status == DisputeStatus.ombudsman) {
+    return true;
+  }
+  final past = d.status == DisputeStatus.resolved ||
+      d.status == DisputeStatus.expired;
+  if (!past) return false;
+  return d.filedDates['l2'] != null ||
+      d.filedDates['ombudsman'] != null ||
+      d.filedDates['l3'] != null;
+}
+
+/// History filter over disputes. Escalated uses the full list; others use past only.
+List<Dispute> filterHistoryDisputes(List<Dispute> disputes, String filter) {
+  final past = disputes
+      .where((d) =>
+          d.status == DisputeStatus.resolved ||
+          d.status == DisputeStatus.expired)
+      .toList();
+  switch (filter) {
+    case 'Won':
+      return past
+          .where((d) =>
+              d.status == DisputeStatus.resolved &&
+              (d.resolvedAmount ?? 0) > 0)
+          .toList();
+    case 'Lost':
+      return past
+          .where((d) =>
+              d.status == DisputeStatus.expired ||
+              (d.status == DisputeStatus.resolved &&
+                  (d.resolvedAmount ?? 0) == 0))
+          .toList();
+    case 'Escalated':
+      return disputes.where(isEscalatedDispute).toList();
+    default:
+      return past;
+  }
+}
+
 /// History (Ledger) page matching mockup Screen 9.
 /// Filter pills + win-rate stats header + card list of past/resolved disputes
 /// + "Load older" footer.
@@ -89,21 +131,7 @@ class _Body extends StatelessWidget {
             d.status == DisputeStatus.resolved ||
             d.status == DisputeStatus.expired)
         .toList();
-    final filtered = past.where((d) {
-      switch (filter) {
-        case 'Won':
-          return d.status == DisputeStatus.resolved &&
-              (d.resolvedAmount ?? 0) > 0;
-        case 'Lost':
-          return d.status == DisputeStatus.expired ||
-              (d.status == DisputeStatus.resolved &&
-                  (d.resolvedAmount ?? 0) == 0);
-        case 'Escalated':
-          return d.status == DisputeStatus.ombudsman;
-        default:
-          return true;
-      }
-    }).toList();
+    final filtered = filterHistoryDisputes(disputes, filter);
 
     final wonAmount = past
         .where((d) => d.status == DisputeStatus.resolved)
