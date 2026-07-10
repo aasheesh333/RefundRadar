@@ -3,13 +3,14 @@ import 'package:refund_radar/services/notification_service.dart';
 
 void main() {
   group('NotificationService id derivation', () {
-    test('same reminder id produces deterministic int', () {
-      final id1 = NotificationService.scheduledIdFor('d1_l1_followup');
-      final id2 = NotificationService.scheduledIdFor('d1_l1_followup');
-      expect(id1, equals(id2));
-      expect(id1, isA<int>());
-      expect(id1, greaterThan(0));
-      expect(id1, lessThanOrEqualTo(0x7FFFFFFF));
+    test('uses stable fixed ids for known reminder ids', () {
+      expect(NotificationService.scheduledIdFor('d1_l1_followup'), 164003897);
+      expect(NotificationService.scheduledIdFor('d1_l2_escalate'), 1824034838);
+      expect(NotificationService.scheduledIdFor('d1_ombudsman'), 21033389);
+      expect(
+        NotificationService.scheduledIdFor('d1_ombudsman_followup'),
+        876816214,
+      );
     });
 
     test('different reminder ids for same dispute produce different ints', () {
@@ -19,8 +20,7 @@ void main() {
       final idDraft = NotificationService.scheduledIdFor('d1_ombudsman_followup');
 
       final ids = [idL1, idL2, idOmb, idDraft];
-      expect(ids.toSet().length, equals(4),
-          reason: 'All reminder ids for same dispute must be unique');
+      expect(ids.toSet().length, equals(4));
     });
 
     test('same stage different dispute produces different int', () {
@@ -43,6 +43,7 @@ void main() {
       final reminderId = 'test_dispute_l1_followup';
       final scheduleId = NotificationService.scheduledIdFor(reminderId);
       final cancelId = NotificationService.cancelIdFor(reminderId);
+      expect(scheduleId, 693035993);
       expect(cancelId, equals(scheduleId));
     });
   });

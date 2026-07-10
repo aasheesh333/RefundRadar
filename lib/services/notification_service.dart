@@ -34,7 +34,12 @@ class NotificationService {
   }
 
   static int scheduledIdFor(String reminderId) {
-    return reminderId.hashCode & 0x7FFFFFFF;
+    var hash = 0x811c9dc5;
+    for (final byte in reminderId.codeUnits) {
+      hash ^= byte;
+      hash = (hash * 0x01000193) & 0xFFFFFFFF;
+    }
+    return hash & 0x7FFFFFFF;
   }
 
   static int cancelIdFor(String reminderId) {
