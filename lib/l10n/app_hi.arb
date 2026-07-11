@@ -326,5 +326,9 @@
   "wizardCouldNotLoadDispute": "विवाद लोड नहीं हो सका। कनेक्शन जांचें और फिर कोशिश करें।",
   "wizardDisputeNotFound": "विवाद नहीं मिला।",
   "typeShortBank": "बैंक",
-  "typeShortWrong": "गलत"
+  "typeShortWrong": "गलत",
+  "formBankSearchHint": "बैंक खोजें...",
+  "formBankYourBanks": "आपके बैंक",
+  "formBankAllBanks": "सभी बैंक",
+  "formBankSearchResults": "खोज परिणाम"
 }

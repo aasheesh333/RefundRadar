@@ -326,5 +326,9 @@
   "wizardCouldNotLoadDispute": "Could not load dispute. Check connection and try again.",
   "wizardDisputeNotFound": "Dispute not found.",
   "typeShortBank": "Bank",
-  "typeShortWrong": "Wrong"
+  "typeShortWrong": "Wrong",
+  "formBankSearchHint": "Search bank...",
+  "formBankYourBanks": "Your banks",
+  "formBankAllBanks": "All banks",
+  "formBankSearchResults": "Search results"
 }

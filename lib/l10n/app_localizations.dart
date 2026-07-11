@@ -825,6 +825,13 @@ class AppLocalizations {
     },
     'typeShortBank': {'en': 'Bank', 'hi': 'बैंक'},
     'typeShortWrong': {'en': 'Wrong', 'hi': 'गलत'},
+    'formBankSearchHint': {'en': 'Search bank...', 'hi': 'बैंक खोजें...'},
+    'formBankYourBanks': {'en': 'Your banks', 'hi': 'आपके बैंक'},
+    'formBankAllBanks': {'en': 'All banks', 'hi': 'सभी बैंक'},
+    'formBankSearchResults': {
+      'en': 'Search results',
+      'hi': 'खोज परिणाम',
+    },
   };
 
   String _t(String key, {Map<String, String>? args}) {
@@ -1220,6 +1227,10 @@ class AppLocalizations {
   String get wizardDisputeNotFound => _t('wizardDisputeNotFound');
   String get typeShortBank => _t('typeShortBank');
   String get typeShortWrong => _t('typeShortWrong');
+  String get formBankSearchHint => _t('formBankSearchHint');
+  String get formBankYourBanks => _t('formBankYourBanks');
+  String get formBankAllBanks => _t('formBankAllBanks');
+  String get formBankSearchResults => _t('formBankSearchResults');
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

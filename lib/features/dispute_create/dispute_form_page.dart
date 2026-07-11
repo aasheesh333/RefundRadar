@@ -958,24 +958,21 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
 
   Future<void> _pickBank(BuildContext context, RulesEngine rules) async {
     final isFastag = widget.type == 'fastag';
-    final list = <({String name, String id})>[];
     if (isFastag) {
+      final list = <({String name, String id})>[];
       for (final i in rules.fastagIssuers) {
         if (i['id'] == 'paytm') continue;
         list.add((name: i['name'] as String, id: i['id'] as String));
       }
-    } else {
-      final selected = await AddBanksPage.loadSelectedBanks();
-      list.addAll(
-        mergeOnboardBanksWithFallback(
-          selectedIds: selected,
-          catalog: BankCatalog.banks,
-          fallback: kFallbackBanks,
-        ),
-      );
+      if (!context.mounted) return;
+      await _showBankPicker(context, list);
+      return;
     }
+
+    // Non-FASTag: show ALL banks with onboarding picks first.
+    final selectedIds = await AddBanksPage.loadSelectedBanks();
     if (!context.mounted) return;
-    await _showBankPicker(context, list);
+    await _showBankPickerWithSearch(context, selectedIds);
   }
 
   Future<void> _showBankPicker(
@@ -1020,6 +1017,219 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         _selectedEntityId = picked!.id;
       });
     }
+  }
+
+  /// Non-FASTag picker: shows ALL `BankCatalog.banks` with a search bar.
+  /// Onboarding-picked banks (that exist in the catalog) are shown first
+  /// under a 'Your banks' header, then 'All banks' follows. 'other' is
+  /// always pinned at the bottom.
+  Future<void> _showBankPickerWithSearch(
+    BuildContext context,
+    List<String> selectedIds,
+  ) async {
+    final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    String searchQuery = '';
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: tc.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            // Your banks (onboarding-picked, that exist in the catalog).
+            final yourBanks = BankCatalog.banks
+                .where((b) => selectedIds.contains(b.id))
+                .toList();
+
+            // All banks (filtered by search). 'other' always included.
+            final allBanks = BankCatalog.banks.where((b) {
+              if (b.id == 'other') return true;
+              if (searchQuery.isEmpty) return true;
+              final q = searchQuery.toLowerCase();
+              return b.name.toLowerCase().contains(q) ||
+                  b.short.toLowerCase().contains(q) ||
+                  b.id.toLowerCase().contains(q);
+            }).toList();
+
+            // Pull 'other' out so it can be pinned at the bottom.
+            BankEntry? otherEntry;
+            final remaining = <BankEntry>[];
+            for (final b in allBanks) {
+              if (b.id == 'other') {
+                otherEntry = b;
+              } else {
+                remaining.add(b);
+              }
+            }
+            final other = otherEntry ?? BankCatalog.banks.last;
+
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: Column(
+                children: [
+                  // Handle bar
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    decoration: BoxDecoration(
+                      color: tc.divider,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  // Title
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        l10n?.formLabelBank ?? 'Select Bank',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: tc.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Search bar
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                    child: TextField(
+                      autofocus: false,
+                      decoration: InputDecoration(
+                        hintText: l10n?.formBankSearchHint ?? 'Search bank...',
+                        hintStyle:
+                            TextStyle(color: tc.textTertiary, fontSize: 14),
+                        prefixIcon: Icon(Icons.search,
+                            size: 20, color: tc.textTertiary),
+                        filled: true,
+                        fillColor: tc.surfaceAlt,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                      onChanged: (value) =>
+                          setSheetState(() => searchQuery = value),
+                    ),
+                  ),
+                  // List
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      children: [
+                        // Your banks section (only when not searching and the
+                        // user has onboarding picks in the catalog)
+                        if (searchQuery.isEmpty && yourBanks.isNotEmpty) ...[
+                          _bankSectionHeader(
+                            sheetContext,
+                            l10n?.formBankYourBanks ?? 'Your banks',
+                            tc,
+                          ),
+                          for (final b in yourBanks)
+                            _bankTile(sheetContext, b, tc, () {
+                              setState(() {
+                                _bankName = b.name;
+                                _selectedEntityId = b.id;
+                              });
+                              Navigator.pop(context);
+                            }),
+                          const SizedBox(height: 8),
+                        ],
+                        // All banks / search results
+                        _bankSectionHeader(
+                          sheetContext,
+                          searchQuery.isEmpty
+                              ? (l10n?.formBankAllBanks ?? 'All banks')
+                              : (l10n?.formBankSearchResults ??
+                                  'Search results'),
+                          tc,
+                        ),
+                        for (final b in remaining)
+                          _bankTile(sheetContext, b, tc, () {
+                            setState(() {
+                              _bankName = b.name;
+                              _selectedEntityId = b.id;
+                            });
+                            Navigator.pop(context);
+                          }),
+                        // Other bank pinned at bottom
+                        _bankTile(sheetContext, other, tc, () {
+                          setState(() {
+                            _bankName = other.name;
+                            _selectedEntityId = other.id;
+                          });
+                          Navigator.pop(context);
+                        }),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _bankSectionHeader(
+    BuildContext context,
+    String label,
+    AppThemeColors tc,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1,
+          color: tc.textTertiary,
+        ),
+      ),
+    );
+  }
+
+  Widget _bankTile(
+    BuildContext context,
+    BankEntry bank,
+    AppThemeColors tc,
+    VoidCallback onTap,
+  ) {
+    final isSelected = _bankName == bank.name;
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                bank.name,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight:
+                      isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? AppColors.accent : tc.textPrimary,
+                ),
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, size: 20, color: AppColors.accent),
+          ],
+        ),
+      ),
+    );
   }
 }
 
