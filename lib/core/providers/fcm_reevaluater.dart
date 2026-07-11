@@ -143,3 +143,4 @@ class _FcmReevaluatorState extends ConsumerState<FcmReevaluator> {
       } catch (_) {}
     }
   }
+}

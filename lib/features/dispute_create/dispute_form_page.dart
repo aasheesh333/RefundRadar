@@ -215,6 +215,10 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     if (_saving) return;
     setState(() => _saving = true);
 
+    // Capture l10n synchronously before any await — using BuildContext
+    // across an async gap triggers use_build_context_synchronously.
+    final l10n = AppLocalizations.of(context);
+
     try {
       final amount = double.tryParse(_amountCtrl.text) ?? 0;
       if (amount <= 0) {
@@ -344,7 +348,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       }
 
       final desc = _descCtrl.text.trim();
-      final l10n = AppLocalizations.of(context);
       final now = DateTime.now();
       final dispute = Dispute(
         id: '',

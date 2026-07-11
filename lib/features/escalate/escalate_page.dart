@@ -868,6 +868,9 @@ class _Body extends ConsumerWidget {
     required Template? matchedTemplate,
     required String localeCode,
   }) async {
+    // Capture l10n synchronously before any await — using BuildContext
+    // across an async gap triggers use_build_context_synchronously.
+    final l10n = AppLocalizations.of(context);
     final subject = 'Escalation — UTR ${dispute.txnId}';
     final body = _emailBody(matchedTemplate, localeCode, dispute);
     final to = _nodalEmail(dispute);
@@ -897,7 +900,6 @@ class _Body extends ConsumerWidget {
     // Track the escalation event in the persisted activity log so it
     // survives cold-boot and appears on the dispute detail timeline.
     try {
-      final l10n = AppLocalizations.of(context);
       final now = DateTime.now();
       final meta = _fmtDate(now);
       final updatedLog = <ActivityLogEntry>[
