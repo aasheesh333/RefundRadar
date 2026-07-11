@@ -7,6 +7,7 @@ import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/data/extensions/dispute_type_display.dart';
+import 'package:refund_radar/data/models/activity_log_entry.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
@@ -503,6 +504,18 @@ class _DisputeBody extends ConsumerWidget {
   }
 
   List<ActivityEntry> _activityLog(AppLocalizations? l10n) {
+    // Prefer the persisted activity log (Track G) when present — this
+    // includes dispute_created, escalation_email_sent, template_used,
+    // resolved, status_changed, etc. written at each action point.
+    if (dispute.activityLog.isNotEmpty) {
+      return dispute.activityLog
+          .map((e) => ActivityEntry.fromLogEntry(e))
+          .toList();
+    }
+
+    // Legacy / migration fallback: old disputes have an empty persisted
+    // log, so surface the historically-computed events so the card is
+    // never blank for existing users.
     final entries = <ActivityEntry>[];
     final l1Ticket = dispute.ticketNumbers['l1'];
     if (l1Ticket != null && l1Ticket.isNotEmpty) {
@@ -511,23 +524,27 @@ class _DisputeBody extends ConsumerWidget {
         meta: l10n?.detailActivityTicketMeta(_fmtDate(dispute.filedDates['l1'] ?? dispute.createdAt)) ??
             'Auto-generated · ${_fmtDate(dispute.filedDates['l1'] ?? dispute.createdAt)}',
         highlighted: true,
+        type: ActivityLogEntry.l1TicketFiled,
       ));
     }
     if (dispute.txnId.isNotEmpty) {
       entries.add(ActivityEntry(
         label: l10n?.detailActivityAutoUtr ?? 'Auto-detected UTR from SMS',
         meta: _fmtDate(dispute.txnDate),
+        type: ActivityLogEntry.utrDetected,
       ));
     }
     entries.add(ActivityEntry(
       label: l10n?.detailActivityMarkedActive ?? 'Dispute marked active',
       meta: _fmtDate(dispute.createdAt),
+      type: ActivityLogEntry.disputeCreated,
     ));
     if (dispute.status == DisputeStatus.resolved && dispute.resolvedAt != null) {
       entries.insert(0, ActivityEntry(
         label: l10n?.detailActivityResolved ?? 'Dispute resolved',
         meta: _fmtDate(dispute.resolvedAt!),
         highlighted: true,
+        type: ActivityLogEntry.resolved,
       ));
     }
     return entries;
@@ -537,20 +554,42 @@ class _DisputeBody extends ConsumerWidget {
       '${d.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]}, ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
   Future<void> _toggleResolved(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
     final isResolved = dispute.status == DisputeStatus.resolved;
     final nextStatus =
         isResolved ? dispute.reopenTarget() : DisputeStatus.resolved;
+    final now = DateTime.now();
     final repo = ref.read(disputeRepositoryProvider);
     final updated = nextStatus == DisputeStatus.resolved
         ? dispute.copyWith(
             status: nextStatus,
             resolvedAmount: dispute.amount,
-            resolvedAt: DateTime.now(),
+            resolvedAt: now,
+            activityLog: [
+              ...dispute.activityLog,
+              ActivityLogEntry(
+                type: ActivityLogEntry.resolved,
+                label: l10n?.activityResolved ?? 'Dispute resolved',
+                meta: _fmtDate(now),
+                timestamp: now,
+                highlighted: true,
+              ),
+            ],
           )
         : dispute.copyWith(
             status: nextStatus,
             resolvedAmount: null,
             resolvedAt: null,
+            activityLog: [
+              ...dispute.activityLog,
+              ActivityLogEntry(
+                type: ActivityLogEntry.statusChanged,
+                label: l10n?.activityStatusChanged ?? 'Status changed',
+                meta: _fmtDate(now),
+                timestamp: now,
+                highlighted: true,
+              ),
+            ],
           );
     await repo.saveDispute(uid, updated);
     // B6: lifecycle changed → re-sync reminders + local notifications.

@@ -1,3 +1,5 @@
+import 'activity_log_entry.dart';
+
 enum DisputeType {
   upiP2p('upi_p2p', 1, 100, 'T+1'),
   upiP2m('upi_p2m', 5, 100, 'T+5'),
@@ -49,6 +51,7 @@ class Dispute {
   final List<String> evidence;
   final DateTime createdAt;
   final String? description;
+  final List<ActivityLogEntry> activityLog;
 
   const Dispute({
     required this.id,
@@ -67,6 +70,7 @@ class Dispute {
     this.evidence = const [],
     required this.createdAt,
     this.description,
+    this.activityLog = const [],
   });
 
   static const Object _unset = Object();
@@ -88,6 +92,7 @@ class Dispute {
     List<String>? evidence,
     DateTime? createdAt,
     Object? description = _unset,
+    List<ActivityLogEntry>? activityLog,
   }) =>
       Dispute(
         id: id ?? this.id,
@@ -114,6 +119,7 @@ class Dispute {
         description: identical(description, _unset)
             ? this.description
             : description as String?,
+        activityLog: activityLog ?? this.activityLog,
       );
 
   DisputeStatus reopenTarget() {
@@ -140,6 +146,7 @@ class Dispute {
         'evidence': evidence,
         'createdAt': createdAt.toIso8601String(),
         'description': description,
+        'activityLog': activityLog.map((e) => e.toJson()).toList(),
       };
 
   factory Dispute.fromJson(Map<String, dynamic> json) => Dispute(
@@ -165,5 +172,9 @@ class Dispute {
         evidence: List<String>.from(json['evidence'] ?? []),
         createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
         description: json['description'] as String?,
+        activityLog: (json['activityLog'] as List?)
+                ?.map((e) => ActivityLogEntry.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            [],
       );
 }

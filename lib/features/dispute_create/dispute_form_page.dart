@@ -8,6 +8,7 @@ import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
+import 'package:refund_radar/data/models/activity_log_entry.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
@@ -343,17 +344,28 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       }
 
       final desc = _descCtrl.text.trim();
+      final l10n = AppLocalizations.of(context);
+      final now = DateTime.now();
       final dispute = Dispute(
         id: '',
         uid: uid,
         type: DisputeType.fromId(widget.type),
         amount: amount,
-        txnDate: _date ?? DateTime.now(),
+        txnDate: _date ?? now,
         txnId: _utrCtrl.text.trim(),
         entityName: _bankName.isEmpty ? null : _bankName,
         entityId: _selectedEntityId.isEmpty ? null : _selectedEntityId,
-        createdAt: DateTime.now(),
+        createdAt: now,
         description: desc.isEmpty ? null : desc,
+        activityLog: [
+          ActivityLogEntry(
+            type: ActivityLogEntry.disputeCreated,
+            label: l10n?.activityDisputeCreated ?? 'Dispute created',
+            meta: _fmtDate(now),
+            timestamp: now,
+            highlighted: true,
+          ),
+        ],
       );
       final repo = ref.read(disputeRepositoryProvider);
       Dispute saved;

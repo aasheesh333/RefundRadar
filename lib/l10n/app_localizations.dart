@@ -617,6 +617,35 @@ class AppLocalizations {
       'hi': 'विवाद सक्रिय चिह्नित',
     },
     'detailActivityResolved': {'en': 'Dispute resolved', 'hi': 'विवाद सुलझा'},
+    // Track G — persisted activity log event labels.
+    'activityDisputeCreated': {
+      'en': 'Dispute created',
+      'hi': 'विवाद दर्ज किया गया',
+    },
+    'activityEscalationSent': {
+      'en': 'Escalation email sent',
+      'hi': 'एस्कलेशन ईमेल भेजा गया',
+    },
+    'activityTemplateUsed': {
+      'en': 'Template used',
+      'hi': 'टेंपलेट उपयोग किया गया',
+    },
+    'activityResolved': {
+      'en': 'Dispute resolved',
+      'hi': 'विवाद हल हो गया',
+    },
+    'activityReminderFired': {
+      'en': 'Deadline reminder fired',
+      'hi': 'समयसीमा अनुस्मारक भेजा गया',
+    },
+    'activityUtrDetected': {
+      'en': 'UTR auto-detected',
+      'hi': 'UTR स्वतः पहचाना गया',
+    },
+    'activityStatusChanged': {
+      'en': 'Status changed',
+      'hi': 'स्थिति बदली गई',
+    },
     // Dispute form labels + validation.
     'formEnterAmount': {
       'en': 'Enter the debited amount',
@@ -1040,6 +1069,15 @@ class AppLocalizations {
   String get detailActivityAutoUtr => _t('detailActivityAutoUtr');
   String get detailActivityMarkedActive => _t('detailActivityMarkedActive');
   String get detailActivityResolved => _t('detailActivityResolved');
+
+  // Track G — persisted activity log event labels.
+  String get activityDisputeCreated => _t('activityDisputeCreated');
+  String get activityEscalationSent => _t('activityEscalationSent');
+  String get activityTemplateUsed => _t('activityTemplateUsed');
+  String get activityResolved => _t('activityResolved');
+  String get activityReminderFired => _t('activityReminderFired');
+  String get activityUtrDetected => _t('activityUtrDetected');
+  String get activityStatusChanged => _t('activityStatusChanged');
 
   // Dispute form validation + labels.
   String get formEnterAmount => _t('formEnterAmount');

@@ -10,6 +10,7 @@ import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 import 'package:refund_radar/data/constants/bank_catalog.dart';
+import 'package:refund_radar/data/models/activity_log_entry.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/template.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
@@ -565,6 +566,7 @@ class _Body extends ConsumerWidget {
                   elevation: true,
                   onTap: () => _sendEmail(
                     context,
+                    ref: ref,
                     matchedTemplate: matchedTemplate,
                     localeCode: localeCode,
                   ),
@@ -628,6 +630,9 @@ class _Body extends ConsumerWidget {
     if (bank.contains('sbi')) return 'nodal.officer@sbi.co.in';
     return 'nodal.officer@yourbank.in';
   }
+
+  String _fmtDate(DateTime d) =>
+      '${d.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]} ${d.year}, ${((d.hour % 12) == 0 ? 12 : d.hour % 12)}:${d.minute.toString().padLeft(2, '0')} ${d.hour < 12 ? 'AM' : 'PM'}';
 
   String _emailBody(Template? matchedTemplate, String localeCode, Dispute d) {
     if (matchedTemplate != null) {
@@ -859,6 +864,7 @@ class _Body extends ConsumerWidget {
 
   Future<void> _sendEmail(
     BuildContext context, {
+    required WidgetRef ref,
     required Template? matchedTemplate,
     required String localeCode,
   }) async {
@@ -886,6 +892,39 @@ class _Body extends ConsumerWidget {
               'To: $to\n${cc != null ? 'CC: $cc\n' : ''}Subject: $subject\n\n$body',
         ),
       );
+    }
+
+    // Track the escalation event in the persisted activity log so it
+    // survives cold-boot and appears on the dispute detail timeline.
+    try {
+      final l10n = AppLocalizations.of(context);
+      final now = DateTime.now();
+      final meta = _fmtDate(now);
+      final updatedLog = <ActivityLogEntry>[
+        ...dispute.activityLog,
+        ActivityLogEntry(
+          type: ActivityLogEntry.escalationEmailSent,
+          label: l10n?.activityEscalationSent ?? 'Escalation email sent',
+          meta: meta,
+          timestamp: now,
+          highlighted: true,
+        ),
+        if (matchedTemplate != null)
+          ActivityLogEntry(
+            type: ActivityLogEntry.templateUsed,
+            label:
+                '${l10n?.activityTemplateUsed ?? 'Template used'}: ${matchedTemplate.titleEn}',
+            meta: meta,
+            timestamp: now,
+          ),
+      ];
+      final repo = ref.read(disputeRepositoryProvider);
+      final updated = dispute.copyWith(activityLog: updatedLog);
+      await repo.saveDispute(dispute.uid, updated);
+      ref.invalidate(disputesProvider(dispute.uid));
+    } catch (e) {
+      // Best-effort: don't block the user if the log write fails.
+      debugPrint('activity log write failed: $e');
     }
   }
 }
