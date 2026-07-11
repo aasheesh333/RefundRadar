@@ -9,6 +9,8 @@ import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/services/fcm_topics.dart';
 import 'package:refund_radar/services/onesignal_service.dart';
 import 'package:refund_radar/services/notification_service.dart';
+import 'package:refund_radar/services/daily_comp_scheduler.dart';
+import 'package:refund_radar/services/weekly_digest_scheduler.dart';
 
 /// FCM topic re-evaluation effect (backlog B5).
 ///
@@ -58,14 +60,10 @@ class _FcmReevaluatorState extends ConsumerState<FcmReevaluator> {
           await ref.read(notificationServiceProvider).migrateNotificationIdsIfNeeded();
         } catch (_) {}
         await repairScheduledNotifications(ref, uid);
+        await _scheduleNotifs(ref, uid);
       });
     }
 
-    // All listeners are registered inside the `uid != null` path so that
-    // a uid transition null → non-null re-binds them with the live uid.
-    // (Earlier version registered the premium/locale listeners
-    // unconditionally outside this block — a stale `uid == null` was
-    // captured by closure and reeval could early-return forever.)
     ref.watch(disputesProvider(uid));
     ref.listen<AsyncValue<dynamic>>(
       disputesProvider(uid),
@@ -74,6 +72,8 @@ class _FcmReevaluatorState extends ConsumerState<FcmReevaluator> {
     ref.listen<bool>(isPremiumProvider, (_, _) => _reeval(ref, uid));
     ref.listen<Locale>(localeProvider, (_, _) => _reeval(ref, uid));
     ref.listen<int>(freeDisputesUsedProvider, (_, _) => _reeval(ref, uid));
+    ref.listen<bool>(notifDailyProvider, (_, _) => _scheduleNotifs(ref, uid));
+    ref.listen<bool>(notifWeeklyProvider, (_, _) => _scheduleNotifs(ref, uid));
 
     return const SizedBox.shrink(); // invisible, no UI
   }
@@ -128,4 +128,18 @@ class _FcmReevaluatorState extends ConsumerState<FcmReevaluator> {
       } catch (_) {/* Crashlytics not initialised — swallow */}
     }
   }
-}
+
+  Future<void> _scheduleNotifs(WidgetRef ref, String uid) async {
+    try {
+      final notifications = ref.read(notificationServiceProvider);
+      final dailyCompScheduler = DailyCompScheduler(notifications);
+      final weeklyDigestScheduler = WeeklyDigestScheduler(notifications);
+      await dailyCompScheduler.schedule(ref, uid);
+      await weeklyDigestScheduler.schedule(ref, uid);
+    } catch (e, st) {
+      try {
+        await FirebaseCrashlytics.instance.recordError(e, st,
+            reason: 'FcmReevaluator._scheduleNotifs', fatal: false);
+      } catch (_) {}
+    }
+  }
