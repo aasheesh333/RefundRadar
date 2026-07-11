@@ -668,6 +668,10 @@ class AppLocalizations {
     },
     // Home page remaining.
     'homeViewAllDisputes': {'en': 'View all disputes', 'hi': 'सभी विवाद देखें'},
+    'homeBreakdownDisputed': {
+      'en': '{disputed} disputed · {penalty} penalty accrued',
+      'hi': '{disputed} विवादित · {penalty} जुर्माना अर्जित',
+    },
     // History page.
     'historyTitle': {'en': 'History', 'hi': 'इतिहास'},
     'historyTotalWon': {'en': 'TOTAL WON', 'hi': 'कुल जीत'},
@@ -1054,6 +1058,9 @@ class AppLocalizations {
 
   // Home page remaining strings.
   String get homeViewAllDisputes => _t('homeViewAllDisputes');
+  String homeBreakdownDisputed(String disputed, String penalty) =>
+      _t('homeBreakdownDisputed',
+          args: {'disputed': disputed, 'penalty': penalty});
 
   // History page.
   String get historyTitle => _t('historyTitle');

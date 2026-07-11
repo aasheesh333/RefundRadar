@@ -203,6 +203,7 @@
   "paywallRestoreFailed": "बहाली विफल: {error}",
   "settingsSessionRefreshed": "सत्र रीफ़्रेश हो गया।",
   "homeViewAllDisputes": "सभी विवाद देखें",
+  "homeBreakdownDisputed": "{disputed} विवादित · {penalty} जुर्माना अर्जित",
   "historyTitle": "इतिहास",
   "historyTotalWon": "कुल जीत",
   "historyWinRate": "जीत दर",

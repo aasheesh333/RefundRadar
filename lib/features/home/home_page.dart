@@ -179,10 +179,17 @@ class _Body extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
     if (disputes.isEmpty) return const _EmptyState();
-    final totalOwed = disputes.fold<double>(
+    final disputedSum = disputes.fold<double>(0, (sum, d) => sum + d.amount);
+    final penaltySum = disputes.fold<double>(
         0, (sum, d) => sum + CompensationCalculator.compute(d).compensationDue);
+    final totalOwed = disputedSum + penaltySum;
     final perDay = disputes.fold<double>(
         0, (sum, d) => sum + (d.type.compensationPerDay ?? 0).toDouble());
+    final breakdown = l10n?.homeBreakdownDisputed(
+          _formatIndian(disputedSum),
+          _formatIndian(penaltySum),
+        ) ??
+        '₹${_formatIndian(disputedSum)} disputed · ₹${_formatIndian(penaltySum)} penalty accrued';
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
@@ -294,6 +301,7 @@ class _Body extends StatelessWidget {
           totalOwed: totalOwed,
           disputeCount: disputes.length,
           perDay: perDay,
+          breakdown: breakdown,
         ),
         const SizedBox(height: 14),
         Row(
@@ -341,6 +349,25 @@ class _Body extends StatelessWidget {
             )),
       ],
     );
+  }
+
+  /// Format an amount using the Indian numbering system (e.g. 1,00,000)
+  /// without the leading ₹ symbol — matches OwedCounterCard._formatIndian
+  /// so the breakdown subtitle uses the same digit grouping as the hero.
+  static String _formatIndian(double amount) {
+    final str = amount.toStringAsFixed(0);
+    final parts = <String>[];
+    int count = 0;
+    for (int i = str.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        parts.insert(0, ',');
+      } else if (count > 3 && count % 2 == 1) {
+        parts.insert(0, ',');
+      }
+      parts.insert(0, str[i]);
+      count++;
+    }
+    return parts.join();
   }
 }
 

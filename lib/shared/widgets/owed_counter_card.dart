@@ -11,12 +11,14 @@ class OwedCounterCard extends StatefulWidget {
   final int disputeCount;
   final double perDay;
   final bool compact;
+  final String? breakdown;
   const OwedCounterCard({
     super.key,
     required this.totalOwed,
     required this.disputeCount,
     required this.perDay,
     this.compact = false,
+    this.breakdown,
   });
 
   @override
@@ -161,6 +163,18 @@ class _OwedCounterCardState extends State<OwedCounterCard>
                 ),
             ],
           ),
+          if (widget.breakdown != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                widget.breakdown!,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xB3FFFFFF),
+                ),
+              ),
+            ),
         ],
       ),
     );

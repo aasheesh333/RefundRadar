@@ -203,6 +203,7 @@
   "paywallRestoreFailed": "Restore failed: {error}",
   "settingsSessionRefreshed": "Session refreshed.",
   "homeViewAllDisputes": "View all disputes",
+  "homeBreakdownDisputed": "{disputed} disputed · {penalty} penalty accrued",
   "historyTitle": "History",
   "historyTotalWon": "TOTAL WON",
   "historyWinRate": "WIN RATE",
