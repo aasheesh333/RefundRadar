@@ -305,6 +305,8 @@
   "escalateT5Missed": "⚠ T+5 missed",
   "escalateNoAmount": "No transaction amount on this dispute",
   "escalateTapToExpand": "Tap to view full email",
+  "escalateEditTemplate": "Pick template",
+  "escalatePickTemplate": "Pick escalation template",
   "escalateToLabel": "TO:",
   "escalateCcLabel": "CC:",
   "escalateSubjectLabel": "Subject:",

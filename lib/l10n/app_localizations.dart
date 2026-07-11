@@ -764,6 +764,14 @@ class AppLocalizations {
       'en': 'Tap to view full email',
       'hi': 'पूरा ईमेल देखने के लिए टैप करें',
     },
+    'escalateEditTemplate': {
+      'en': 'Pick template',
+      'hi': 'टेंपलेट चुनें',
+    },
+    'escalatePickTemplate': {
+      'en': 'Pick escalation template',
+      'hi': 'एस्कलेशन टेंपलेट चुनें',
+    },
     'escalateToLabel': {'en': 'TO:', 'hi': 'प्रति:'},
     'escalateCcLabel': {'en': 'CC:', 'hi': 'प्रतिलिपि:'},
     'escalateSubjectLabel': {'en': 'Subject:', 'hi': 'विषय:'},
@@ -1183,6 +1191,8 @@ class AppLocalizations {
   String get escalateT5Missed => _t('escalateT5Missed');
   String get escalateNoAmount => _t('escalateNoAmount');
   String get escalateTapToExpand => _t('escalateTapToExpand');
+  String get escalateEditTemplate => _t('escalateEditTemplate');
+  String get escalatePickTemplate => _t('escalatePickTemplate');
   String get escalateToLabel => _t('escalateToLabel');
   String get escalateCcLabel => _t('escalateCcLabel');
   String get escalateSubjectLabel => _t('escalateSubjectLabel');

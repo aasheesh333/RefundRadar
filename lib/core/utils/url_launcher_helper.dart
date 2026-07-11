@@ -42,10 +42,13 @@ class EmailUtil {
     String? body,
     String? cc,
   }) {
-    final params = <String, String>{};
-    if (subject != null) params['subject'] = subject;
-    if (body != null) params['body'] = body;
-    if (cc != null && cc.isNotEmpty) params['cc'] = cc;
-    return Uri(scheme: 'mailto', path: email, queryParameters: params);
+    String enc(String? v) => v == null ? '' : Uri.encodeComponent(v);
+
+    final parts = <String>[];
+    if (subject != null) parts.add('subject=${enc(subject)}');
+    if (body != null) parts.add('body=${enc(body)}');
+    if (cc != null) parts.add('cc=${enc(cc)}');
+
+    return Uri.parse('mailto:$email?${parts.join('&')}');
   }
 }

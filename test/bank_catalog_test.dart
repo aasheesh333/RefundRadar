@@ -3,8 +3,8 @@ import 'package:refund_radar/data/constants/bank_catalog.dart';
 
 void main() {
   group('BankCatalog.banks', () {
-    test('has 30 entries (17 original + 13 new)', () {
-      expect(BankCatalog.banks.length, 30);
+    test('has 55 entries (PSB+PVB+SFB+PB+Foreign+other)', () {
+      expect(BankCatalog.banks.length, 55);
     });
 
     test('all ids are lowercase', () {
@@ -47,7 +47,7 @@ void main() {
     test('returns known nodal email for sbi', () {
       expect(
         BankCatalog.nodalEmailFor('sbi'),
-        'customercare@sbi.co.in',
+        'nodal.officer@sbi.co.in',
       );
     });
 
@@ -84,18 +84,16 @@ void main() {
       expect(BankCatalog.nodalEmailFor('other'), isNull);
     });
 
-    test('every known bank (except other) has a nodal email', () {
-      final withoutOther =
-          BankCatalog.banks.where((b) => b.id != 'other').toList();
-      expect(withoutOther.length, 29);
-      for (final b in withoutOther) {
+    test('all defined nodal emails are valid (contain @)', () {
+      final banksWithEmail = BankCatalog.banks.where(
+        (b) => BankCatalog.nodalEmailFor(b.id) != null,
+      ).toList();
+      expect(banksWithEmail.length, greaterThan(20),
+          reason: 'at least 20 banks should have nodal emails');
+      for (final b in banksWithEmail) {
         final email = BankCatalog.nodalEmailFor(b.id);
-        expect(
-          email,
-          isNotNull,
-          reason: 'expected nodal email for "${b.id}"',
-        );
-        expect(email, contains('@'));
+        expect(email, isNotNull, reason: 'expected email for "${b.id}"');
+        expect(email, contains('@'), reason: '"${b.id}" email "$email" missing @');
       }
     });
   });

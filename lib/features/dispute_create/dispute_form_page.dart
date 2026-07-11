@@ -571,12 +571,13 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                       : null),
                             focused: _utrFound,
                             child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Expanded(
                                   child: TextField(
                                     controller: _utrCtrl,
                                     style: TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.w500,
                                       color: tc.textPrimary,
                                       fontFamily: AppTypography.family,
@@ -598,29 +599,15 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                         setState(() => _utrFound = false),
                                   ),
                                 ),
-                                const SizedBox(width: 6),
-                                GestureDetector(
+                                const SizedBox(width: 8),
+                                _InlineChipButton(
+                                  label: l10n?.formInbox ?? 'Inbox',
                                   onTap: _pickFromSmsInbox,
-                                  child: Text(
-                                    l10n?.formInbox ?? 'Inbox',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.accent,
-                                    ),
-                                  ),
                                 ),
-                                const SizedBox(width: 10),
-                                GestureDetector(
+                                const SizedBox(width: 8),
+                                _InlineChipButton(
+                                  label: l10n?.formPaste ?? 'Paste',
                                   onTap: _pasteFromSms,
-                                  child: Text(
-                                    l10n?.formPaste ?? 'Paste',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.accent,
-                                    ),
-                                  ),
                                 ),
                               ],
                             ),
@@ -631,6 +618,8 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                             label:
                                 l10n?.formLabelAmountDebited ??
                                 'AMOUNT DEBITED',
+                            helper:
+                                l10n?.formAmountCap ?? 'Max ₹5,00,000',
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.baseline,
                               textBaseline: TextBaseline.alphabetic,
@@ -638,7 +627,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                 Text(
                                   '₹',
                                   style: TextStyle(
-                                    fontSize: 13,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                     color: tc.textSecondary,
                                   ),
@@ -717,15 +706,16 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                 'DESCRIPTION (optional)',
                             child: TextField(
                               controller: _descCtrl,
-                              maxLines: 2,
+                              minLines: 3,
+                              maxLines: 6,
                               maxLength: 500,
                               maxLengthEnforcement: MaxLengthEnforcement.enforced,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w500,
                                 color: tc.textPrimary,
                                 fontFamily: AppTypography.family,
-                                height: 1.35,
+                                height: 1.4,
                               ),
                               cursorColor: AppColors.primary,
                               decoration: const InputDecoration(
@@ -1030,5 +1020,35 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         _selectedEntityId = picked!.id;
       });
     }
+  }
+}
+
+class _InlineChipButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  const _InlineChipButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
+    return Material(
+      color: tc.accentSoft,
+      borderRadius: BorderRadius.circular(AppRadii.sm),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.sm),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.accent,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

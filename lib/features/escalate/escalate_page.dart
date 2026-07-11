@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/providers/theme_provider.dart';
@@ -11,6 +12,7 @@ import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 import 'package:refund_radar/data/constants/bank_catalog.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/template.dart';
+import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/data/repositories/template_repository.dart';
 import 'package:refund_radar/features/templates/template_library_page.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
@@ -18,6 +20,7 @@ import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
+import 'package:refund_radar/shared/widgets/status_pill.dart';
 import 'package:refund_radar/shared/widgets/toggle_switch.dart';
 
 /// Escalate page — mockup Screen 8. Dark green hero with "Maximum penalty
@@ -34,6 +37,9 @@ class EscalatePage extends ConsumerStatefulWidget {
 
 class _EscalatePageState extends ConsumerState<EscalatePage> {
   bool _ccOmbudsman = true;
+  String? _selectedTemplateId;
+
+  void _selectTemplate(String? id) => setState(() => _selectedTemplateId = id);
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +81,8 @@ class _EscalatePageState extends ConsumerState<EscalatePage> {
                   dispute: dispute,
                   ccOmbudsman: _ccOmbudsman,
                   onToggleCc: (v) => setState(() => _ccOmbudsman = v),
+                  selectedTemplateId: _selectedTemplateId,
+                  onSelectTemplate: _selectTemplate,
                 );
               },
               loading: () => const SkeletonList(itemCount: 4),
@@ -94,10 +102,14 @@ class _Body extends ConsumerWidget {
   final Dispute dispute;
   final bool ccOmbudsman;
   final ValueChanged<bool> onToggleCc;
+  final String? selectedTemplateId;
+  final void Function(String?) onSelectTemplate;
   const _Body({
     required this.dispute,
     required this.ccOmbudsman,
     required this.onToggleCc,
+    required this.selectedTemplateId,
+    required this.onSelectTemplate,
   });
 
   @override
@@ -111,6 +123,9 @@ class _Body extends ConsumerWidget {
     final templatesAsync = ref.watch(templatesProvider);
     final locale = ref.watch(localeProvider);
     final localeCode = locale.languageCode;
+    final rulesAsync = ref.watch(rulesEngineProvider);
+    final freeIds = rulesAsync.asData?.value.freeTemplateIds.map((s) => s).toSet() ?? const <String>{};
+    final isPremiumUser = ref.watch(isPremiumProvider);
 
     return templatesAsync.when(
       loading: () => const SkeletonList(itemCount: 4),
@@ -119,9 +134,20 @@ class _Body extends ConsumerWidget {
         onRetry: () => ref.invalidate(templatesProvider),
       ),
       data: (templates) {
-        final match = _matchEscalationTemplate(templates, dispute);
+        // User-picked template wins; fall back to auto-matched level-2 template.
+        Template? picked;
+        if (selectedTemplateId != null) {
+          for (final t in templates) {
+            if (t.id == selectedTemplateId) {
+              picked = t;
+              break;
+            }
+          }
+        }
+        final match = picked ?? _matchEscalationTemplate(templates, dispute);
         return _buildBody(
           context,
+          ref,
           l10n: l10n,
           tc: tc,
           comp: comp,
@@ -130,13 +156,17 @@ class _Body extends ConsumerWidget {
           deadlineMissed: deadlineMissed,
           localeCode: localeCode,
           matchedTemplate: match,
+          templates: templates,
+          freeIds: freeIds,
+          isPremiumUser: isPremiumUser,
         );
       },
     );
   }
 
   Widget _buildBody(
-    BuildContext context, {
+    BuildContext context,
+    WidgetRef ref, {
     required AppLocalizations? l10n,
     required AppThemeColors tc,
     required CompensationResult comp,
@@ -145,6 +175,9 @@ class _Body extends ConsumerWidget {
     required bool deadlineMissed,
     required String localeCode,
     required Template? matchedTemplate,
+    required List<Template> templates,
+    required Set<String> freeIds,
+    required bool isPremiumUser,
   }) {
     return Column(
       children: [
@@ -206,11 +239,11 @@ class _Body extends ConsumerWidget {
         ),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
             children: [
               // max-claim hero
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: tc.ctaBackground,
                   borderRadius: const BorderRadius.all(Radius.circular(14)),
@@ -233,7 +266,7 @@ class _Body extends ConsumerWidget {
                       CompensationCalculator.formatIndian(maxClaim),
                       style: TextStyle(
                         fontFamily: AppTypography.family,
-                        fontSize: 28,
+                        fontSize: 30,
                         fontWeight: FontWeight.w800,
                         height: 1,
                         color: tc.ctaForeground,
@@ -261,7 +294,7 @@ class _Body extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               // send-to card
               _card(
                 context,
@@ -308,11 +341,36 @@ class _Body extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               // email preview card
               _card(
                 context,
                 label: l10n?.escalateEmailPreview ?? 'EMAIL PREVIEW',
+                labelAction: Tooltip(
+                  message: l10n?.escalateEditTemplate ?? 'Pick template',
+                  child: InkWell(
+                    onTap: () => _showTemplatePicker(
+                      context,
+                      ref,
+                      templates: templates,
+                      localeCode: localeCode,
+                      freeIds: freeIds,
+                      isPremiumUser: isPremiumUser,
+                    ),
+                    borderRadius: BorderRadius.circular(AppRadii.sm),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      child: Icon(
+                        Icons.edit_outlined,
+                        size: 18,
+                        color: AppColors.accent,
+                      ),
+                    ),
+                  ),
+                ),
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -368,11 +426,11 @@ class _Body extends ConsumerWidget {
                     child: Text(
                       _emailBody(matchedTemplate, localeCode, dispute),
                       style: TextStyle(
-                        fontSize: 12,
-                        height: 1.45,
+                        fontSize: 13,
+                        height: 1.5,
                         color: tc.textSecondary,
                       ),
-                      maxLines: 3,
+                      maxLines: 5,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -422,7 +480,7 @@ class _Body extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               // amber callout
               if (deadlineMissed)
                 Container(
@@ -523,10 +581,11 @@ class _Body extends ConsumerWidget {
     BuildContext context, {
     required String label,
     required List<Widget> children,
+    Widget? labelAction,
   }) {
     final tc = AppThemeColors.of(context);
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: tc.surface,
         border: Border.all(color: tc.divider, width: 1),
@@ -536,14 +595,21 @@ class _Body extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1,
-              color: tc.textSecondary,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                    color: tc.textSecondary,
+                  ),
+                ),
+              ),
+              ?labelAction,
+            ],
           ),
           const SizedBox(height: 8),
           ...children,
@@ -589,6 +655,171 @@ class _Body extends ConsumerWidget {
       if (t.escalationLevel == 2 && t.category == category) return t;
     }
     return null;
+  }
+
+  void _showTemplatePicker(
+    BuildContext context,
+    WidgetRef ref, {
+    required List<Template> templates,
+    required String localeCode,
+    required Set<String> freeIds,
+    required bool isPremiumUser,
+  }) {
+    final l10n = AppLocalizations.of(context);
+
+    final category = switch (dispute.type) {
+      DisputeType.upiP2p ||
+      DisputeType.upiP2m ||
+      DisputeType.atm ||
+      DisputeType.imps => 'UPI / IMPS / ATM',
+      DisputeType.fastag => 'FASTag',
+      DisputeType.bankCharge => 'Bank charges',
+      DisputeType.wrongTransfer => 'Wrong transfer',
+    };
+
+    final repo = ref.read(templateRepositoryProvider);
+
+    // Filter level-2 templates for this category; free-first ordering.
+    final candidates = <Template>[];
+    for (final t in templates) {
+      if (t.escalationLevel == 2 && t.category == category) {
+        candidates.add(t);
+      }
+    }
+    candidates.sort((a, b) {
+      final aLocked = repo.isLocked(a, freeIds, isPremiumUser: isPremiumUser);
+      final bLocked = repo.isLocked(b, freeIds, isPremiumUser: isPremiumUser);
+      if (aLocked && !bLocked) return 1;
+      if (!aLocked && bLocked) return -1;
+      return 0;
+    });
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetCtx) {
+        final sheetTc = AppThemeColors.of(sheetCtx);
+        return SafeArea(
+          child: DraggableScrollableSheet(
+            initialChildSize: 0.45,
+            minChildSize: 0.3,
+            maxChildSize: 0.75,
+            expand: false,
+            builder: (scrollCtx, controller) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                  child: Text(
+                    l10n?.escalatePickTemplate ?? 'Pick escalation template',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: sheetTc.textPrimary,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.separated(
+                    controller: controller,
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                    itemCount: candidates.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (_, i) {
+                      final t = candidates[i];
+                      final locked = repo.isLocked(
+                        t,
+                        freeIds,
+                        isPremiumUser: isPremiumUser,
+                      );
+                      // Highlight currently-selected template
+                      final isSelected = t.id == selectedTemplateId;
+                      return InkWell(
+                        onTap: locked
+                            ? () {
+                                Navigator.pop(sheetCtx);
+                                context.push(
+                                  '/paywall?return=/home&trigger=template_locked',
+                                );
+                              }
+                            : () {
+                                onSelectTemplate(t.id);
+                                Navigator.pop(sheetCtx);
+                              },
+                        borderRadius: BorderRadius.circular(AppRadii.lg),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: sheetTc.surface,
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.accent
+                                  : sheetTc.divider,
+                              width: isSelected ? 2 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(AppRadii.lg),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      t.titleFor(localeCode),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: locked
+                                            ? sheetTc.textTertiary
+                                            : sheetTc.textPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Level 2 · ${t.category}',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: locked
+                                            ? sheetTc.textTertiary
+                                            : sheetTc.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isSelected)
+                                const Padding(
+                                  padding: EdgeInsets.only(left: 8),
+                                  child: Icon(
+                                    Icons.check_circle,
+                                    size: 20,
+                                    color: AppColors.accent,
+                                  ),
+                                ),
+                              if (locked && !isSelected)
+                                StatusPill(
+                                  label:
+                                      l10n?.templateProBadge ?? 'Pro',
+                                  fg: AppColors.premiumGold,
+                                  bg: sheetTc.premiumGoldSoft,
+                                  prefix: '🔒',
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showFullEmail(BuildContext context, {required String body}) {
@@ -753,7 +984,7 @@ class _FooterButton extends StatelessWidget {
         onTap: onTap,
         child: Container(
           height: 52,
-          padding: const EdgeInsets.symmetric(horizontal: 22),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           alignment: Alignment.center,
           child: Text(
             label,
