@@ -154,6 +154,52 @@ class NotificationService {
     await _plugin.cancel(_weeklyDigestNotificationId);
   }
 
+  /// Task C5: fire an instant high-priority notification the moment a UTR
+  /// is auto-detected from an incoming SMS. Tapping the notification opens
+  /// the dispute form with the UTR / amount / sender pre-filled — the
+  /// routing side parses the payload in
+  /// [RefundRadarApp] / the notification-tap handler in `main.dart`.
+  ///
+  /// Notification id is `utr.hashCode.abs()` so each UTR falls in a stable
+  /// bucket (a re-detection of the same UTR replaces the previous banner
+  /// rather than stacking them). The `9100` base keeps these IDs far from
+  /// the scheduled-reminder range (`reminder.id.hashCode` etc.) and the
+  /// daily/weekly digests (9001/9002) so `cancelAll` paths can't collide.
+  Future<void> showUtrDetectedNotification({
+    required String utr,
+    required double? amount,
+    required String sender,
+  }) async {
+    final id = utr.hashCode.abs();
+    final title = amount != null
+        ? 'Transaction detected — ₹${amount.toInt()}'
+        : 'Bank transaction detected';
+    final body = 'UTR: $utr from $sender. Start a dispute?';
+
+    await _plugin.show(
+      id,
+      title,
+      body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'utr_detection_channel',
+          'Transaction detection',
+          channelDescription:
+              'Instant alerts when UTRs are detected in incoming SMS',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        ),
+      ),
+      // Deep-link payload: `utr_detected://utr=...&amount=...&sender=...`
+      // Tap-side handling rewrites this to a parseable URI and routes to
+      // the dispute form pre-filled.
+      payload: 'utr_detected://utr=$utr'
+          '&amount=${amount ?? ''}'
+          '&sender=${Uri.encodeComponent(sender)}',
+    );
+  }
+
   /// One-time upgrade guard: previous builds keyed scheduled-notification ids
   /// with `reminder.id.hashCode & 0x7FFFFFFF`, which differs from the current
   /// FNV-1a derivation used by [cancelForReminder] / [cancelForDispute]. On the
