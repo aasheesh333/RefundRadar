@@ -382,9 +382,9 @@ class _Body extends ConsumerWidget {
               Icon(
                 deadlineMissed ? Icons.warning_amber_rounded : Icons.access_time,
                 size: 14,
-                color: deadlineMissed
-                    ? tc.alert
-                    : tc.ctaForeground.withValues(alpha: 0.7),
+                    color: deadlineMissed
+                        ? AppColors.alert
+                        : tc.ctaForeground.withValues(alpha: 0.7),
               ),
               const SizedBox(width: 4),
               Text(
@@ -395,7 +395,7 @@ class _Body extends ConsumerWidget {
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: deadlineMissed
-                      ? tc.alert
+                      ? AppColors.alert
                       : tc.ctaForeground.withValues(alpha: 0.7),
                 ),
               ),
@@ -1136,7 +1136,7 @@ class _RecipientRow extends StatelessWidget {
               color: AppColors.accent,
             ),
           ),
-        if (trailing != null) trailing!,
+        ?trailing,
       ],
     );
   }
