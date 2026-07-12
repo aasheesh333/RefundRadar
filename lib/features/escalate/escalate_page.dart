@@ -36,11 +36,55 @@ class EscalatePage extends ConsumerStatefulWidget {
   ConsumerState<EscalatePage> createState() => _EscalatePageState();
 }
 
-class _EscalatePageState extends ConsumerState<EscalatePage> {
+class _EscalatePageState extends ConsumerState<EscalatePage>
+    with TickerProviderStateMixin {
   bool _ccOmbudsman = true;
   String? _selectedTemplateId;
+  late final AnimationController _animController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 900),
+      vsync: this,
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
 
   void _selectTemplate(String? id) => setState(() => _selectedTemplateId = id);
+
+  /// Staggered entrance wrapper — 80ms stagger between cards, fade + slight
+  /// upward slide while constraining the overall interval to ~300ms each.
+  Widget _staggeredBox(int index, Widget child) {
+    final start = (index * 0.08).clamp(0.0, 0.8);
+    final end = start + 0.3;
+    return FadeTransition(
+      opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(
+          parent: _animController,
+          curve: Interval(start, end, curve: Curves.easeOutCubic),
+        ),
+      ),
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.05),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: _animController,
+            curve: Interval(start, end, curve: Curves.easeOutCubic),
+          ),
+        ),
+        child: child,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +128,7 @@ class _EscalatePageState extends ConsumerState<EscalatePage> {
                   onToggleCc: (v) => setState(() => _ccOmbudsman = v),
                   selectedTemplateId: _selectedTemplateId,
                   onSelectTemplate: _selectTemplate,
+                  staggeredBox: _staggeredBox,
                 );
               },
               loading: () => const SkeletonList(itemCount: 4),
@@ -105,12 +150,14 @@ class _Body extends ConsumerWidget {
   final ValueChanged<bool> onToggleCc;
   final String? selectedTemplateId;
   final void Function(String?) onSelectTemplate;
+  final Widget Function(int index, Widget child) staggeredBox;
   const _Body({
     required this.dispute,
     required this.ccOmbudsman,
     required this.onToggleCc,
     required this.selectedTemplateId,
     required this.onSelectTemplate,
+    required this.staggeredBox,
   });
 
   @override
@@ -180,402 +227,495 @@ class _Body extends ConsumerWidget {
     required Set<String> freeIds,
     required bool isPremiumUser,
   }) {
+    final deadlineDays = deadlineMissed
+        ? 0
+        : comp.deadlineDate.difference(DateTime.now()).inDays;
     return Column(
       children: [
-        // header
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
-          child: Row(
-            children: [
-              AppBackButton(onTap: () => context.pop()),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n?.escalateAppBarTitle ?? 'Escalate',
-                      style: TextStyle(
-                        fontFamily: AppTypography.family,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: tc.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      '${l10n?.escalateNodalOfficer ?? 'Nodal Officer'} · ${dispute.entityName ?? "your bank"}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: tc.textSecondary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              if (deadlineMissed)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: tc.alertSoft,
-                    borderRadius: BorderRadius.circular(AppRadii.pill),
-                  ),
-                  child: Text(
-                    l10n?.escalateT5Missed ?? '⚠ T+5 missed',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.alert,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
         Expanded(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-            children: [
-              // max-claim hero
-              Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: tc.ctaBackground,
-                  borderRadius: const BorderRadius.all(Radius.circular(14)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n?.escalateMaxPenaltyLabel ??
-                          'MAXIMUM PENALTY YOU CAN CLAIM',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1,
-                        color: tc.ctaForeground.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      CompensationCalculator.formatIndian(maxClaim),
-                      style: TextStyle(
-                        fontFamily: AppTypography.family,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w800,
-                        height: 1,
-                        color: tc.ctaForeground,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      refund == 0
-                          ? (l10n?.escalateNoAmount ??
-                                'No transaction amount on this dispute')
-                          : (l10n?.escalateRefundPlusComp(
-                                  CompensationCalculator.formatIndian(refund),
-                                  CompensationCalculator.formatIndian(
-                                    comp.compensationDue,
-                                  ),
-                                  comp.daysElapsed,
-                                ) ??
-                                '${CompensationCalculator.formatIndian(refund)} refund + ${CompensationCalculator.formatIndian(comp.compensationDue)} comp (${comp.daysElapsed} days × ₹100/day)'),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: tc.ctaForeground.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              // send-to card
-              _card(
-                context,
-                label: l10n?.escalateSendTo ?? 'SEND TO',
-                children: [
-                  _RecipientRow(
-                    emojiTile: '🎯',
-                    bgTileColor: tc.alertSoft,
-                    title: l10n?.escalateNodalOfficer ?? 'Nodal Officer',
-                    detail:
-                        l10n?.escalateSlaDays(_nodalEmail(dispute)) ??
-                        '${_nodalEmail(dispute)} · SLA 10d',
-                    selected: true,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Container(
-                        width: 26,
-                        height: 26,
-                        decoration: BoxDecoration(
-                          color: tc.surfaceAlt,
-                          borderRadius: BorderRadius.circular(7),
-                        ),
-                        child: const Center(
-                          child: Text('✉', style: TextStyle(fontSize: 13)),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          l10n?.escalateCcOmbudsman ?? 'CC RBI Ombudsman',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: ccOmbudsman
-                                ? tc.textPrimary
-                                : tc.textSecondary,
-                          ),
-                        ),
-                      ),
-                      ToggleSwitch(value: ccOmbudsman, onChanged: onToggleCc),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // email preview card
-              _card(
-                context,
-                label: l10n?.escalateEmailPreview ?? 'EMAIL PREVIEW',
-                labelAction: Tooltip(
-                  message: l10n?.escalateEditTemplate ?? 'Pick template',
-                  child: InkWell(
-                    onTap: () => _showTemplatePicker(
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: _buildHeader(context, tc, l10n, deadlineMissed)),
+              SliverList(
+                delegate: SliverChildListDelegate([
+                  staggeredBox(0, _buildHero(tc, l10n, comp, refund, maxClaim, deadlineMissed, deadlineDays)),
+                  const SizedBox(height: 16),
+                  staggeredBox(1, _buildSendToCard(context, tc, l10n, dispute, ccOmbudsman, onToggleCc)),
+                  const SizedBox(height: 16),
+                  staggeredBox(
+                    2,
+                    _buildEmailPreviewCard(
                       context,
                       ref,
-                      templates: templates,
+                      tc: tc,
+                      l10n: l10n,
+                      dispute: dispute,
+                      ccOmbudsman: ccOmbudsman,
+                      matchedTemplate: matchedTemplate,
                       localeCode: localeCode,
+                      templates: templates,
                       freeIds: freeIds,
                       isPremiumUser: isPremiumUser,
                     ),
-                    borderRadius: BorderRadius.circular(AppRadii.sm),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 2,
-                      ),
-                      child: Icon(
-                        Icons.edit_outlined,
-                        size: 18,
-                        color: AppColors.accent,
-                      ),
-                    ),
+                  ),
+                  if (deadlineMissed) ...[
+                    const SizedBox(height: 16),
+                    staggeredBox(3, _buildAmberCallout(tc, l10n, comp)),
+                  ],
+                  const SizedBox(height: 20),
+                ]),
+              ),
+            ],
+          ),
+        ),
+        _buildFooter(tc, context, ref, l10n, matchedTemplate, localeCode),
+      ],
+    );
+  }
+
+  Widget _buildHeader(
+    BuildContext context,
+    AppThemeColors tc,
+    AppLocalizations? l10n,
+    bool deadlineMissed,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
+      child: Row(
+        children: [
+          AppBackButton(onTap: () => context.pop()),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n?.escalateAppBarTitle ?? 'Escalate',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: tc.textPrimary,
                   ),
                 ),
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: tc.surfaceAlt,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      l10n?.escalateEmailSubject(dispute.txnId) ??
-                          'Subject: Escalation — UTR ${dispute.txnId}',
-                      style: TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: tc.textPrimary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                const SizedBox(height: 1),
+                Text(
+                  '${l10n?.escalateNodalOfficer ?? 'Nodal Officer'} · ${dispute.entityName ?? "your bank"}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: tc.textSecondary,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${l10n?.escalateToLabel ?? 'TO:'} ${_nodalEmail(dispute)}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: tc.textPrimary,
-                    ),
-                  ),
-                  if (ccOmbudsman)
-                    Text(
-                      '${l10n?.escalateCcLabel ?? 'CC:'} crpc@rbi.org.in',
-                      style: TextStyle(fontSize: 11, color: tc.textSecondary),
-                    ),
-                  const SizedBox(height: 10),
-                  Text(
-                    l10n?.escalateEmailGreeting ?? 'Dear Nodal Officer,',
-                    style: TextStyle(
-                      fontSize: 12,
-                      height: 1.45,
-                      color: tc.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  GestureDetector(
-                    onTap: () => _showFullEmail(
-                      context,
-                      body: _emailBody(matchedTemplate, localeCode, dispute),
-                    ),
-                    child: Text(
-                      _emailBody(matchedTemplate, localeCode, dispute),
-                      style: TextStyle(
-                        fontSize: 13,
-                        height: 1.5,
-                        color: tc.textSecondary,
-                      ),
-                      maxLines: 5,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  GestureDetector(
-                    onTap: () => _showFullEmail(
-                      context,
-                      body: _emailBody(matchedTemplate, localeCode, dispute),
-                    ),
-                    child: Text(
-                      '${l10n?.escalateTapToExpand ?? 'Tap to view full email'} \u25BE',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: tc.textTertiary,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    l10n?.escalateEmailAutoDrafted ??
-                        '[auto-drafted, tap to edit]',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontStyle: FontStyle.italic,
-                      color: tc.textTertiary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Text(
-                        '✓',
-                        style: TextStyle(fontSize: 10, color: AppColors.accent),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        l10n?.escalateStandardsCompliant ??
-                            'Standards-compliant · view source',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.accent,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          if (deadlineMissed)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 4,
+              ),
+              decoration: BoxDecoration(
+                color: tc.alertSoft,
+                borderRadius: BorderRadius.circular(AppRadii.pill),
+              ),
+              child: Text(
+                l10n?.escalateT5Missed ?? '⚠ T+5 missed',
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.alert,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHero(
+    AppThemeColors tc,
+    AppLocalizations? l10n,
+    CompensationResult comp,
+    double refund,
+    double maxClaim,
+    bool deadlineMissed,
+    int deadlineDays,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: tc.ctaBackground,
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        boxShadow: AppShadows.card,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'TOTAL CLAIMABLE',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1,
+              color: tc.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            CompensationCalculator.formatIndian(maxClaim),
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
+              height: 1,
+              color: tc.ctaForeground,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Icon(
+                deadlineMissed ? Icons.warning_amber_rounded : Icons.access_time,
+                size: 14,
+                color: deadlineMissed
+                    ? tc.alert
+                    : tc.ctaForeground.withValues(alpha: 0.7),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                deadlineMissed
+                    ? 'T+5 deadline missed — claim full penalty'
+                    : 'T+5 deadline in $deadlineDays days',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: deadlineMissed
+                      ? tc.alert
+                      : tc.ctaForeground.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            refund == 0
+                ? (l10n?.escalateNoAmount ??
+                      'No transaction amount on this dispute')
+                : (l10n?.escalateRefundPlusComp(
+                        CompensationCalculator.formatIndian(refund),
+                        CompensationCalculator.formatIndian(
+                          comp.compensationDue,
                         ),
-                      ),
-                    ],
+                        comp.daysElapsed,
+                      ) ??
+                      '${CompensationCalculator.formatIndian(refund)} refund + ${CompensationCalculator.formatIndian(comp.compensationDue)} comp (${comp.daysElapsed} days × ₹100/day)'),
+            style: TextStyle(
+              fontSize: 11,
+              color: tc.ctaForeground.withValues(alpha: 0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSendToCard(
+    BuildContext context,
+    AppThemeColors tc,
+    AppLocalizations? l10n,
+    Dispute dispute,
+    bool ccOmbudsman,
+    ValueChanged<bool> onToggleCc,
+  ) {
+    return _card(
+      context,
+      label: l10n?.escalateSendTo ?? 'SEND TO',
+      children: [
+        _RecipientRow(
+          emojiTile: '🎯',
+          bgTileColor: tc.alertSoft,
+          title: l10n?.escalateNodalOfficer ?? 'Nodal Officer',
+          detail:
+              l10n?.escalateSlaDays(_nodalEmail(dispute)) ??
+              '${_nodalEmail(dispute)} · SLA 10d',
+          selected: true,
+        ),
+        const SizedBox(height: 8),
+        _RecipientRow(
+          emojiTile: '✉',
+          bgTileColor: tc.surfaceAlt,
+          title: l10n?.escalateCcOmbudsman ?? 'CC RBI Ombudsman',
+          detail: 'crpc@rbi.org.in',
+          selected: ccOmbudsman,
+          trailing: ToggleSwitch(value: ccOmbudsman, onChanged: onToggleCc),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmailPreviewCard(
+    BuildContext context,
+    WidgetRef ref, {
+    required AppThemeColors tc,
+    required AppLocalizations? l10n,
+    required Dispute dispute,
+    required bool ccOmbudsman,
+    required Template? matchedTemplate,
+    required String localeCode,
+    required List<Template> templates,
+    required Set<String> freeIds,
+    required bool isPremiumUser,
+  }) {
+    return _card(
+      context,
+      label: l10n?.escalateEmailPreview ?? 'EMAIL PREVIEW',
+      labelAction: Tooltip(
+        message: l10n?.escalateEditTemplate ?? 'Pick template',
+        child: InkWell(
+          onTap: () => _showTemplatePicker(
+            context,
+            ref,
+            templates: templates,
+            localeCode: localeCode,
+            freeIds: freeIds,
+            isPremiumUser: isPremiumUser,
+          ),
+          borderRadius: BorderRadius.circular(AppRadii.sm),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 4,
+              vertical: 2,
+            ),
+            child: Icon(
+              Icons.edit_outlined,
+              size: 18,
+              color: AppColors.accent,
+            ),
+          ),
+        ),
+      ),
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 8,
+          ),
+          decoration: BoxDecoration(
+            color: tc.surfaceAlt,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            l10n?.escalateEmailSubject(dispute.txnId) ??
+                'Subject: Escalation — UTR ${dispute.txnId}',
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: tc.textPrimary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '${l10n?.escalateToLabel ?? 'TO:'} ${_nodalEmail(dispute)}',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: tc.textPrimary,
+          ),
+        ),
+        if (ccOmbudsman)
+          Text(
+            '${l10n?.escalateCcLabel ?? 'CC:'} crpc@rbi.org.in',
+            style: TextStyle(fontSize: 11, color: tc.textSecondary),
+          ),
+        const SizedBox(height: 10),
+        Text(
+          l10n?.escalateEmailGreeting ?? 'Dear Nodal Officer,',
+          style: TextStyle(
+            fontSize: 12,
+            height: 1.45,
+            color: tc.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        GestureDetector(
+          onTap: () => _showFullEmail(
+            context,
+            body: _emailBody(matchedTemplate, localeCode, dispute),
+          ),
+          child: Text(
+            _emailBody(matchedTemplate, localeCode, dispute),
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.5,
+              color: tc.textSecondary,
+            ),
+            maxLines: 5,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(height: 4),
+        GestureDetector(
+          onTap: () => _showFullEmail(
+            context,
+            body: _emailBody(matchedTemplate, localeCode, dispute),
+          ),
+          child: Text(
+            '${l10n?.escalateTapToExpand ?? 'Tap to view full email'} \u25BE',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: tc.textTertiary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          l10n?.escalateEmailAutoDrafted ??
+              '[auto-drafted, tap to edit]',
+          style: TextStyle(
+            fontSize: 10,
+            fontStyle: FontStyle.italic,
+            color: tc.textTertiary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Text(
+              '✓',
+              style: TextStyle(fontSize: 10, color: AppColors.accent),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              l10n?.escalateStandardsCompliant ??
+                  'Standards-compliant · view source',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: AppColors.accent,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAmberCallout(
+    AppThemeColors tc,
+    AppLocalizations? l10n,
+    CompensationResult comp,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: tc.alertSoft,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '⚠',
+            style: TextStyle(fontSize: 13, color: AppColors.alert),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: tc.textPrimary,
+                  height: 1.4,
+                ),
+                children: [
+                  TextSpan(
+                    text:
+                        l10n?.escalateSendWithinPrefix ??
+                        'Send within ',
+                  ),
+                  TextSpan(
+                    text: l10n?.escalateSendWithin24h ?? '24 hours',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  TextSpan(
+                    text:
+                        l10n?.escalateSendWithinSuffix(
+                          CompensationCalculator.formatIndian(
+                            comp.compensationDue,
+                          ),
+                        ) ??
+                        ' to claim full ${CompensationCalculator.formatIndian(comp.compensationDue)} comp retroactively.',
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              // amber callout
-              if (deadlineMissed)
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: tc.alertSoft,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        '⚠',
-                        style: TextStyle(fontSize: 13, color: AppColors.alert),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: RichText(
-                          text: TextSpan(
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: tc.textPrimary,
-                              height: 1.4,
-                            ),
-                            children: [
-                              TextSpan(
-                                text:
-                                    l10n?.escalateSendWithinPrefix ??
-                                    'Send within ',
-                              ),
-                              TextSpan(
-                                text: l10n?.escalateSendWithin24h ?? '24 hours',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              TextSpan(
-                                text:
-                                    l10n?.escalateSendWithinSuffix(
-                                      CompensationCalculator.formatIndian(
-                                        comp.compensationDue,
-                                      ),
-                                    ) ??
-                                    ' to claim full ${CompensationCalculator.formatIndian(comp.compensationDue)} comp retroactively.',
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
+            ),
           ),
-        ),
-        // sticky footer
-        Container(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-          decoration: BoxDecoration(
-            color: tc.surface,
-            border: Border(top: BorderSide(color: tc.divider, width: 1)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooter(
+    AppThemeColors tc,
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations? l10n,
+    Template? matchedTemplate,
+    String localeCode,
+  ) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        12 + MediaQuery.of(context).padding.bottom,
+      ),
+      decoration: BoxDecoration(
+        color: tc.surface,
+        border: Border(top: BorderSide(color: tc.divider, width: 1)),
+      ),
+      child: Row(
+        children: [
+          _FooterButton(
+            label: l10n?.ombudsmanCopy ?? 'Copy',
+            color: tc.surfaceAlt,
+            textColor: tc.isDark ? AppColors.accent : AppColors.primary,
+            onTap: () => _copyEmail(
+              context,
+              matchedTemplate: matchedTemplate,
+              localeCode: localeCode,
+            ),
           ),
-          child: Row(
-            children: [
-              _FooterButton(
-                label: l10n?.ombudsmanCopy ?? 'Copy',
-                color: tc.surfaceAlt,
-                textColor: tc.isDark ? AppColors.accent : AppColors.primary,
-                onTap: () => _copyEmail(
-                  context,
-                  matchedTemplate: matchedTemplate,
-                  localeCode: localeCode,
-                ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: _FooterButton(
+              label: l10n?.escalateSend ?? 'Send escalation →',
+              color: tc.ctaBackground,
+              textColor: tc.ctaForeground,
+              elevation: true,
+              onTap: () => _sendEmail(
+                context,
+                ref: ref,
+                matchedTemplate: matchedTemplate,
+                localeCode: localeCode,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _FooterButton(
-                  label: l10n?.escalateSend ?? 'Send escalation →',
-                  color: tc.ctaBackground,
-                  textColor: tc.ctaForeground,
-                  elevation: true,
-                  onTap: () => _sendEmail(
-                    context,
-                    ref: ref,
-                    matchedTemplate: matchedTemplate,
-                    localeCode: localeCode,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -937,12 +1077,14 @@ class _RecipientRow extends StatelessWidget {
   final String title;
   final String detail;
   final bool selected;
+  final Widget? trailing;
   const _RecipientRow({
     required this.emojiTile,
     required this.bgTileColor,
     required this.title,
     required this.detail,
     required this.selected,
+    this.trailing,
   });
 
   @override
@@ -985,7 +1127,7 @@ class _RecipientRow extends StatelessWidget {
             ],
           ),
         ),
-        if (selected)
+        if (selected && trailing == null)
           const Text(
             '✓',
             style: TextStyle(
@@ -994,6 +1136,7 @@ class _RecipientRow extends StatelessWidget {
               color: AppColors.accent,
             ),
           ),
+        if (trailing != null) trailing!,
       ],
     );
   }
