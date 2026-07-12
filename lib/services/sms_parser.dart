@@ -7,7 +7,10 @@ class SmsParseResult {
 }
 
 class SmsParser {
-  static final _utrRegex = RegExp(r'\b(\d{12})\b');
+  /// UPI UTRs are 12 digits but IMPS/FASTag RRNs can be 15-22 digits (Task C3).
+  /// The 22-digit ceiling keeps us off clearly non-UTR long numerics (e.g.
+  /// 24-digit ISO timestamps or 30+ character tracking numbers).
+  static final _utrRegex = RegExp(r'\b(\d{12,22})\b');
   static final _amountRegex = RegExp(r'Rs\.?\s*([\d,]+\.?\d*)|₹\s*([\d,]+\.?\d*)');
   static final _dateRegex = RegExp(
       r'(\d{1,2}[-/](?:0?[1-9]|1[012])[-/]\d{2,4})|(\d{4}-\d{2}-\d{2})|(\d{2}[-][A-Za-z]{3}[-]\d{2})');
@@ -17,7 +20,14 @@ class SmsParser {
     final effective = sms.replaceAll('\u00A0', ' '); // nbsp → space (some banks)
     String? utr;
     final utrMatch = _utrRegex.firstMatch(effective);
-    if (utrMatch != null) utr = utrMatch.group(1);
+    if (utrMatch != null) {
+      final candidate = utrMatch.group(1)!;
+      // Verify the match isn't an Aadhaar number or other non-transaction
+      // ID before committing to it (Task C3 false-positive filter).
+      if (_isLikelyTransactionId(candidate, effective)) {
+        utr = candidate;
+      }
+    }
 
     double? amount;
     final amtMatch = _amountRegex.firstMatch(effective);
@@ -40,6 +50,33 @@ class SmsParser {
     if (vpaMatch != null) vpa = vpaMatch.group(1);
 
     return SmsParseResult(utr: utr, amount: amount, date: date, vpa: vpa);
+  }
+
+  /// Aadhaar / non-transaction false-positive filter (Task C3).
+  ///
+  /// The 12-22 digit regex now also catches Aadhaar numbers (12 digits,
+  /// sometimes written `1234 5678 9012`). We exclude those when no
+  /// UTR/RRN/ref/txn keyword is nearby, so bank SMS still parse and
+  /// govt/OTP SMS don't latch onto a 12-digit substring. Longer matches
+  /// (13-22 digits) are never Aadhaar, so they always pass.
+  static bool _isLikelyTransactionId(String match, String fullSms) {
+    // The SMS body explicitly mentions Aadhaar → skip regardless of length.
+    if (fullSms.toLowerCase().contains('aadhaar')) return false;
+
+    // A 12-digit match could be an Aadhaar number — especially when the
+    // body shows it in the canonical `4+4+4` layout. Accept only when a
+    // UTR / RRN / ref / txn keyword is present to anchor it as a txn id.
+    if (match.length == 12 &&
+        RegExp(r'\d{4}\s?\d{4}\s?\d{4}').hasMatch(fullSms)) {
+      final lower = fullSms.toLowerCase();
+      if (!lower.contains('utr') &&
+          !lower.contains('rrn') &&
+          !lower.contains('ref') &&
+          !lower.contains('txn')) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /// Two-year pivot for `dd-MMM-yy` / `yy-MM-dd`: bank SMSs without a

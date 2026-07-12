@@ -19,6 +19,11 @@
          screen; if Play rejects the declaration we fall back to manual paste. -->
     <!-- READ_SMS: on-device bank SMS prefill for dispute form (never uploaded). -->
     <uses-permission android:name="android.permission.READ_SMS"/>
+    <!-- RECEIVE_SMS: live UTR auto-detect — instant notification when an
+         incoming SMS contains a transaction reference. Same runtime gate
+         as READ_SMS (user opt-in via onboarding SMS screen). Forwarded to
+         Flutter on-device; never uploaded. -->
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <application
         android:label="Refund Radar"
         android:name="${applicationName}"
