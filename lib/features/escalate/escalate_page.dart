@@ -192,7 +192,15 @@ class _Body extends ConsumerWidget {
             }
           }
         }
-        final match = picked ?? _matchEscalationTemplate(templates, dispute);
+        final repo = ref.read(templateRepositoryProvider);
+        final match = picked ??
+            _matchEscalationTemplate(
+              templates,
+              dispute,
+              repo,
+              freeIds,
+              isPremiumUser,
+            );
         return _buildBody(
           context,
           ref,
@@ -256,6 +264,7 @@ class _Body extends ConsumerWidget {
                       templates: templates,
                       freeIds: freeIds,
                       isPremiumUser: isPremiumUser,
+                      repo: ref.read(templateRepositoryProvider),
                     ),
                   ),
                   if (deadlineMissed) ...[
@@ -268,7 +277,17 @@ class _Body extends ConsumerWidget {
             ],
           ),
         ),
-        _buildFooter(tc, context, ref, l10n, matchedTemplate, localeCode),
+        _buildFooter(
+          tc,
+          context,
+          ref,
+          l10n,
+          matchedTemplate,
+          localeCode,
+          repo: ref.read(templateRepositoryProvider),
+          freeIds: freeIds,
+          isPremiumUser: isPremiumUser,
+        ),
       ],
     );
   }
@@ -470,7 +489,10 @@ class _Body extends ConsumerWidget {
     required List<Template> templates,
     required Set<String> freeIds,
     required bool isPremiumUser,
+    required TemplateRepository repo,
   }) {
+    final isMatchLocked = matchedTemplate != null &&
+        repo.isLocked(matchedTemplate, freeIds, isPremiumUser: isPremiumUser);
     return _card(
       context,
       label: l10n?.escalateEmailPreview ?? 'EMAIL PREVIEW',
@@ -537,57 +559,142 @@ class _Body extends ConsumerWidget {
             style: TextStyle(fontSize: 11, color: tc.textSecondary),
           ),
         const SizedBox(height: 10),
-        Text(
-          l10n?.escalateEmailGreeting ?? 'Dear Nodal Officer,',
-          style: TextStyle(
-            fontSize: 12,
-            height: 1.45,
-            color: tc.textSecondary,
+        if (isMatchLocked) ...[
+          // F1: matched template is premium & user is free — show first
+          // 2 lines + blur/fade + Pro badge + paywall CTA instead of the
+          // full premium body (prevents the auto-match leak).
+          ClipRect(
+            child: Stack(
+              children: [
+                Text(
+                  _emailBody(matchedTemplate, localeCode, dispute),
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.5,
+                    color: tc.textSecondary,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 22,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          tc.surface.withValues(alpha: 0),
+                          tc.surface,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        GestureDetector(
-          onTap: () => _showFullEmail(
-            context,
-            body: _emailBody(matchedTemplate, localeCode, dispute),
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: () => context.push(
+              '/paywall?return=/home&trigger=template_locked',
+            ),
+            borderRadius: BorderRadius.circular(AppRadii.sm),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: tc.premiumGoldSoft,
+                borderRadius: BorderRadius.circular(AppRadii.sm),
+                border: Border.all(
+                  color: AppColors.premiumGold.withValues(alpha: 0.5),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Text('🔒', style: TextStyle(fontSize: 13)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'This is a Pro template — unlock to view & send',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.premiumGold,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    l10n?.templateProBadge ?? 'Pro',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.premiumGold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          child: Text(
-            _emailBody(matchedTemplate, localeCode, dispute),
+          const SizedBox(height: 6),
+        ] else ...[
+          Text(
+            l10n?.escalateEmailGreeting ?? 'Dear Nodal Officer,',
             style: TextStyle(
-              fontSize: 13,
-              height: 1.5,
+              fontSize: 12,
+              height: 1.45,
               color: tc.textSecondary,
             ),
-            maxLines: 5,
-            overflow: TextOverflow.ellipsis,
           ),
-        ),
-        const SizedBox(height: 4),
-        GestureDetector(
-          onTap: () => _showFullEmail(
-            context,
-            body: _emailBody(matchedTemplate, localeCode, dispute),
+          const SizedBox(height: 4),
+          GestureDetector(
+            onTap: () => _showFullEmail(
+              context,
+              body: _emailBody(matchedTemplate, localeCode, dispute),
+            ),
+            child: Text(
+              _emailBody(matchedTemplate, localeCode, dispute),
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.5,
+                color: tc.textSecondary,
+              ),
+              maxLines: 5,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          child: Text(
-            '${l10n?.escalateTapToExpand ?? 'Tap to view full email'} \u25BE',
+          const SizedBox(height: 4),
+          GestureDetector(
+            onTap: () => _showFullEmail(
+              context,
+              body: _emailBody(matchedTemplate, localeCode, dispute),
+            ),
+            child: Text(
+              '${l10n?.escalateTapToExpand ?? 'Tap to view full email'} \u25BE',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: tc.textTertiary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n?.escalateEmailAutoDrafted ??
+                '[auto-drafted, tap to edit]',
             style: TextStyle(
               fontSize: 10,
-              fontWeight: FontWeight.w600,
+              fontStyle: FontStyle.italic,
               color: tc.textTertiary,
             ),
           ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          l10n?.escalateEmailAutoDrafted ??
-              '[auto-drafted, tap to edit]',
-          style: TextStyle(
-            fontSize: 10,
-            fontStyle: FontStyle.italic,
-            color: tc.textTertiary,
-          ),
-        ),
-        const SizedBox(height: 8),
+          const SizedBox(height: 8),
+        ],
         Row(
           children: [
             const Text(
@@ -674,8 +781,13 @@ class _Body extends ConsumerWidget {
     WidgetRef ref,
     AppLocalizations? l10n,
     Template? matchedTemplate,
-    String localeCode,
-  ) {
+    String localeCode, {
+    required TemplateRepository repo,
+    required Set<String> freeIds,
+    required bool isPremiumUser,
+  }) {
+    final isMatchLocked = matchedTemplate != null &&
+        repo.isLocked(matchedTemplate, freeIds, isPremiumUser: isPremiumUser);
     return Container(
       padding: EdgeInsets.fromLTRB(
         20,
@@ -706,12 +818,23 @@ class _Body extends ConsumerWidget {
               color: tc.ctaBackground,
               textColor: tc.ctaForeground,
               elevation: true,
-              onTap: () => _sendEmail(
-                context,
-                ref: ref,
-                matchedTemplate: matchedTemplate,
-                localeCode: localeCode,
-              ),
+              onTap: () {
+                // F1: if the matched template is locked for a free user,
+                // route to the paywall instead of leaking the premium body.
+                if (isMatchLocked) {
+                  context.push(
+                    '/paywall?return=/home&trigger=template_locked',
+                  );
+                  return;
+                }
+                _sendEmail(
+                  context,
+                  ref: ref,
+                  matchedTemplate: matchedTemplate,
+                  localeCode: localeCode,
+                  isPremiumUser: isPremiumUser,
+                );
+              },
             ),
           ),
         ],
@@ -786,7 +909,13 @@ class _Body extends ConsumerWidget {
         'immediate reversal plus ₹100/day compensation…';
   }
 
-  Template? _matchEscalationTemplate(List<Template> templates, Dispute d) {
+  Template? _matchEscalationTemplate(
+    List<Template> templates,
+    Dispute d,
+    TemplateRepository repo,
+    Set<String> freeIds,
+    bool isPremiumUser,
+  ) {
     final category = switch (d.type) {
       DisputeType.upiP2p ||
       DisputeType.upiP2m ||
@@ -796,6 +925,23 @@ class _Body extends ConsumerWidget {
       DisputeType.bankCharge => 'Bank charges',
       DisputeType.wrongTransfer => 'Wrong transfer',
     };
+    // First try unlocked level-2 templates only — prevents the auto-match
+    // from leaking premium template bodies to free users (Task F1).
+    for (final t in templates) {
+      if (t.escalationLevel == 2 &&
+          t.category == category &&
+          !repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser)) {
+        return t;
+      }
+    }
+    // Fallback: any free (non-premium) template in this category & level.
+    for (final t in templates) {
+      if (t.escalationLevel == 2 && t.category == category && !t.isPremium) {
+        return t;
+      }
+    }
+    // Last resort: any template in category (may be locked — picker & body
+    // preview handle the gating from here).
     for (final t in templates) {
       if (t.escalationLevel == 2 && t.category == category) return t;
     }
@@ -811,6 +957,7 @@ class _Body extends ConsumerWidget {
     required bool isPremiumUser,
   }) {
     final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
 
     final category = switch (dispute.type) {
       DisputeType.upiP2p ||
@@ -824,146 +971,280 @@ class _Body extends ConsumerWidget {
 
     final repo = ref.read(templateRepositoryProvider);
 
-    // Filter level-2 templates for this category; free-first ordering.
-    final candidates = <Template>[];
+    // F2: split level-2 templates for this category into Free (unlocked
+    // for this user) and Pro (locked) buckets for the two-tab picker.
+    final freeTemplates = <Template>[];
+    final proTemplates = <Template>[];
     for (final t in templates) {
-      if (t.escalationLevel == 2 && t.category == category) {
-        candidates.add(t);
+      if (t.escalationLevel != 2 || t.category != category) continue;
+      if (repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser)) {
+        proTemplates.add(t);
+      } else {
+        freeTemplates.add(t);
       }
     }
-    candidates.sort((a, b) {
-      final aLocked = repo.isLocked(a, freeIds, isPremiumUser: isPremiumUser);
-      final bLocked = repo.isLocked(b, freeIds, isPremiumUser: isPremiumUser);
-      if (aLocked && !bLocked) return 1;
-      if (!aLocked && bLocked) return -1;
-      return 0;
-    });
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: tc.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetCtx) {
         final sheetTc = AppThemeColors.of(sheetCtx);
+        final sheetL10n = AppLocalizations.of(sheetCtx);
         return SafeArea(
-          child: DraggableScrollableSheet(
-            initialChildSize: 0.45,
-            minChildSize: 0.3,
-            maxChildSize: 0.75,
-            expand: false,
-            builder: (scrollCtx, controller) => Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-                  child: Text(
-                    l10n?.escalatePickTemplate ?? 'Pick escalation template',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: sheetTc.textPrimary,
+          child: DefaultTabController(
+            length: 2,
+            child: SizedBox(
+              height: MediaQuery.of(sheetCtx).size.height * 0.65,
+              child: Column(
+                children: [
+                  // Handle
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    decoration: BoxDecoration(
+                      color: sheetTc.divider,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                ),
-                Expanded(
-                  child: ListView.separated(
-                    controller: controller,
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                    itemCount: candidates.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
-                    itemBuilder: (_, i) {
-                      final t = candidates[i];
-                      final locked = repo.isLocked(
-                        t,
-                        freeIds,
-                        isPremiumUser: isPremiumUser,
-                      );
-                      // Highlight currently-selected template
-                      final isSelected = t.id == selectedTemplateId;
-                      return InkWell(
-                        onTap: locked
-                            ? () {
-                                Navigator.pop(sheetCtx);
-                                context.push(
-                                  '/paywall?return=/home&trigger=template_locked',
-                                );
-                              }
-                            : () {
-                                onSelectTemplate(t.id);
-                                Navigator.pop(sheetCtx);
-                              },
-                        borderRadius: BorderRadius.circular(AppRadii.lg),
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: sheetTc.surface,
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppColors.accent
-                                  : sheetTc.divider,
-                              width: isSelected ? 2 : 1,
-                            ),
-                            borderRadius: BorderRadius.circular(AppRadii.lg),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      t.titleFor(localeCode),
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: locked
-                                            ? sheetTc.textTertiary
-                                            : sheetTc.textPrimary,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Level 2 · ${t.category}',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: locked
-                                            ? sheetTc.textTertiary
-                                            : sheetTc.textSecondary,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (isSelected)
-                                const Padding(
-                                  padding: EdgeInsets.only(left: 8),
-                                  child: Icon(
-                                    Icons.check_circle,
-                                    size: 20,
-                                    color: AppColors.accent,
-                                  ),
-                                ),
-                              if (locked && !isSelected)
-                                StatusPill(
-                                  label:
-                                      l10n?.templateProBadge ?? 'Pro',
-                                  fg: AppColors.premiumGold,
-                                  bg: sheetTc.premiumGoldSoft,
-                                  prefix: '🔒',
-                                ),
-                            ],
-                          ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        sheetL10n?.escalatePickTemplate ??
+                            'Pick escalation template',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: sheetTc.textPrimary,
                         ),
-                      );
-                    },
+                      ),
+                    ),
+                  ),
+                  TabBar(
+                    tabs: [
+                      Tab(text: 'Free (${freeTemplates.length})'),
+                      Tab(
+                        text:
+                            '${sheetL10n?.templateProBadge ?? 'Pro'} (${proTemplates.length})',
+                      ),
+                    ],
+                    labelColor: AppColors.accent,
+                    unselectedLabelColor: sheetTc.textTertiary,
+                    indicatorColor: AppColors.accent,
+                    indicatorSize: TabBarIndicatorSize.label,
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _templateList(
+                          sheetCtx,
+                          freeTemplates,
+                          repo,
+                          freeIds,
+                          isPremiumUser,
+                          selectedTemplateId,
+                          localeCode,
+                          onSelectTemplate,
+                          sheetL10n,
+                          isProTab: false,
+                        ),
+                        _templateList(
+                          sheetCtx,
+                          proTemplates,
+                          repo,
+                          freeIds,
+                          isPremiumUser,
+                          selectedTemplateId,
+                          localeCode,
+                          onSelectTemplate,
+                          sheetL10n,
+                          isProTab: true,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// F2 helper — renders the Free or Pro tab of the template picker.
+  /// Pro (locked) entries show a faded 2-line body preview + Pro badge and
+  /// route to the paywall on tap instead of selecting the template.
+  Widget _templateList(
+    BuildContext context,
+    List<Template> templates,
+    TemplateRepository repo,
+    Set<String> freeIds,
+    bool isPremiumUser,
+    String? selectedTemplateId,
+    String localeCode,
+    void Function(String?) onSelectTemplate,
+    AppLocalizations? l10n, {
+    required bool isProTab,
+  }) {
+    final tc = AppThemeColors.of(context);
+    if (templates.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text(
+            isProTab
+                ? 'No Pro templates for this category'
+                : 'No free templates for this category',
+            style: TextStyle(color: tc.textTertiary, fontSize: 14),
+          ),
+        ),
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.all(20),
+      itemCount: templates.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        final t = templates[index];
+        final isSelected = t.id == selectedTemplateId;
+        // Pro tab entries are gated for free users; premium users unlock them.
+        final isLocked = isProTab &&
+            repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser);
+
+        return InkWell(
+          onTap: isLocked
+              ? () {
+                  Navigator.pop(context);
+                  context.push(
+                    '/paywall?return=/home&trigger=template_locked',
+                  );
+                }
+              : () {
+                  onSelectTemplate(t.id);
+                  Navigator.pop(context);
+                },
+          borderRadius: BorderRadius.circular(AppRadii.lg),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: isSelected ? AppColors.accent : tc.divider,
+                width: isSelected ? 2 : 1,
+              ),
+              borderRadius: BorderRadius.circular(AppRadii.lg),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        t.titleFor(localeCode),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: isLocked ? tc.textTertiary : tc.textPrimary,
+                        ),
+                      ),
+                    ),
+                    if (isLocked)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: StatusPill(
+                          label: l10n?.templateProBadge ?? 'Pro',
+                          fg: AppColors.premiumGold,
+                          bg: tc.premiumGoldSoft,
+                          prefix: '🔒',
+                        ),
+                      ),
+                    if (isSelected)
+                      const Padding(
+                        padding: EdgeInsets.only(left: 8),
+                        child: Icon(
+                          Icons.check_circle,
+                          size: 20,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Level ${t.escalationLevel} · ${t.category}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isLocked ? tc.textTertiary : tc.textSecondary,
                   ),
                 ),
+                const SizedBox(height: 6),
+                if (isLocked)
+                  _blurredPreview(
+                    filledTemplateBody(t, localeCode, dispute),
+                    tc,
+                  )
+                else
+                  Text(
+                    filledTemplateBody(t, localeCode, dispute),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: tc.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  /// F2 helper — fades the bottom of a locked template preview with a
+  /// surface-coloured gradient so the full premium body stays blurred.
+  Widget _blurredPreview(String body, AppThemeColors tc) {
+    return ClipRect(
+      child: Stack(
+        children: [
+          Text(
+            body,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 13,
+              color: tc.textSecondary,
+              height: 1.4,
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    tc.surface.withValues(alpha: 0),
+                    tc.surface,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1007,6 +1288,7 @@ class _Body extends ConsumerWidget {
     required WidgetRef ref,
     required Template? matchedTemplate,
     required String localeCode,
+    required bool isPremiumUser,
   }) async {
     // Capture l10n synchronously before any await — using BuildContext
     // across an async gap triggers use_build_context_synchronously.
@@ -1068,8 +1350,129 @@ class _Body extends ConsumerWidget {
       // Best-effort: don't block the user if the log write fails.
       debugPrint('activity log write failed: $e');
     }
+
+    // F4: post-send upsell — after a successful escalation, show a
+    // "What's next?" dialog nudging users toward the Ombudsman (L3)
+    // letter. Free users see a paywall CTA; premium users navigate
+    // straight to the ombudsman letter generator.
+    if (ok && context.mounted) {
+      _showPostEscalationDialog(context, dispute, isPremiumUser);
+    }
   }
-}
+
+  /// F4 — success dialog shown after the escalation email is sent.
+  /// Premium users get a direct "Open Ombudsman letter →" CTA; free
+  /// users see the L3 notice behind a Pro badge with a paywall CTA.
+  void _showPostEscalationDialog(
+    BuildContext context,
+    Dispute dispute,
+    bool isPremiumUser,
+  ) {
+    final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    showDialog<void>(
+      context: context,
+      builder: (c) => AlertDialog(
+        backgroundColor: tc.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadii.lg),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.check_circle, color: AppColors.accent, size: 28),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Escalation sent!',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: tc.textPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "What's next?",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: tc.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "If the bank doesn't resolve within 30 days, escalate to the Banking Ombudsman.",
+              style: TextStyle(fontSize: 13, color: tc.textSecondary),
+            ),
+            const SizedBox(height: 12),
+            // Level 3 preview card
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: tc.accentSoft,
+                borderRadius: BorderRadius.circular(AppRadii.md),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.gavel, size: 20, color: AppColors.accent),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Level 3: Ombudsman notice',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: tc.textPrimary,
+                      ),
+                    ),
+                  ),
+                  if (!isPremiumUser)
+                    StatusPill(
+                      label: l10n?.templateProBadge ?? 'Pro',
+                      fg: AppColors.premiumGold,
+                      bg: tc.premiumGoldSoft,
+                      prefix: '🔒',
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c),
+            child: Text(
+              'Later',
+              style: TextStyle(color: tc.textSecondary),
+            ),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(c);
+              if (isPremiumUser) {
+                context.push('/ombudsman/${dispute.id}');
+              } else {
+                context.push(
+                  '/paywall?return=/home&trigger=post_escalation',
+                );
+              }
+            },
+            child: Text(
+              isPremiumUser
+                  ? 'Open Ombudsman letter →'
+                  : 'Unlock Ombudsman templates →',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
 class _RecipientRow extends StatelessWidget {
   final String emojiTile;
