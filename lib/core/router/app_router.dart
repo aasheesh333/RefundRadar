@@ -40,8 +40,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           builder: (c, s) => const DisputeTypePage()),
       GoRoute(
         path: '/disputes/form',
-        builder: (c, s) =>
-            DisputeFormPage(type: s.uri.queryParameters['type'] ?? 'upi_p2p'),
+        builder: (c, s) => DisputeFormPage(
+          type: s.uri.queryParameters['type'] ?? 'upi_p2p',
+          prefilledUtr: s.uri.queryParameters['utr'],
+          prefilledAmount:
+              double.tryParse(s.uri.queryParameters['amount'] ?? ''),
+          prefilledSender: s.uri.queryParameters['sender'],
+        ),
       ),
       GoRoute(
         path: '/disputes/:id',

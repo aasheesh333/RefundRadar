@@ -11,6 +11,15 @@ const _kPrefMigratedFnv1aIds = 'migrated_fnv1a_ids';
 class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
 
+  /// Optional callback invoked when the user taps a local notification.
+  /// The argument is the platform-supplied `payload` string (see
+  /// [showUtrDetectedNotification]). Wired up in `main.dart` using the
+  /// `goRouterProvider` so taps can route into the app. Kept as a static
+  /// because the platform channel calls back outside the Riverpod build
+  /// lifecycle — but the callback itself uses the container to resolve
+  /// the router.
+  static void Function(String? payload)? onNotificationTap;
+
   Future<void> init() async {
     tz.initializeTimeZones();
     try {
@@ -27,7 +36,17 @@ class NotificationService {
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosInit = DarwinInitializationSettings();
     const settings = InitializationSettings(android: androidInit, iOS: iosInit);
-    await _plugin.initialize(settings);
+    await _plugin.initialize(
+      settings,
+      onDidReceiveNotificationResponse: (response) {
+        final cb = onNotificationTap;
+        if (cb == null) return;
+        // Allow the callback to record a redirect path; the actual
+        // `router.go(...)` happens inside the callback (which holds a ref
+        // to the go router).
+        cb(response.payload);
+      },
+    );
   }
 
   Future<void> requestPermission() async {
@@ -197,6 +216,34 @@ class NotificationService {
       payload: 'utr_detected://utr=$utr'
           '&amount=${amount ?? ''}'
           '&sender=${Uri.encodeComponent(sender)}',
+    );
+  }
+
+  /// Task C6: foreground FCM push → local notification passthrough.
+  ///
+  /// FCM foreground messages aren't shown by the platform notification
+  /// shade on Android when the app is in the foreground — we render a
+  /// basic high-priority local notification so the user still sees the
+  /// message. The payload is null here (the FCM message is not a
+  /// deep-link trigger like a UTR auto-detect is).
+  Future<void> showSimpleNotification({
+    required String title,
+    required String body,
+  }) async {
+    await _plugin.show(
+      0,
+      title,
+      body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'fcm_foreground_channel',
+          'Push notifications',
+          channelDescription: 'Foreground push notifications from RefundRadar',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        ),
+      ),
     );
   }
 

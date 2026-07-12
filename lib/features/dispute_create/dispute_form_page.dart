@@ -50,7 +50,19 @@ List<({String name, String id})> mergeOnboardBanksWithFallback({
 
 class DisputeFormPage extends ConsumerStatefulWidget {
   final String type;
-  const DisputeFormPage({super.key, required this.type});
+  /// Pre-filled from a UTR-auto-detect notification tap (Task C7).
+  /// When non-null, the form opens with these values already applied so
+  /// the user can tap "Create dispute" without re-keying anything.
+  final String? prefilledUtr;
+  final double? prefilledAmount;
+  final String? prefilledSender;
+  const DisputeFormPage({
+    super.key,
+    required this.type,
+    this.prefilledUtr,
+    this.prefilledAmount,
+    this.prefilledSender,
+  });
   @override
   ConsumerState<DisputeFormPage> createState() => _DisputeFormPageState();
 }
@@ -68,6 +80,20 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   // does `_col.add`, so two concurrent saves would create duplicate
   // disputes). Set true on entry, cleared on success/failure.
   bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Apply pre-filled UTR data from an auto-detect notification tap
+    // (Task C7). The router passes these as query params on /disputes/form.
+    if (widget.prefilledUtr != null && widget.prefilledUtr!.isNotEmpty) {
+      _utrCtrl.text = widget.prefilledUtr!;
+      _utrFound = true;
+    }
+    if (widget.prefilledAmount != null) {
+      _amountCtrl.text = widget.prefilledAmount!.toStringAsFixed(0);
+    }
+  }
 
   @override
   void dispose() {

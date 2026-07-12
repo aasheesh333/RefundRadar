@@ -2,14 +2,17 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/fcm_reevaluater.dart';
+import 'package:refund_radar/core/providers/utr_detection_provider.dart';
 import 'package:refund_radar/core/router/app_router.dart';
 import 'package:refund_radar/core/theme/app_theme.dart';
 import 'package:refund_radar/core/providers/theme_provider.dart';
+import 'package:refund_radar/data/models/utr_detection.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/notification_service.dart';
 import 'package:refund_radar/services/revenue_cat_service.dart';
@@ -83,7 +86,12 @@ void main() {
     await hydratePersistedAppState(container);
     // 5a. Initialise local notifications (B6 reminders local push). Safe
     //     no-op if permission hasn't been granted yet — user grants via
-    //     settings UI or the onboarding SMS screen.
+    //     settings UI or the onboarding SMS screen. Wire the notification
+    //     tap callback BEFORE init so the first tap routes correctly too
+    //     (Task C7): the static dispatch reads `goRouterProvider` from
+    //     the same container.
+    NotificationService.onNotificationTap =
+        _buildNotificationTapHandler(container);
     await container.read(notificationServiceProvider).init();
     // 5. Configure RevenueCat in the same container so it can write into
     //    `isPremiumProvider` (and persist it) on purchase / restore.
@@ -98,6 +106,13 @@ void main() {
           appId: const String.fromEnvironment('ONESIGNAL_APP_ID'),
           apiKey: const String.fromEnvironment('ONESIGNAL_API_KEY'),
         );
+    // 5c. FCM foreground message handler (Task C6). Foreground pushes
+    //     don't reach the Android shade on their own — render them via
+    //     [NotificationService.showSimpleNotification]. Failures are
+    //     non-fatal: the platform still banners the message in background.
+    if (_crashlyticsEnabled) {
+      FirebaseMessaging.onMessage.listen(_handleFcmForegroundMessage);
+    }
     runApp(UncontrolledProviderScope(
       container: container,
       child: const RefundRadarApp(),
@@ -109,6 +124,55 @@ void main() {
       debugPrint('Uncaught async error: $error\n$stack');
     }
   });
+}
+
+/// Routes a UTR auto-detect notification tap to the dispute form (Task C7).
+///
+/// UTR auto-detect notifications carry
+/// `utr_detected://utr=...&amount=...&sender=...` (see
+/// `NotificationService.showUtrDetectedNotification`). We rewrite the
+/// custom scheme into a `?`-style query and extract the three fields.
+/// The dispute form reads them as optional constructor params and
+/// pre-fills UTR / amount; a missing amount is dropped (the form still
+/// opens with the UTR only).
+void Function(String? payload) _buildNotificationTapHandler(
+  ProviderContainer container,
+) {
+  return (String? payload) {
+    if (payload == null || !payload.startsWith('utr_detected://')) return;
+    // Rewrite `utr_detected://utr=X&amount=Y&sender=Z` → `?utr=X&amount=Y&sender=Z`
+    // so Uri.parse can pull the queryParameters. The scheme `utr_detected`
+    // has no host in our payloads, so inserting `?` after `://` is safe and
+    // lossless for the values we URL-encoded in the first place.
+    final rest = payload.substring('utr_detected://'.length);
+    final uri = Uri.parse('utr_detected://?$rest');
+    final utr = uri.queryParameters['utr'] ?? '';
+    final amount = double.tryParse(uri.queryParameters['amount'] ?? '');
+    final senderRaw = uri.queryParameters['sender'];
+    if (utr.isEmpty) return;
+    final qp = <String, String>{
+      'type': 'upi_p2p',
+      'utr': utr,
+      if (amount != null) 'amount': amount.toStringAsFixed(0),
+      if (senderRaw != null && senderRaw.isNotEmpty) 'sender': senderRaw,
+    };
+    final goRouter = container.read(goRouterProvider);
+    final target = Uri(path: '/disputes/form', queryParameters: qp).toString();
+    goRouter.go(target);
+  };
+}
+
+void _handleFcmForegroundMessage(RemoteMessage message) {
+  final notification = message.notification;
+  if (notification == null) return;
+  try {
+    NotificationService().showSimpleNotification(
+      title: notification.title ?? '',
+      body: notification.body ?? '',
+    );
+  } catch (e) {
+    debugPrint('FCM foreground notification show failed: $e');
+  }
 }
 
 class RefundRadarApp extends ConsumerWidget {
@@ -134,8 +198,61 @@ class RefundRadarApp extends ConsumerWidget {
         child ?? const SizedBox.shrink(),
         // FCM topic re-evaluation effect (B5). Runs for the whole session.
         const FcmReevaluator(),
+        // Task C6: watch the UTR auto-detect stream and fire an instant
+        // notification for each new detection. Renders nothing.
+        const UtrDetectionListener(),
       ],
     ),
     );
   }
+}
+
+/// Task C6 listener that watches [utrDetectionProvider] and fires a local
+/// notification for every new auto-detected UTR. Renders nothing visible —
+/// it exists purely to keep a [ref.listen] subscription alive for the
+/// whole session (Riverpod re-attaches on dispose/rebuild safely).
+///
+/// Notifications are best-effort: a permission gap or a plugin error must
+/// not crash the app — we swallow and debug-print. The state list that
+/// backs the home "Detected transactions" banner is updated inside
+/// [utrDetectionsProvider]'s notifier, independent of this widget.
+class UtrDetectionListener extends ConsumerStatefulWidget {
+  const UtrDetectionListener({super.key});
+
+  @override
+  ConsumerState<UtrDetectionListener> createState() =>
+      _UtrDetectionListenerState();
+}
+
+class _UtrDetectionListenerState extends ConsumerState<UtrDetectionListener> {
+  @override
+  void initState() {
+    super.initState();
+    // Subscribe once on mount; ref.listen auto-disposes on dispose.
+    // We use addPostFrameCallback so ref is ready and so the listener
+    // can safely reach the notification service.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.listen<AsyncValue<UtrDetection>>(
+        utrDetectionProvider,
+        (_, next) {
+          next.whenData((detection) async {
+            try {
+              await ref.read(notificationServiceProvider)
+                  .showUtrDetectedNotification(
+                utr: detection.utr,
+                amount: detection.amount,
+                sender: detection.sender,
+              );
+            } catch (e) {
+              debugPrint('UTR detection notification failed: $e');
+            }
+          });
+        },
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }
