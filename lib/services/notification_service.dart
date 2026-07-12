@@ -176,14 +176,14 @@ class NotificationService {
   /// Task C5: fire an instant high-priority notification the moment a UTR
   /// is auto-detected from an incoming SMS. Tapping the notification opens
   /// the dispute form with the UTR / amount / sender pre-filled — the
-  /// routing side parses the payload in
-  /// [RefundRadarApp] / the notification-tap handler in `main.dart`.
+  /// routing side parses the payload in the notification-tap handler in
+  /// `main.dart`.
   ///
   /// Notification id is `utr.hashCode.abs()` so each UTR falls in a stable
   /// bucket (a re-detection of the same UTR replaces the previous banner
-  /// rather than stacking them). The `9100` base keeps these IDs far from
-  /// the scheduled-reminder range (`reminder.id.hashCode` etc.) and the
-  /// daily/weekly digests (9001/9002) so `cancelAll` paths can't collide.
+  /// rather than stacking them). UTR hashes live in a different ID range
+  /// than the daily/weekly digest IDs (9001/9002) and the FNV-1a-derived
+  /// reminder IDs in `scheduledIdFor`, so `cancelAll` paths stay clean.
   Future<void> showUtrDetectedNotification({
     required String utr,
     required double? amount,
