@@ -956,7 +956,6 @@ class _Body extends ConsumerWidget {
     required Set<String> freeIds,
     required bool isPremiumUser,
   }) {
-    final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
 
     final category = switch (dispute.type) {
@@ -1473,6 +1472,7 @@ class _Body extends ConsumerWidget {
       ),
     );
   }
+}
 
 class _RecipientRow extends StatelessWidget {
   final String emojiTile;
