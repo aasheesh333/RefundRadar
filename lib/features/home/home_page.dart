@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/core/providers/utr_detection_provider.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/data/models/utr_detection.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/owed_counter_card.dart';
@@ -170,15 +172,16 @@ class HomePage extends ConsumerWidget {
   }
 }
 
-class _Body extends StatelessWidget {
+class _Body extends ConsumerWidget {
   final List<Dispute> disputes;
   const _Body({required this.disputes});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
-    if (disputes.isEmpty) return const _EmptyState();
+    final detections = ref.watch(utrDetectionsProvider);
+    if (disputes.isEmpty && detections.isEmpty) return const _EmptyState();
     final disputedSum = disputes.fold<double>(0, (sum, d) => sum + d.amount);
     final penaltySum = disputes.fold<double>(
         0, (sum, d) => sum + CompensationCalculator.compute(d).compensationDue);
@@ -191,102 +194,101 @@ class _Body extends StatelessWidget {
         ) ??
         '₹${_formatIndian(disputedSum)} disputed · ₹${_formatIndian(penaltySum)} penalty accrued';
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
-      children: [
-        // header
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)?.appName ?? 'Refund Radar',
-                    style: const TextStyle(
-                      fontFamily: AppTypography.family,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
-                    ),
+    // Build a list of widgets so we can splice the detected-transactions
+    // banner before the disputes when there are unclaimed detections.
+    final children = <Widget>[
+      // header
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)?.appName ?? 'Refund Radar',
+                  style: const TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
                   ),
-                  const SizedBox(height: 1),
-                  Text(
-                    l10n?.homeActiveDisputes(disputes.length) ??
-                        '${disputes.length} active ${disputes.length == 1 ? 'dispute' : 'disputes'}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: tc.textSecondary,
-                    ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  l10n?.homeActiveDisputes(disputes.length) ??
+                      '${disputes.length} active ${disputes.length == 1 ? 'dispute' : 'disputes'}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: tc.textSecondary,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Tooltip(
-              message: 'Reminders',
-              child: Semantics(
-                button: true,
-                label: 'Reminders',
-                child: InkWell(
-                  onTap: () => context.push('/reminders'),
-                  borderRadius: BorderRadius.circular(24),
-                  child: const SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: Icon(Icons.notifications_outlined,
-                        size: 22, color: AppColors.primary),
-                  ),
+          ),
+          Tooltip(
+            message: 'Reminders',
+            child: Semantics(
+              button: true,
+              label: 'Reminders',
+              child: InkWell(
+                onTap: () => context.push('/reminders'),
+                borderRadius: BorderRadius.circular(24),
+                child: const SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: Icon(Icons.notifications_outlined,
+                      size: 22, color: AppColors.primary),
                 ),
               ),
             ),
-            Tooltip(
-              message: 'Templates',
-              child: Semantics(
-                button: true,
-                label: 'Templates',
-                child: InkWell(
-                  onTap: () => context.push('/templates'),
-                  borderRadius: BorderRadius.circular(24),
-                  child: const SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: Icon(Icons.description_outlined,
-                        size: 22, color: AppColors.primary),
-                  ),
+          ),
+          Tooltip(
+            message: 'Templates',
+            child: Semantics(
+              button: true,
+              label: 'Templates',
+              child: InkWell(
+                onTap: () => context.push('/templates'),
+                borderRadius: BorderRadius.circular(24),
+                child: const SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: Icon(Icons.description_outlined,
+                      size: 22, color: AppColors.primary),
                 ),
               ),
             ),
-            Tooltip(
-              message: AppLocalizations.of(context)?.settingsTitle ?? 'Settings',
-              child: Semantics(
-                button: true,
-                label: AppLocalizations.of(context)?.settingsTitle ?? 'Settings',
-                child: InkWell(
-                  onTap: () => context.push('/settings'),
-                  borderRadius: BorderRadius.circular(24),
+          ),
+          Tooltip(
+            message: AppLocalizations.of(context)?.settingsTitle ?? 'Settings',
+            child: Semantics(
+              button: true,
+              label: AppLocalizations.of(context)?.settingsTitle ?? 'Settings',
+              child: InkWell(
+                onTap: () => context.push('/settings'),
+                borderRadius: BorderRadius.circular(24),
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  alignment: Alignment.center,
                   child: Container(
-                    width: 48,
-                    height: 48,
-                    alignment: Alignment.center,
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: tc.surfaceAlt,
-                        shape: BoxShape.circle,
-                        border:
-                            Border.all(color: AppColors.premiumGold, width: 2),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'A',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                          ),
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: tc.surfaceAlt,
+                      shape: BoxShape.circle,
+                      border:
+                          Border.all(color: AppColors.premiumGold, width: 2),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'A',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
                         ),
                       ),
                     ),
@@ -294,15 +296,29 @@ class _Body extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        OwedCounterCard(
-          totalOwed: totalOwed,
-          disputeCount: disputes.length,
-          perDay: perDay,
-          breakdown: breakdown,
-        ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      OwedCounterCard(
+        totalOwed: totalOwed,
+        disputeCount: disputes.length,
+        perDay: perDay,
+        breakdown: breakdown,
+      ),
+    ];
+
+    // Detected transactions banner (Task C8). Only show when there are
+    // unclaimed detections. Each card taps through to the dispute form
+    // pre-filled; dismiss removes the detection from the running list.
+    if (detections.isNotEmpty) {
+      children
+        ..add(const SizedBox(height: 14))
+        ..add(_DetectedTransactionsSection(detections: detections));
+    }
+
+    if (disputes.isNotEmpty) {
+      children.addAll([
         const SizedBox(height: 14),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -347,7 +363,12 @@ class _Body extends StatelessWidget {
                 onTap: () => context.push('/disputes/${d.id}'),
               ),
             )),
-      ],
+      ]);
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
+      children: children,
     );
   }
 
@@ -454,6 +475,204 @@ class _EmptyState extends StatelessWidget {
             }),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Detected-transactions banner section (Task C8). Renders one card per
+/// unclaimed [UtrDetection]; tapping the card opens the dispute form
+/// pre-filled and marks the detection claimed, the dismiss button drops
+/// the detection from the running session list.
+class _DetectedTransactionsSection extends ConsumerWidget {
+  final List<UtrDetection> detections;
+  const _DetectedTransactionsSection({required this.detections});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text('🔍', style: TextStyle(fontSize: 14)),
+            const SizedBox(width: 6),
+            Text(
+              l10n?.homeDetectedTitle ?? 'Detected transactions',
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: tc.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          l10n?.homeDetectedSubtitle ??
+              'Auto-detected from incoming SMS — tap to claim or dismiss.',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w400,
+            color: tc.textSecondary,
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 10),
+        ...detections.map((d) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _DetectedCard(detection: d),
+            )),
+      ],
+    );
+  }
+}
+
+class _DetectedCard extends ConsumerWidget {
+  final UtrDetection detection;
+  const _DetectedCard({required this.detection});
+
+  /// Format an integer amount using the Indian numbering system
+  /// (1,00,000 etc.) without the leading ₹ symbol — matches the rest of
+  /// the home page's grouping.
+  static String _formatIndianAmount(double amount) {
+    final str = amount.toStringAsFixed(0);
+    final parts = <String>[];
+    int count = 0;
+    for (int i = str.length - 1; i >= 0; i--) {
+      if (count == 3) {
+        parts.insert(0, ',');
+      } else if (count > 3 && count % 2 == 1) {
+        parts.insert(0, ',');
+      }
+      parts.insert(0, str[i]);
+      count++;
+    }
+    return parts.join();
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final tc = AppThemeColors.of(context);
+    final amountStr = detection.amount != null
+        ? _formatIndianAmount(detection.amount!)
+        : '--';
+    final sender =
+        detection.sender.isEmpty ? 'Unknown sender' : detection.sender;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+      decoration: BoxDecoration(
+        color: tc.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: AppColors.accent.withValues(alpha: 0.35),
+          width: 1,
+        ),
+        boxShadow: AppShadows.card,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: tc.accentSoft,
+              shape: BoxShape.circle,
+            ),
+            child: const Center(
+              child: Text('UTR', style: TextStyle(fontSize: 11)),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n?.homeDetectedCardAmount(amountStr, sender) ??
+                      '₹$amountStr · $sender',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: tc.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  l10n?.homeDetectedCardUtr(detection.utr) ??
+                      'UTR ${detection.utr}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: tc.textSecondary,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Dismiss — drops the detection from the running list.
+          Tooltip(
+            message: l10n?.homeDetectedDismiss ?? 'Dismiss',
+            child: Semantics(
+              button: true,
+              label: l10n?.homeDetectedDismiss ?? 'Dismiss',
+              child: InkWell(
+                onTap: () => ref
+                    .read(utrDetectionsProvider.notifier)
+                    .markClaimed(detection.utr),
+                borderRadius: BorderRadius.circular(20),
+                child: const Padding(
+                  padding: EdgeInsets.all(8),
+                  child:
+                      Icon(Icons.close, size: 18, color: AppColors.alert),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          // Claim — deep-link to the dispute form pre-filled.
+          FilledButton(
+            onPressed: () {
+              // Mark claimed so the banner disappears; tap the router.
+              ref
+                  .read(utrDetectionsProvider.notifier)
+                  .markClaimed(detection.utr);
+              final qp = <String, String>{
+                'type': 'upi_p2p',
+                'utr': detection.utr,
+                if (detection.amount != null)
+                  'amount': detection.amount!.toStringAsFixed(0),
+                if (detection.sender.isNotEmpty) 'sender': detection.sender,
+              };
+              final target =
+                  Uri(path: '/disputes/form', queryParameters: qp).toString();
+              context.push(target);
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.white,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadii.sm),
+              ),
+            ),
+            child: Text(
+              l10n?.homeDetectedClaim ?? 'Claim →',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

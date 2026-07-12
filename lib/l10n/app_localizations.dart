@@ -113,9 +113,9 @@ class AppLocalizations {
     },
     'smsPermissionSubtitle': {
       'en':
-          'Android grants inbox access. RefundRadar scans messages on this phone to find likely refund-related bank or merchant SMS and prefill UTR, amount, and date.',
+          'RefundRadar reads your SMS inbox to auto-detect transaction references (UTR) and sends you instant notifications to claim or dispute your money. We never upload your SMS content — all detection happens on your device.',
       'hi':
-          'Android इनबॉक्स एक्सेस देता है। RefundRadar इसी फोन पर संदेश स्कैन करके संभावित रिफंड-संबंधित बैंक या मर्चेंट SMS ढूंढता है और UTR, राशि, तारीख भरता है।',
+          'RefundRadar आपके SMS इनबॉक्स को पढ़कर लेन-देन संदर्भ (UTR) स्वतः पहचानता है और आपको दावा करने या विवाद खोलने के लिए तुरंत सूचना भेजता है। हम कभी आपके SMS की सामग्री अपलोड नहीं करते — सभी पहचान आपके डिवाइस पर होती है।',
     },
     'smsPermissionHowItWorks1': {
       'en': 'You approve Android SMS inbox access',
@@ -701,6 +701,31 @@ class AppLocalizations {
       'en': '{disputed} disputed · {penalty} penalty accrued',
       'hi': '{disputed} विवादित · {penalty} जुर्माना अर्जित',
     },
+    // Task C8: UTR auto-detect banner on Home.
+    'homeDetectedTitle': {
+      'en': 'Detected transactions',
+      'hi': 'पहचाने गए लेनदेन',
+    },
+    'homeDetectedSubtitle': {
+      'en': 'Auto-detected from incoming SMS — tap to claim or dismiss.',
+      'hi': 'आने वाले SMS से स्वतः पहचाना गया — दावा करने या खारिज करने के लिए टैप करें।',
+    },
+    'homeDetectedCardAmount': {
+      'en': '₹{amount} · {sender}',
+      'hi': '₹{amount} · {sender}',
+    },
+    'homeDetectedCardUtr': {
+      'en': 'UTR {utr}',
+      'hi': 'UTR {utr}',
+    },
+    'homeDetectedClaim': {
+      'en': 'Claim →',
+      'hi': 'दावा करें →',
+    },
+    'homeDetectedDismiss': {
+      'en': 'Dismiss',
+      'hi': 'खारिज करें',
+    },
     // History page.
     'historyTitle': {'en': 'History', 'hi': 'इतिहास'},
     'historyTotalWon': {'en': 'TOTAL WON', 'hi': 'कुल जीत'},
@@ -1106,6 +1131,16 @@ class AppLocalizations {
   String homeBreakdownDisputed(String disputed, String penalty) =>
       _t('homeBreakdownDisputed',
           args: {'disputed': disputed, 'penalty': penalty});
+
+  // Task C8: UTR auto-detect banner getters.
+  String get homeDetectedTitle => _t('homeDetectedTitle');
+  String get homeDetectedSubtitle => _t('homeDetectedSubtitle');
+  String homeDetectedCardAmount(String amount, String sender) =>
+      _t('homeDetectedCardAmount', args: {'amount': amount, 'sender': sender});
+  String homeDetectedCardUtr(String utr) =>
+      _t('homeDetectedCardUtr', args: {'utr': utr});
+  String get homeDetectedClaim => _t('homeDetectedClaim');
+  String get homeDetectedDismiss => _t('homeDetectedDismiss');
 
   // History page.
   String get historyTitle => _t('historyTitle');

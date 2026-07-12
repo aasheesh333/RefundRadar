@@ -26,6 +26,31 @@ void main() {
       final r = SmsParser.parse(sms);
       expect(r.utr, '998877665544');
     });
+
+    test('15-digit IMPS RRN parses (Task C3 regex: 12-22 digits)', () {
+      const sms =
+          'IMPS transfer of Rs.950 ref 417293054120453 credited on 05-06-25.';
+      final r = SmsParser.parse(sms);
+      expect(r.utr, '417293054120453');
+    });
+
+    test('22-digit FASTag RRN parses (top of the new range)', () {
+      const sms =
+          'FASTag txn ref 99887766554433221100 debited Rs.75 on 02-07-25.';
+      final r = SmsParser.parse(sms);
+      expect(r.utr, '99887766554433221100');
+    });
+
+    test('23-digit run is rejected (out of UTR range)', () {
+      // Anything 23+ digits is unlikely to be a txn ref (e.g. ISO timestamps
+      // or tracking numbers). The regex caps at 22 to avoid noise.
+      const sms =
+          'Tracking number 12345678901234567890123 debited Rs.75 on 02-07-25.';
+      final r = SmsParser.parse(sms);
+      // First 22-digit prefix won't match a `\b...\b` boundary because the
+      // whole 23-digit run is a single word; the regex won't carve 22 out.
+      expect(r.utr, isNull);
+    });
   });
 
   group('SmsParser amount extraction', () {
@@ -112,10 +137,22 @@ void main() {
 
   group('SmsParser cross-field interplay', () {
     test('rejects Aadhaar-like 12-digit number when not framed as UTR', () {
-      // Aadhaar is 12 digits and the regex will still match it — the parser
-      // is non-discriminating. Surface this as expected behaviour so the
-      // caller knows not to over-rely.
+      // Task C3: Aadhaar is 12 digits and the regex matches it. The new
+      // false-positive filter (_isLikelyTransactionId) recognizes an SMS
+      // that mentions "Aadhaar" and drops the UTR so the caller doesn't
+      // latch onto a gov-ID number.
       const sms = 'Your Aadhaar 999900001111 is verified. ₹0 debited.';
+      final r = SmsParser.parse(sms);
+      expect(r.utr, isNull);
+      expect(r.amount, 0);
+    });
+
+    test('accepts a 12-digit number when framed with UTR/RRN/ref/txn', () {
+      // The filter only rejects Aadhaar-like numbers when no UTR/RRN/ref/txn
+      // keyword is nearby. A bank-SMS Aadhaar-like run anchored by `UTR`
+      // still parses — the keyword is the discriminator.
+      const sms =
+          'Your UTR 999900001111 is verified for ₹0 debited on 10-Jan-25.';
       final r = SmsParser.parse(sms);
       expect(r.utr, '999900001111');
       expect(r.amount, 0);
