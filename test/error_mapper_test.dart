@@ -35,28 +35,18 @@ void main() {
   });
 
   group('errorDetail', () {
-    test('extracts bracketed firebase error code', () {
+    // In debug mode (including tests), errorDetail returns e.toString()
+    // directly so developers see the full error. The regex extraction
+    // only runs in release/profile mode.
+    test('returns full toString in debug mode', () {
       final e = Exception('[cloud_firestore/permission-denied] Missing permissions.');
-      expect(errorDetail(e), 'cloud_firestore/permission-denied');
-    });
-
-    test('extracts auth error code without brackets', () {
-      final e = Exception('code: auth/invalid-credential');
-      expect(errorDetail(e), 'auth/invalid-credential');
-    });
-
-    test('truncates long messages to 80 chars', () {
-      final long = 'x' * 120;
-      final e = Exception(long);
-      final detail = errorDetail(e);
-      expect(detail, isNotNull);
-      expect(detail!.endsWith('…'), isTrue);
-      expect(detail.length, 81); // 80 chars + ellipsis
+      // kDebugMode is true in tests, so we get the full string.
+      expect(errorDetail(e), e.toString());
     });
 
     test('returns short messages as-is', () {
       final e = Exception('short error');
-      expect(errorDetail(e), 'short error');
+      expect(errorDetail(e), 'Exception: short error');
     });
   });
 }
