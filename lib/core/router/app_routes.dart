@@ -35,12 +35,10 @@ class AppRoutes {
     String? amount,
     String? sender,
   }) {
-    final qp = <String, String>{
-      'type': type,
-      if (utr != null) 'utr': utr,
-      if (amount != null) 'amount': amount,
-      if (sender != null) 'sender': sender,
-    };
+    final qp = <String, String>{'type': type};
+    if (utr != null) qp['utr'] = utr;
+    if (amount != null) qp['amount'] = amount;
+    if (sender != null) qp['sender'] = sender;
     return Uri(path: disputesForm, queryParameters: qp).toString();
   }
 }
