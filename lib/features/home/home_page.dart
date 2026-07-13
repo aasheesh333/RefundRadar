@@ -18,13 +18,12 @@ import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
 
 /// Non-terminal disputes shown on Home (active only).
-/// Drafts are excluded — an incomplete dispute shouldn't inflate the
-/// "You're owed" counter or clutter the active list.
+/// Includes `draft`: the create form saves new disputes as draft until
+/// L1 is filed, so excluding draft hides every newly-created dispute.
 List<Dispute> activeHomeDisputes(List<Dispute> disputes) => disputes
     .where((d) =>
         d.status != DisputeStatus.resolved &&
-        d.status != DisputeStatus.expired &&
-        d.status != DisputeStatus.draft)
+        d.status != DisputeStatus.expired)
     .toList();
 
 class HomePage extends ConsumerWidget {

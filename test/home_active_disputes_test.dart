@@ -15,7 +15,7 @@ void main() {
       );
 
   group('activeHomeDisputes', () {
-    test('excludes resolved, expired, and draft', () {
+    test('includes draft + filed statuses; excludes resolved and expired', () {
       final input = [
         mk('a', DisputeStatus.draft),
         mk('b', DisputeStatus.filedL1),
@@ -25,7 +25,9 @@ void main() {
         mk('f', DisputeStatus.expired),
       ];
       final active = activeHomeDisputes(input);
-      expect(active.map((d) => d.id).toList(), ['b', 'c', 'd']);
+      // New disputes are created as draft until L1 is filed — they must
+      // appear on Home or the create → home flow looks broken.
+      expect(active.map((d) => d.id).toList(), ['a', 'b', 'c', 'd']);
     });
 
     test('empty when only terminal disputes', () {
@@ -36,21 +38,22 @@ void main() {
       expect(activeHomeDisputes(input), isEmpty);
     });
 
-    test('empty when only drafts', () {
+    test('includes drafts (create form saves as draft)', () {
       final input = [
         mk('a', DisputeStatus.draft),
         mk('b', DisputeStatus.draft),
       ];
-      expect(activeHomeDisputes(input), isEmpty);
+      expect(activeHomeDisputes(input).map((d) => d.id).toList(), ['a', 'b']);
     });
 
-    test('preserves all filed non-terminal statuses', () {
+    test('preserves all non-terminal statuses', () {
       final input = [
+        mk('a', DisputeStatus.draft),
         mk('b', DisputeStatus.filedL1),
         mk('c', DisputeStatus.filedL2),
         mk('d', DisputeStatus.ombudsman),
       ];
-      expect(activeHomeDisputes(input).length, 3);
+      expect(activeHomeDisputes(input).length, 4);
     });
   });
 }
