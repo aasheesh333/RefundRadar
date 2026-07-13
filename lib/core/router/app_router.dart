@@ -25,9 +25,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final onboarded = ref.read(hasSeenOnboardingProvider);
       final goingToOnboard = state.matchedLocation == '/onboard' ||
           state.matchedLocation.startsWith('/onboard/');
+      // Not onboarded → force onboarding flow (handles deep-links before
+      // onboarding is complete).
+      if (!onboarded && !goingToOnboard) {
+        return '/onboard';
+      }
+      // Already onboarded → skip onboarding slides on cold boot.
       if (onboarded && goingToOnboard) {
-        // Already completed onboarding on a previous launch — skip straight
-        // to home so the slides don't replay every cold boot.
         return '/home';
       }
       return null;

@@ -228,33 +228,27 @@ class UtrDetectionListener extends ConsumerStatefulWidget {
 
 class _UtrDetectionListenerState extends ConsumerState<UtrDetectionListener> {
   @override
-  void initState() {
-    super.initState();
-    // Subscribe once on mount; ref.listen auto-disposes on dispose.
-    // We use addPostFrameCallback so ref is ready and so the listener
-    // can safely reach the notification service.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      ref.listen<AsyncValue<UtrDetection>>(
-        utrDetectionProvider,
-        (_, next) {
-          next.whenData((detection) async {
-            try {
-              await ref.read(notificationServiceProvider)
-                  .showUtrDetectedNotification(
+  Widget build(BuildContext context) {
+    // ref.listen in build() is the idiomatic Riverpod pattern — it
+    // auto-disposes on unmount and re-attaches safely on rebuild. The
+    // old addPostFrameCallback + initState approach could double-fire
+    // notifications if the widget was rebuilt by MaterialApp.builder
+    // (e.g. on theme/locale change).
+    ref.listen<AsyncValue<UtrDetection>>(utrDetectionProvider, (_, next) {
+      next.whenData((detection) async {
+        try {
+          await ref
+              .read(notificationServiceProvider)
+              .showUtrDetectedNotification(
                 utr: detection.utr,
                 amount: detection.amount,
                 sender: detection.sender,
               );
-            } catch (e) {
-              debugPrint('UTR detection notification failed: $e');
-            }
-          });
-        },
-      );
+        } catch (e) {
+          debugPrint('UTR detection notification failed: $e');
+        }
+      });
     });
+    return const SizedBox.shrink();
   }
-
-  @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
 }

@@ -34,7 +34,7 @@ final disputeRepositoryProvider =
 });
 
 final disputesProvider =
-    FutureProvider.family<List<Dispute>, String>((ref, uid) async {
+    FutureProvider.autoDispose.family<List<Dispute>, String>((ref, uid) async {
   final repo = ref.watch(disputeRepositoryProvider);
   return repo.loadDisputes(uid);
 });

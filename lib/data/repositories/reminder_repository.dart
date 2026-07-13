@@ -155,7 +155,7 @@ final reminderRepositoryProvider = Provider<ReminderRepository>((ref) {
 });
 
 /// Live stream of the signed-in user's reminders, sorted by [fireAt].
-final remindersProvider = StreamProvider.family<List<Reminder>, String>((ref, uid) {
+final remindersProvider = StreamProvider.autoDispose.family<List<Reminder>, String>((ref, uid) {
   return FirebaseFirestore.instance
       .collection('users')
       .doc(uid)
