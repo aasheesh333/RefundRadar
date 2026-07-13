@@ -13,6 +13,7 @@ import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
+import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 
 /// Paywall location for free users who deep-link (or navigate) to the
@@ -98,7 +99,8 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
       body: uidAsync.when(
         loading: () => const SkeletonList(itemCount: 3),
         error: (e, _) => BrandedErrorBanner(
-          message: e.toString(),
+          message: friendlyError(e),
+          detail: errorDetail(e),
           onRetry: () => ref.invalidate(userIdProvider),
         ),
         data: (uid) {
@@ -114,7 +116,8 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
               return disputesAsync.when(
                 loading: () => const SkeletonList(itemCount: 3),
                 error: (e, _) => BrandedErrorBanner(
-                  message: e.toString(),
+                  message: friendlyError(e),
+                  detail: errorDetail(e),
                   onRetry: () => ref.invalidate(disputesProvider(uid)),
                 ),
                 data: (disputes) {
@@ -249,7 +252,8 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
             },
             loading: () => const SkeletonList(itemCount: 3),
             error: (e, _) => BrandedErrorBanner(
-              message: e.toString(),
+              message: friendlyError(e),
+              detail: errorDetail(e),
               onRetry: () => ref.invalidate(rulesEngineProvider),
             ),
           );

@@ -110,8 +110,23 @@ void main() {
     //     don't reach the Android shade on their own — render them via
     //     [NotificationService.showSimpleNotification]. Failures are
     //     non-fatal: the platform still banners the message in background.
+    //     Use the container-managed singleton rather than a bare
+    //     NotificationService() so any future per-instance state stays
+    //     consistent.
     if (_crashlyticsEnabled) {
-      FirebaseMessaging.onMessage.listen(_handleFcmForegroundMessage);
+      final notifService = container.read(notificationServiceProvider);
+      FirebaseMessaging.onMessage.listen((message) {
+        final notification = message.notification;
+        if (notification == null) return;
+        try {
+          notifService.showSimpleNotification(
+            title: notification.title ?? '',
+            body: notification.body ?? '',
+          );
+        } catch (e) {
+          debugPrint('FCM foreground notification show failed: $e');
+        }
+      });
     }
     runApp(UncontrolledProviderScope(
       container: container,
@@ -160,19 +175,6 @@ void Function(String? payload) _buildNotificationTapHandler(
     final target = Uri(path: '/disputes/form', queryParameters: qp).toString();
     goRouter.go(target);
   };
-}
-
-void _handleFcmForegroundMessage(RemoteMessage message) {
-  final notification = message.notification;
-  if (notification == null) return;
-  try {
-    NotificationService().showSimpleNotification(
-      title: notification.title ?? '',
-      body: notification.body ?? '',
-    );
-  } catch (e) {
-    debugPrint('FCM foreground notification show failed: $e');
-  }
 }
 
 class RefundRadarApp extends ConsumerWidget {

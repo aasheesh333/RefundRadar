@@ -150,35 +150,42 @@ class FirestoreDisputeRepository implements DisputeRepository {
 
   @override
   Future<Dispute> saveDispute(String uid, Dispute dispute) async {
+    // Generate the document reference ONCE, before the retry loop, so
+    // that all retry attempts write to the same doc id. This makes
+    // `set()` idempotent — a network-retry or crash-recovery replay
+    // overwrites the same doc instead of creating duplicates.
+    final isNew = dispute.id.isEmpty;
+    final docRef = isNew ? _col(uid).doc() : _col(uid).doc(dispute.id);
+    final id = docRef.id;
     return _withAuthRetry(uid, () async {
       final data = dispute.toJson()..['uid'] = uid;
-      if (dispute.id.isEmpty) {
-        final ref = await _col(uid).add(data);
-        return dispute.copyWith(id: ref.id, uid: uid);
-      }
-      await _col(uid).doc(dispute.id).set(data, SetOptions(merge: true));
-      return dispute.copyWith(uid: uid);
+      await docRef.set(data, SetOptions(merge: true));
+      return dispute.copyWith(id: id, uid: uid);
     });
   }
 
   @override
   Future<void> deleteDispute(String uid, String id) async {
     await _ensureAuthToken(uid);
-    await _col(uid).doc(id).delete();
-    // Cascade: wipe reminders + cancel local notifications. Best-effort —
-    // a failure here means an orphaned reminder row, not a leaked dispute.
+    // Cascade FIRST: wipe reminders + cancel local notifications BEFORE
+    // deleting the parent dispute. If the cascade fails, the parent is
+    // still alive — the user can retry. Deleting the parent first would
+    // orphan reminders that can't be tracked back to a deleted dispute.
     if (onDeleteDispute != null) {
-      try {
-        await onDeleteDispute!(uid, id);
-      } catch (e, st) {
-        debugPrint('onDeleteDispute cascade failed for $id: $e\n$st');
-      }
+      await onDeleteDispute!(uid, id);
     }
+    await _col(uid).doc(id).delete();
   }
 
   @override
   Future<void> deleteAllUserData(String uid) async {
     await _ensureAuthToken(uid);
+    // Cascade FIRST: delete the reminders subcollection + cancel all
+    // scheduled notifications while the user doc still exists (rules
+    // require `isOwner(uid)`, so the token must still be valid here).
+    if (onDeleteAllUserData != null) {
+      await onDeleteAllUserData!(uid);
+    }
     final snap = await _col(uid).get();
     final batch = _db.batch();
     for (final d in snap.docs) {
@@ -186,15 +193,5 @@ class FirestoreDisputeRepository implements DisputeRepository {
     }
     await batch.commit();
     await _db.collection('users').doc(uid).delete();
-    // Cascade: delete the reminders subcollection + cancel all scheduled
-    // notifications BEFORE the parent user doc is gone (rules require
-    // `isOwner(uid)`, so the token must still be valid here).
-    if (onDeleteAllUserData != null) {
-      try {
-        await onDeleteAllUserData!(uid);
-      } catch (e, st) {
-        debugPrint('onDeleteAllUserData cascade failed for $uid: $e\n$st');
-      }
-    }
   }
 }

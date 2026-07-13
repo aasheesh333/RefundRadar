@@ -10,6 +10,7 @@ import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
+import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 
 class RemindersPage extends ConsumerWidget {
@@ -46,7 +47,8 @@ class RemindersPage extends ConsumerWidget {
               child: uidAsync.when(
                 loading: () => const SkeletonList(itemCount: 4, itemHeight: 84),
                 error: (e, _) => BrandedErrorBanner(
-                  message: e.toString(),
+                  message: friendlyError(e),
+                  detail: errorDetail(e),
                   onRetry: () => ref.invalidate(userIdProvider),
                 ),
                 data: (uid) {
@@ -55,7 +57,8 @@ class RemindersPage extends ConsumerWidget {
                   return remindersAsync.when(
                     loading: () => const SkeletonList(itemCount: 4, itemHeight: 84),
                     error: (e, _) => BrandedErrorBanner(
-                      message: e.toString(),
+                      message: friendlyError(e),
+                      detail: errorDetail(e),
                       onRetry: () => ref.invalidate(remindersProvider(uid)),
                     ),
                     data: (reminders) {

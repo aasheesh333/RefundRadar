@@ -230,8 +230,9 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
+    final id = DateTime.now().millisecondsSinceEpoch.remainder(0x7FFFFFFF);
     await _plugin.show(
-      0,
+      id,
       title,
       body,
       const NotificationDetails(

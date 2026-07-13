@@ -20,6 +20,7 @@ import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
+import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/widgets/status_pill.dart';
 import 'package:refund_radar/shared/widgets/toggle_switch.dart';
@@ -96,7 +97,8 @@ class _EscalatePageState extends ConsumerState<EscalatePage>
         child: uidAsync.when(
           loading: () => const SkeletonList(itemCount: 4),
           error: (e, _) => BrandedErrorBanner(
-            message: e.toString(),
+            message: friendlyError(e),
+            detail: errorDetail(e),
             onRetry: () => ref.invalidate(userIdProvider),
           ),
           data: (uid) {
@@ -133,7 +135,8 @@ class _EscalatePageState extends ConsumerState<EscalatePage>
               },
               loading: () => const SkeletonList(itemCount: 4),
               error: (e, _) => BrandedErrorBanner(
-                message: e.toString(),
+                message: friendlyError(e),
+                detail: errorDetail(e),
                 onRetry: () => ref.invalidate(disputesProvider(uid)),
               ),
             );
@@ -178,7 +181,8 @@ class _Body extends ConsumerWidget {
     return templatesAsync.when(
       loading: () => const SkeletonList(itemCount: 4),
       error: (e, _) => BrandedErrorBanner(
-        message: e.toString(),
+        message: friendlyError(e),
+        detail: errorDetail(e),
         onRetry: () => ref.invalidate(templatesProvider),
       ),
       data: (templates) {

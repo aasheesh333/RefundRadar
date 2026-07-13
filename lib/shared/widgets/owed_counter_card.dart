@@ -26,21 +26,25 @@ class OwedCounterCard extends StatefulWidget {
 }
 
 class _OwedCounterCardState extends State<OwedCounterCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
+    with TickerProviderStateMixin {
+  late AnimationController _countCtrl;
+  late AnimationController _pulseCtrl;
   late Animation<double> _anim;
   late Animation<double> _dot;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
+    _countCtrl = AnimationController(
         duration: const Duration(milliseconds: 600), vsync: this);
     _anim = Tween<double>(begin: 0, end: widget.totalOwed)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
+        .animate(CurvedAnimation(parent: _countCtrl, curve: Curves.easeOut));
+    _pulseCtrl = AnimationController(
+        duration: const Duration(milliseconds: 1400), vsync: this);
     _dot = Tween<double>(begin: 0.4, end: 1.0).animate(
-        CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
-    _ctrl.repeat(reverse: true, period: const Duration(milliseconds: 1400));
+        CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut));
+    _countCtrl.forward();
+    _pulseCtrl.repeat(reverse: true);
   }
 
   @override
@@ -48,8 +52,8 @@ class _OwedCounterCardState extends State<OwedCounterCard>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.totalOwed != widget.totalOwed) {
       _anim = Tween<double>(begin: oldWidget.totalOwed, end: widget.totalOwed)
-          .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOut));
-      _ctrl
+          .animate(CurvedAnimation(parent: _countCtrl, curve: Curves.easeOut));
+      _countCtrl
         ..reset()
         ..forward();
     }
@@ -57,7 +61,8 @@ class _OwedCounterCardState extends State<OwedCounterCard>
 
   @override
   void dispose() {
-    _ctrl.dispose();
+    _countCtrl.dispose();
+    _pulseCtrl.dispose();
     super.dispose();
   }
 

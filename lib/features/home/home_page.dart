@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,12 +14,16 @@ import 'package:refund_radar/shared/widgets/owed_counter_card.dart';
 import 'package:refund_radar/shared/widgets/dispute_card.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
+import 'package:refund_radar/shared/utils/error_mapper.dart';
 
 /// Non-terminal disputes shown on Home (active only).
+/// Drafts are excluded — an incomplete dispute shouldn't inflate the
+/// "You're owed" counter or clutter the active list.
 List<Dispute> activeHomeDisputes(List<Dispute> disputes) => disputes
     .where((d) =>
         d.status != DisputeStatus.resolved &&
-        d.status != DisputeStatus.expired)
+        d.status != DisputeStatus.expired &&
+        d.status != DisputeStatus.draft)
     .toList();
 
 class HomePage extends ConsumerWidget {
@@ -55,8 +58,8 @@ class HomePage extends ConsumerWidget {
                   _Body(disputes: activeHomeDisputes(disputes)),
               loading: () => const _Loading(),
               error: (e, _) => BrandedErrorBanner(
-                message: _friendlyError(e),
-                detail: _errorDetail(e),
+                message: friendlyError(e),
+                detail: errorDetail(e),
                 onRetry: () async {
                   await ref.read(reauthProvider)();
                   ref.invalidate(userIdProvider);
@@ -67,8 +70,8 @@ class HomePage extends ConsumerWidget {
           },
           loading: () => const _Loading(),
           error: (e, _) => BrandedErrorBanner(
-            message: _friendlyError(e),
-            detail: _errorDetail(e),
+            message: friendlyError(e),
+            detail: errorDetail(e),
             onRetry: () async {
               await ref.read(reauthProvider)();
               ref.invalidate(userIdProvider);
@@ -131,45 +134,6 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  /// Map raw Firebase exceptions to short, user-facing copy. Never dump
-  /// `[cloud_firestore/permission-denied] ...` into the UI.
-  static String _friendlyError(Object e) {
-    final s = e.toString().toLowerCase();
-    if (s.contains('permission-denied') || s.contains('permission_denied')) {
-      return 'Could not load your disputes. Tap Retry. If this keeps happening, sign out from Settings and reopen the app.';
-    }
-    if (s.contains('unavailable') ||
-        s.contains('network') ||
-        s.contains('socket')) {
-      return 'You appear to be offline. Check your connection and retry.';
-    }
-    if (s.contains('unauthenticated')) {
-      return 'Session expired. Tap Retry to sign in again.';
-    }
-    if (s.contains('operation-not-allowed') ||
-        s.contains('admin-restricted-operation')) {
-      return 'Anonymous sign-in is not enabled. Open Firebase Console → Authentication → Anonymous → Enable, then reopen the app.';
-    }
-    return 'Could not load disputes. Tap Retry.';
-  }
-
-  /// Short technical code surfaced in the banner's detail row so the exact
-  /// failing layer (auth vs rules vs network) is visible without debugging.
-  /// Kept terse on purpose — the friendly message above is the user-facing
-  /// copy; this just lets us confirm the root cause at a glance.
-  static String? _errorDetail(Object e) {
-    if (kDebugMode) return e.toString();
-    final s = e.toString();
-    // Extract a `category/code` style token if present (Firebase exceptions
-    // stringify as `[cloud_firestore/permission-denied] ...`).
-    final m = RegExp(r'\[([\w/-]+/[a-z-]+)\]').firstMatch(s);
-    if (m != null) return m.group(1);
-    // FirebaseAuthException stringifies as `code: e.code` without brackets.
-    final am = RegExp(r'\b(auth/[a-z-]+)\b').firstMatch(s);
-    if (am != null) return am.group(1);
-    // Last resort: first 80 chars, no stack.
-    return s.length > 80 ? '${s.substring(0, 80)}…' : s;
-  }
 }
 
 class _Body extends ConsumerWidget {

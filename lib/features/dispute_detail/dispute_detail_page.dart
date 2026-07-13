@@ -21,6 +21,7 @@ import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/rbi_timeline.dart';
 import 'package:refund_radar/shared/widgets/activity_log.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
+import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/widgets/status_pill.dart';
 
@@ -38,7 +39,8 @@ class DisputeDetailPage extends ConsumerWidget {
         child: uidAsync.when(
           loading: () => const SkeletonList(itemCount: 3),
           error: (e, _) => BrandedErrorBanner(
-            message: e.toString(),
+            message: friendlyError(e),
+            detail: errorDetail(e),
             onRetry: () => ref.invalidate(userIdProvider),
           ),
           data: (uid) {
@@ -68,7 +70,8 @@ class DisputeDetailPage extends ConsumerWidget {
           },
           loading: () => const SkeletonList(itemCount: 3),
           error: (e, _) => BrandedErrorBanner(
-            message: e.toString(),
+            message: friendlyError(e),
+            detail: errorDetail(e),
             onRetry: () => ref.invalidate(disputesProvider(uid)),
           ),
             );
