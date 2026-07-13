@@ -15,7 +15,7 @@ void main() {
       );
 
   group('activeHomeDisputes', () {
-    test('excludes resolved and expired', () {
+    test('excludes resolved, expired, and draft', () {
       final input = [
         mk('a', DisputeStatus.draft),
         mk('b', DisputeStatus.filedL1),
@@ -25,7 +25,7 @@ void main() {
         mk('f', DisputeStatus.expired),
       ];
       final active = activeHomeDisputes(input);
-      expect(active.map((d) => d.id).toList(), ['a', 'b', 'c', 'd']);
+      expect(active.map((d) => d.id).toList(), ['b', 'c', 'd']);
     });
 
     test('empty when only terminal disputes', () {
@@ -36,14 +36,21 @@ void main() {
       expect(activeHomeDisputes(input), isEmpty);
     });
 
-    test('preserves all non-terminal statuses', () {
+    test('empty when only drafts', () {
       final input = [
         mk('a', DisputeStatus.draft),
+        mk('b', DisputeStatus.draft),
+      ];
+      expect(activeHomeDisputes(input), isEmpty);
+    });
+
+    test('preserves all filed non-terminal statuses', () {
+      final input = [
         mk('b', DisputeStatus.filedL1),
         mk('c', DisputeStatus.filedL2),
         mk('d', DisputeStatus.ombudsman),
       ];
-      expect(activeHomeDisputes(input).length, 4);
+      expect(activeHomeDisputes(input).length, 3);
     });
   });
 }
