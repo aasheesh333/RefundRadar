@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/features/settings/settings_actions.dart';
@@ -134,7 +135,7 @@ class SettingsPage extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   InkWell(
-                    onTap: () => context.push('/paywall?trigger=settings'),
+                    onTap: () => context.push('${AppRoutes.paywall}?trigger=settings'),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
@@ -521,7 +522,7 @@ class SettingsPage extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(kDeleteDataSuccessBody)),
       );
-      context.go('/home');
+      context.go(AppRoutes.home);
     } catch (_) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

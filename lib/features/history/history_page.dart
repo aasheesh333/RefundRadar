@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
@@ -313,7 +314,7 @@ class _HistoryCard extends StatelessWidget {
     };
 
     return InkWell(
-      onTap: () => context.push('/disputes/${dispute.id}'),
+      onTap: () => context.push(AppRoutes.disputeDetail(dispute.id)),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
@@ -478,7 +479,7 @@ class _EmptyHistory extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             FilledButton(
-              onPressed: () => context.push('/disputes/create'),
+              onPressed: () => context.push(AppRoutes.disputesCreate),
               child: Text(l10n?.homeAddDispute ?? 'Add dispute'),
             ),
           ],

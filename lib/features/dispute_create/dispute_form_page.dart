@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
@@ -368,7 +369,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
               duration: Duration(seconds: 3),
             ),
           );
-          context.push('/paywall?return=/home&trigger=free_second_dispute');
+          context.push(AppRoutes.paywallWithReturn('/home', 'free_second_dispute'));
           return;
         }
       }
@@ -479,7 +480,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       } catch (e) {
         debugPrint('best-effort step failed: $e');
       }
-      if (mounted) context.go('/home');
+      if (mounted) context.go(AppRoutes.home);
     } finally {
       if (mounted) setState(() => _saving = false);
     }

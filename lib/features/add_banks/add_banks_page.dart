@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
@@ -75,7 +76,7 @@ class _AddBanksPageState extends ConsumerState<AddBanksPage> {
     // every subsequent cold boot. Pass the live ref so the in-memory
     // provider flips immediately (router redirect reads it).
     await markOnboardingComplete(ref);
-    if (mounted) context.go('/home');
+    if (mounted) context.go(AppRoutes.home);
   }
 
   @override
@@ -102,7 +103,7 @@ class _AddBanksPageState extends ConsumerState<AddBanksPage> {
                     ),
                     child: InkWell(
                       customBorder: const CircleBorder(),
-                      onTap: () => context.go('/onboard/sms'),
+                      onTap: () => context.go(AppRoutes.onboardSms),
                       child: SizedBox(
                         width: 36,
                         height: 36,

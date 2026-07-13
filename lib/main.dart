@@ -10,6 +10,7 @@ import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/fcm_reevaluater.dart';
 import 'package:refund_radar/core/providers/utr_detection_provider.dart';
 import 'package:refund_radar/core/router/app_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/theme/app_theme.dart';
 import 'package:refund_radar/core/providers/theme_provider.dart';
 import 'package:refund_radar/data/models/utr_detection.dart';
@@ -165,14 +166,13 @@ void Function(String? payload) _buildNotificationTapHandler(
     final amount = double.tryParse(uri.queryParameters['amount'] ?? '');
     final senderRaw = uri.queryParameters['sender'];
     if (utr.isEmpty) return;
-    final qp = <String, String>{
-      'type': 'upi_p2p',
-      'utr': utr,
-      if (amount != null) 'amount': amount.toStringAsFixed(0),
-      if (senderRaw != null && senderRaw.isNotEmpty) 'sender': senderRaw,
-    };
     final goRouter = container.read(goRouterProvider);
-    final target = Uri(path: '/disputes/form', queryParameters: qp).toString();
+    final target = AppRoutes.disputesFormWithParams(
+      type: 'upi_p2p',
+      utr: utr,
+      amount: amount?.toStringAsFixed(0),
+      sender: senderRaw,
+    );
     goRouter.go(target);
   };
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
@@ -234,7 +235,7 @@ class _ReminderCard extends ConsumerWidget {
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () =>
-                          context.go('/disputes/${reminder.disputeId}'),
+                          context.go(AppRoutes.disputeDetail(reminder.disputeId)),
                       child: Semantics(
                         button: true,
                         label: 'Open dispute',
@@ -300,7 +301,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
-              onPressed: () => context.push('/disputes/create'),
+              onPressed: () => context.push(AppRoutes.disputesCreate),
               style: FilledButton.styleFrom(
                 backgroundColor: tc.ctaBackground,
                 foregroundColor: tc.ctaForeground,

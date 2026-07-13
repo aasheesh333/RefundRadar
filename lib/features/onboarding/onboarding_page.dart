@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import '../../core/providers/app_state_provider.dart';
 import '../../core/theme/app_theme_colors.dart';
 import '../../core/theme/app_tokens.dart';
@@ -33,7 +34,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         curve: Curves.ease,
       );
     } else {
-      context.go('/onboard/sms');
+      context.go(AppRoutes.onboardSms);
     }
   }
 
@@ -41,7 +42,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     // Skip marks onboarding complete (so it doesn't replay next launch)
     // and jumps straight to home.
     await markOnboardingComplete(ref);
-    if (mounted) context.go('/home');
+    if (mounted) context.go(AppRoutes.home);
   }
 
   List<_SlideData> _slidesFor(AppLocalizations? l10n, AppThemeColors tc) => [

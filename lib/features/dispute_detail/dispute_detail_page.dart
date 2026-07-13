@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
@@ -301,13 +302,13 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                       child: _ActionButton(
                         label: deadlineMissed ? 'Escalate now' : 'Escalate',
                         color: AppColors.alert,
-                        onTap: () => context.push('/wizard/${dispute.id}'),
+                        onTap: () => context.push(AppRoutes.wizard(dispute.id)),
                       ),
                     ),
                     const SizedBox(width: 8),
                     _IconAction(
                       emoji: '📧',
-                      onTap: () => context.push('/escalate/${dispute.id}'),
+                      onTap: () => context.push(AppRoutes.escalate(dispute.id)),
                     ),
                     const SizedBox(width: 8),
                     _IconAction(
@@ -328,7 +329,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                               '/paywall?return=/disputes/${dispute.id}&trigger=ombudsman_letter');
                           return;
                         }
-                        context.push('/ombudsman/${dispute.id}');
+                        context.push(AppRoutes.ombudsman(dispute.id));
                       },
                     ),
                   ],

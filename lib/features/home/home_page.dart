@@ -15,6 +15,7 @@ import 'package:refund_radar/shared/widgets/dispute_card.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 
 /// Non-terminal disputes shown on Home (active only).
 /// Drafts are excluded — an incomplete dispute shouldn't inflate the
@@ -106,7 +107,7 @@ class HomePage extends ConsumerWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(AppRadii.pill),
-                  onTap: () => context.push('/disputes/create'),
+                  onTap: () => context.push(AppRoutes.disputesCreate),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -197,7 +198,7 @@ class _Body extends ConsumerWidget {
               button: true,
               label: 'Reminders',
               child: InkWell(
-                onTap: () => context.push('/reminders'),
+                onTap: () => context.push(AppRoutes.reminders),
                 borderRadius: BorderRadius.circular(24),
                 child: const SizedBox(
                   width: 48,
@@ -214,7 +215,7 @@ class _Body extends ConsumerWidget {
               button: true,
               label: 'Templates',
               child: InkWell(
-                onTap: () => context.push('/templates'),
+                onTap: () => context.push(AppRoutes.templates),
                 borderRadius: BorderRadius.circular(24),
                 child: const SizedBox(
                   width: 48,
@@ -231,7 +232,7 @@ class _Body extends ConsumerWidget {
               button: true,
               label: AppLocalizations.of(context)?.settingsTitle ?? 'Settings',
               child: InkWell(
-                onTap: () => context.push('/settings'),
+                onTap: () => context.push(AppRoutes.settings),
                 borderRadius: BorderRadius.circular(24),
                 child: Container(
                   width: 48,
@@ -298,7 +299,7 @@ class _Body extends ConsumerWidget {
             ),
             GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => context.push('/history'),
+              onTap: () => context.push(AppRoutes.history),
               child: Semantics(
                 button: true,
                 label: l10n?.homeViewAllDisputes ?? 'View all disputes',
@@ -324,7 +325,7 @@ class _Body extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 10),
               child: DisputeCard(
                 dispute: d,
-                onTap: () => context.push('/disputes/${d.id}'),
+                onTap: () => context.push(AppRoutes.disputeDetail(d.id)),
               ),
             )),
       ]);
@@ -415,7 +416,7 @@ class _EmptyState extends StatelessWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(AppRadii.md),
-                  onTap: () => context.push('/disputes/create'),
+                  onTap: () => context.push(AppRoutes.disputesCreate),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -608,15 +609,12 @@ class _DetectedCard extends ConsumerWidget {
               ref
                   .read(utrDetectionsProvider.notifier)
                   .markClaimed(detection.utr);
-              final qp = <String, String>{
-                'type': 'upi_p2p',
-                'utr': detection.utr,
-                if (detection.amount != null)
-                  'amount': detection.amount!.toStringAsFixed(0),
-                if (detection.sender.isNotEmpty) 'sender': detection.sender,
-              };
-              final target =
-                  Uri(path: '/disputes/form', queryParameters: qp).toString();
+              final target = AppRoutes.disputesFormWithParams(
+                type: 'upi_p2p',
+                utr: detection.utr,
+                amount: detection.amount?.toStringAsFixed(0),
+                sender: detection.sender.isNotEmpty ? detection.sender : null,
+              );
               context.push(target);
             },
             style: FilledButton.styleFrom(

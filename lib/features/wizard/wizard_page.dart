@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
@@ -342,7 +343,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                                 } catch (e) {
                                   // Don't block navigation on reminder sync.
                                 }
-                                if (context.mounted) context.go('/reminders');
+                                if (context.mounted) context.go(AppRoutes.reminders);
                               },
                               style: FilledButton.styleFrom(
                                 backgroundColor: AppThemeColors.of(

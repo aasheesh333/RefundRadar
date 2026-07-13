@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
@@ -104,7 +105,7 @@ class EscalatePostSendDialog {
             onPressed: () {
               Navigator.pop(c);
               if (isPremiumUser) {
-                context.push('/ombudsman/${dispute.id}');
+                context.push(AppRoutes.ombudsman(dispute.id));
               } else {
                 context.push(
                   '/paywall?return=/home&trigger=post_escalation',

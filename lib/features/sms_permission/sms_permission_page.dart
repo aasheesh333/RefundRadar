@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
@@ -38,7 +39,7 @@ class SmsPermissionPage extends StatelessWidget {
                         label: 'Back',
                         child: InkWell(
                           customBorder: const CircleBorder(),
-                          onTap: () => context.go('/onboard'),
+                          onTap: () => context.go(AppRoutes.onboard),
                           child: SizedBox(
                             width: 48,
                             height: 48,
@@ -371,7 +372,7 @@ class _SmsFooter extends StatelessWidget {
                     final status = await Permission.sms.request();
                     if (!context.mounted) return;
                     if (status.isGranted || status.isLimited) {
-                      context.go('/onboard/banks');
+                      context.go(AppRoutes.onboardBanks);
                       return;
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -385,7 +386,7 @@ class _SmsFooter extends StatelessWidget {
                   } catch (_) {
                     // Plugin missing / desktop — continue onboarding.
                   }
-                  if (context.mounted) context.go('/onboard/banks');
+                  if (context.mounted) context.go(AppRoutes.onboardBanks);
                 },
                 style: FilledButton.styleFrom(
                   backgroundColor: tc.ctaBackground,
@@ -410,7 +411,7 @@ class _SmsFooter extends StatelessWidget {
               width: double.infinity,
               height: 52,
               child: OutlinedButton(
-                onPressed: () => context.go('/onboard/banks'),
+                onPressed: () => context.go(AppRoutes.onboardBanks),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
                     color: tc.isDark ? AppColors.accent : AppColors.primary,
