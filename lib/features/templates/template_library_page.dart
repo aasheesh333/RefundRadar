@@ -198,13 +198,11 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                 localeCode: localeCode,
                 onTap: () {
                   if (locked) {
-                    context.push(
-                      AppRoutes.paywallWithParams(
-                        trigger: 'template_locked',
-                        returnPath: AppRoutes.templates,
-                        templateId: t.id,
-                        templateTitle: t.titleFor(localeCode),
-                      ),
+                    _showLockedPreview(
+                      c,
+                      t,
+                      localeCode,
+                      dispute: selected,
                     );
                   } else {
                     _showTemplatePreview(c, t, localeCode, dispute: selected);
@@ -264,6 +262,164 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
             child: Text(l10n?.ombudsmanCopy ?? 'Copy'),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Task 7.3 — locked-card tap opens a bottom sheet with a blurred body
+  /// preview and an "Unlock with Premium" CTA (rather than jumping straight
+  /// to the paywall). Users can read the first part of the template to
+  /// decide whether it's worth buying, then tap through to the paywall with
+  /// the template's id/title already wired through `paywallWithParams`.
+  void _showLockedPreview(
+    BuildContext context,
+    Template t,
+    String localeCode, {
+    Dispute? dispute,
+  }) {
+    final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    final body = filledTemplateBody(t, localeCode, dispute);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: tc.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (c) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 14),
+                  decoration: BoxDecoration(
+                    color: tc.divider,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              // Title + Pro badge
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      t.titleFor(localeCode),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: tc.textPrimary,
+                      ),
+                    ),
+                  ),
+                  StatusPill(
+                    label: l10n?.templateProBadge ?? 'Pro',
+                    fg: AppColors.premiumGold,
+                    bg: tc.premiumGoldSoft,
+                    prefix: '🔒',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${t.category} · Level ${t.escalationLevel}',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: tc.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 14),
+              // Blurred preview — show the top ~30% of the template body
+              // behind a soft scrim so the user gets a sense of structure
+              // without being able to read the full text. The remaining
+              // lines are masked by a gradient fade to "Locked to continue".
+              Stack(
+                children: [
+                  // Faded/blurred preview text.
+                  ClipRect(
+                    child: Container(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.22,
+                      ),
+                      child: SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: Text(
+                          body,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: tc.textSecondary,
+                            height: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Gradient fade to "locked" affordance.
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              tc.surface.withValues(alpha: 0),
+                              tc.surface.withValues(alpha: 0.6),
+                              tc.surface.withValues(alpha: 1),
+                            ],
+                            stops: const [0.45, 0.75, 1],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              // CTA: Unlock with Premium → paywall with template context
+              // (Task 7.4). The paywall headline names this template.
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    Navigator.pop(c);
+                    context.push(
+                      AppRoutes.paywallWithParams(
+                        trigger: 'template_locked',
+                        returnPath: AppRoutes.templates,
+                        templateId: t.id,
+                        templateTitle: t.titleFor(localeCode),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.lock_open, size: 18),
+                  label: Text(
+                    l10n?.templateUnlockCta ?? 'Unlock with Premium',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.pop(c),
+                child: Text(
+                  l10n?.commonClose ?? 'Close',
+                  style: TextStyle(color: tc.textSecondary),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

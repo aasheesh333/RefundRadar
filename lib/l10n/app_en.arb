@@ -233,6 +233,7 @@
   "addBanksEmpty": "No bank found",
   "templateLevelLabel": "Level {level}",
   "templateProBadge": "Pro",
+  "templateUnlockCta": "Unlock with Premium",
   "statusResolved": "Resolved",
   "statusMissed": "Missed",
   "statusDayOf": "Day {day} of {total}",

@@ -233,6 +233,7 @@
   "addBanksEmpty": "कोई बैंक नहीं मिला",
   "templateLevelLabel": "स्तर {level}",
   "templateProBadge": "प्रो",
+  "templateUnlockCta": "प्रीमियम से अनलॉक करें",
   "statusResolved": "सुलझा",
   "statusMissed": "छूटा",
   "statusDayOf": "दिन {day}/{total}",

@@ -751,6 +751,10 @@ class AppLocalizations {
     // Template library.
     'templateLevelLabel': {'en': 'Level {level}', 'hi': 'स्तर {level}'},
     'templateProBadge': {'en': 'Pro', 'hi': 'प्रो'},
+    'templateUnlockCta': {
+      'en': 'Unlock with Premium',
+      'hi': 'प्रीमियम से अनलॉक करें',
+    },
     // Pass 2 residual i18n — dispute form / type page / escalate / wizard docs.
     'formClipboardEmpty': {
       'en': 'Clipboard empty — copy an SMS first.',
@@ -1181,6 +1185,7 @@ class AppLocalizations {
   String templateLevelLabel(int level) =>
       _t('templateLevelLabel', args: {'level': '$level'});
   String get templateProBadge => _t('templateProBadge');
+  String get templateUnlockCta => _t('templateUnlockCta');
 
   // Status pills.
   String get statusResolved => _t('statusResolved');
