@@ -6,7 +6,7 @@ void main() {
     test('routes free users to paywall with dispute return + ombudsman trigger', () {
       expect(
         ombudsmanLetterPaywallLocation('abc-123'),
-        '/paywall?return=/disputes/abc-123&trigger=ombudsman_letter',
+        '/paywall?trigger=ombudsman_letter&return=%2Fdisputes%2Fabc-123',
       );
     });
   });
