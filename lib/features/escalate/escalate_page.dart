@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/providers/theme_provider.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
@@ -815,12 +816,26 @@ class _Body extends ConsumerWidget {
             label: l10n?.ombudsmanCopy ?? 'Copy',
             color: tc.surfaceAlt,
             textColor: tc.isDark ? AppColors.accent : AppColors.primary,
-            onTap: () => _copyEmail(
-              context,
-              matchedTemplate: matchedTemplate,
-              localeCode: localeCode,
-            ),
-          ),
+            onTap: () {
+              // F1: Copy must be gated the same way as Send; otherwise a
+              // free user with a locked auto-matched template can leak the
+              // full premium body to the clipboard without paying.
+              if (isMatchLocked) {
+                context.push(
+                  AppRoutes.paywallWithParams(
+                    trigger: 'template_locked',
+                    returnPath: AppRoutes.home,
+                  ),
+                );
+                return;
+              }
+              _copyEmail(
+                context,
+                matchedTemplate: matchedTemplate,
+                localeCode: localeCode,
+              );
+            },
+          ),,
           const SizedBox(width: 10),
           Expanded(
             child: FooterButton(

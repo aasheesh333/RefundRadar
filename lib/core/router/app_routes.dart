@@ -29,6 +29,19 @@ class AppRoutes {
   static String paywallWithReturn(String returnPath, String trigger) =>
       '$paywall?return=$returnPath&trigger=$trigger';
 
+  static String paywallWithParams({
+    required String trigger,
+    String? returnPath,
+    String? templateId,
+    String? templateTitle,
+  }) {
+    final qp = <String, String>{'trigger': trigger};
+    if (returnPath != null) qp['return'] = returnPath;
+    if (templateId != null) qp['templateId'] = templateId;
+    if (templateTitle != null) qp['templateTitle'] = templateTitle;
+    return Uri(path: paywall, queryParameters: qp).toString();
+  }
+
   static String disputesFormWithParams({
     String type = 'upi_p2p',
     String? utr,
