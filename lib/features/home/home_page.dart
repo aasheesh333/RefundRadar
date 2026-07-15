@@ -17,6 +17,7 @@ import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/utils/indian_number_formatter.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
+import 'package:refund_radar/core/providers/app_state_provider.dart';
 
 /// Non-terminal disputes shown on Home (active only).
 /// Includes `draft`: the create form saves new disputes as draft until
@@ -146,6 +147,7 @@ class _Body extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
     final detections = ref.watch(utrDetectionsProvider);
+    final isPremium = ref.watch(isPremiumProvider);
     if (disputes.isEmpty && detections.isEmpty) return const _EmptyState();
     final disputedSum = disputes.fold<double>(0, (sum, d) => sum + d.amount);
     final penaltySum = disputes.fold<double>(
@@ -272,6 +274,14 @@ class _Body extends ConsumerWidget {
         breakdown: breakdown,
       ),
     ];
+
+    // Pro upsell card — makes premium a front-and-center point-of-sale on
+    // the Home screen for free users. Hidden once the user upgrades.
+    if (!isPremium) {
+      children
+        ..add(const SizedBox(height: 14))
+        ..add(_HomeProUpsellCard());
+    }
 
     // Detected transactions banner (Task C8). Only show when there are
     // unclaimed detections. Each card taps through to the dispute form
@@ -621,5 +631,91 @@ class _Loading extends StatelessWidget {
     // Skeleton list rather than a spinner — the home page renders a
     // stack of dispute cards, so the placeholder should mimic them.
     return const SkeletonList(itemCount: 4, itemHeight: 110);
+  }
+}
+
+/// Compact Pro upsell card shown on the Home screen for free users.
+/// Tapping routes to the paywall. Uses a gold-tinted gradient to visually
+/// distinguish it from dispute cards and signal "premium value".
+class _HomeProUpsellCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    return GestureDetector(
+      onTap: () => context.push(
+        AppRoutes.paywallWithParams(
+          trigger: 'home_banner',
+          returnPath: AppRoutes.home,
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [tc.premiumGoldSoft, tc.surface],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(color: AppColors.premiumGold, width: 1),
+          borderRadius: BorderRadius.circular(AppRadii.lg),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.workspace_premium,
+              color: AppColors.premiumGold,
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n?.homeUpsellTitle ??
+                        'Recover every rupee with Pro',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: tc.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    l10n?.homeUpsellBody ??
+                        'Unlimited disputes, 50+ templates, Ombudsman generator.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: tc.textSecondary,
+                      height: 1.4,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.premiumGold,
+                borderRadius: BorderRadius.circular(AppRadii.md),
+              ),
+              child: Text(
+                l10n?.homeUpsellCta ?? 'Upgrade',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primaryDark,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

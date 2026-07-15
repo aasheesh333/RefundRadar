@@ -52,6 +52,18 @@ class AppLocalizations {
     },
     'homeNewDispute': {'en': 'New dispute', 'hi': 'नया विवाद'},
     'homeEmptyTitle': {'en': 'No disputes yet', 'hi': 'अभी कोई विवाद नहीं'},
+    'homeUpsellTitle': {
+      'en': 'Recover every rupee with Pro',
+      'hi': 'Pro के साथ हर रुपया वसूलें',
+    },
+    'homeUpsellBody': {
+      'en': 'Unlimited disputes, 50+ RBI-compliant templates, and Ombudsman letter generator.',
+      'hi': 'असीमित विवाद, 50+ RBI-अनुपालित टेम्पलेट, और ऑम्बुडस्मैन पत्र जनरेटर।',
+    },
+    'homeUpsellCta': {
+      'en': 'Upgrade to Pro',
+      'hi': 'Pro में अपग्रेड करें',
+    },
     'homeEmptySubtitle': {
       'en': 'Add your first stuck transaction to start tracking compensation.',
       'hi': 'पहला अटका पैसा जोड़कर वसूली शुरू करें।',
@@ -982,6 +994,9 @@ class AppLocalizations {
       _t('homeOwedSubtitle', args: {'count': '$count', 'perDay': perDay});
   String get homeNewDispute => _t('homeNewDispute');
   String get homeEmptyTitle => _t('homeEmptyTitle');
+  String get homeUpsellTitle => _t('homeUpsellTitle');
+  String get homeUpsellBody => _t('homeUpsellBody');
+  String get homeUpsellCta => _t('homeUpsellCta');
   String get homeEmptySubtitle => _t('homeEmptySubtitle');
   String get homeAddDispute => _t('homeAddDispute');
   String get disputeTypeUPI => _t('disputeTypeUPI');
