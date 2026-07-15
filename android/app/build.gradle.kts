@@ -16,8 +16,13 @@ plugins {
 
 android {
     namespace = "com.dhanuk.refundradar"
-    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
+    // Android 15+ 16 KB page-size support. Requires AGP ≥8.3 and
+    // compileSdk ≥35. This keeps native libraries (libflutter.so,
+    // libapp.so, Firebase/RC native libs) 16 KB aligned so the app
+    // does not crash on 16 KB-page devices (Pixel 9, future devices).
+    compileSdk = 35
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -33,8 +38,15 @@ android {
         versionName = flutter.versionName
     }
 
+    // 16 KB native library packaging — keeps lib*.so files aligned to
+    // 16 KB boundaries inside the APK/AAB zip. Required for Android 15
+    // 16 KB-page devices.
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
     // ---------------------------------------------------------------------------
-    // Release signing.
     // 1. Local: define these as env vars or in ~/.gradle/gradle.properties.
     // 2. CI: GitHub secrets — see .github/workflows/android.yml → release job.
     // Falls back to debug signing config when the keystore file isn't present
