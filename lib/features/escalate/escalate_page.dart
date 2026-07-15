@@ -507,8 +507,9 @@ class _Body extends ConsumerWidget {
     required bool isPremiumUser,
     required TemplateRepository repo,
   }) {
-    final isMatchLocked = matchedTemplate != null &&
-        repo.isLocked(matchedTemplate, freeIds, isPremiumUser: isPremiumUser);
+    final lockedTemplate = matchedTemplate;
+    final isMatchLocked = lockedTemplate != null &&
+        repo.isLocked(lockedTemplate, freeIds, isPremiumUser: isPremiumUser);
     return _card(
       context,
       label: l10n?.escalateEmailPreview ?? 'EMAIL PREVIEW',
@@ -617,8 +618,8 @@ class _Body extends ConsumerWidget {
               AppRoutes.paywallWithParams(
                 trigger: 'template_locked',
                 returnPath: AppRoutes.home,
-                templateId: matchedTemplate!.id,
-                templateTitle: matchedTemplate.titleFor(localeCode),
+                templateId: lockedTemplate.id,
+                templateTitle: lockedTemplate.titleFor(localeCode),
               ),
             ),
             borderRadius: BorderRadius.circular(AppRadii.sm),
@@ -833,8 +834,8 @@ class _Body extends ConsumerWidget {
                   AppRoutes.paywallWithParams(
                     trigger: 'template_locked',
                     returnPath: AppRoutes.home,
-                    templateId: matchedTemplate!.id,
-                    templateTitle: matchedTemplate.titleFor(localeCode),
+                    templateId: lockedTemplate.id,
+                    templateTitle: lockedTemplate.titleFor(localeCode),
                   ),
                 );
                 return;
@@ -861,8 +862,8 @@ class _Body extends ConsumerWidget {
                     AppRoutes.paywallWithParams(
                       trigger: 'template_locked',
                       returnPath: AppRoutes.home,
-                      templateId: matchedTemplate!.id,
-                      templateTitle: matchedTemplate.titleFor(localeCode),
+                      templateId: lockedTemplate.id,
+                      templateTitle: lockedTemplate.titleFor(localeCode),
                     ),
                   );
                   return;
