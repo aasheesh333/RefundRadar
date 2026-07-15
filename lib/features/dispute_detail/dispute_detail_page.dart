@@ -426,7 +426,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                 textColor: AppColors.primary,
                 onTap: _toggling
                     ? null
-                    : () => _confirmToggle(context, ref),
+                    : () => _confirmToggle(ref),
               ),
             ],
           ),
@@ -1029,7 +1029,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
   /// Task 9.5 — show a confirmation dialog before toggling the dispute status
   /// (Mark Resolved / Reopen). Prevents accidental status changes and sets
   /// user expectation about reminders stopping/resuming.
-  Future<void> _confirmToggle(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmToggle(WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
     final isResolved = dispute.status == DisputeStatus.resolved;
     final confirmed = await showDialog<bool>(
@@ -1060,10 +1060,10 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
         ],
       ),
     );
-    if (confirmed == true && mounted) await _toggleResolved(context, ref);
+    if (confirmed == true && mounted) await _toggleResolved(ref);
   }
 
-  Future<void> _toggleResolved(BuildContext context, WidgetRef ref) async {
+  Future<void> _toggleResolved(WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
     final isResolved = dispute.status == DisputeStatus.resolved;
     final nextStatus =
