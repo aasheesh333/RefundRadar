@@ -209,6 +209,7 @@
   "paywallRestored": "Premium restored 🎉",
   "paywallNoPurchases": "No purchases found.",
   "paywallRestoreFailed": "Restore failed: {error}",
+  "paywallRestoreFailedGeneric": "Could not restore purchases. Check your connection and try again.",
   "settingsSessionRefreshed": "Session refreshed.",
   "homeViewAllDisputes": "View all disputes",
   "homeBreakdownDisputed": "{disputed} disputed · {penalty} penalty accrued",

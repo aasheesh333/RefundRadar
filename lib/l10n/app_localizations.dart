@@ -695,6 +695,10 @@ class AppLocalizations {
       'en': 'Restore failed: {error}',
       'hi': 'बहाली विफल: {error}',
     },
+    'paywallRestoreFailedGeneric': {
+      'en': 'Could not restore purchases. Check your connection and try again.',
+      'hi': 'खरीद बहाल नहीं हो सकी। कनेक्शन जांचें और पुनः प्रयास करें।',
+    },
     'settingsSessionRefreshed': {
       'en': 'Session refreshed.',
       'hi': 'सत्र रीफ़्रेश हो गया।',
@@ -1146,6 +1150,7 @@ class AppLocalizations {
   String get paywallNoPurchases => _t('paywallNoPurchases');
   String paywallRestoreFailed(String error) =>
       _t('paywallRestoreFailed', args: {'error': error});
+  String get paywallRestoreFailedGeneric => _t('paywallRestoreFailedGeneric');
   String get settingsSessionRefreshed => _t('settingsSessionRefreshed');
 
   // Home page remaining strings.

@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
@@ -136,7 +138,13 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
           content: Text(
             ok
                 ? (l10n?.paywallRestored ?? 'Premium restored 🎉')
-                : (l10n?.paywallNoPurchases ?? 'No purchases found.'),
+                // Task 8.1 — restorePurchases() swallows all exceptions
+                // and returns `false`, so a `false` here could mean either
+                // "no prior purchases" OR "network/play-services error".
+                // The generic localized message covers both cases without
+                // leaking raw exception text.
+                : (l10n?.paywallRestoreFailedGeneric ??
+                    'Could not restore purchases. Check your connection and try again.'),
           ),
         ),
       );
@@ -147,7 +155,8 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
       scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text(
-            l10n?.paywallRestoreFailed('$e') ?? 'Restore failed: $e',
+            l10n?.paywallRestoreFailedGeneric ??
+                'Could not restore purchases. Check your connection and try again.',
           ),
         ),
       );
@@ -202,18 +211,35 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
     );
   }
 
-  /// Notion-plan INR price per package type (spec §6.2 + user-confirmed
-  /// lifetime): Monthly ₹99 / Yearly ₹499 / Lifetime ₹1,999. We override
-  /// the store's `priceString` (which reflects the store account's locale
-  /// — often USD on the RevenueCat Test Store and overseas accounts) so
-  /// Indian users always see INR. The underlying purchase still charges
-  /// whatever the linked Play Store product costs; this is display-only.
-  String _inrPriceFor(Package p) => switch (p.packageType) {
-        PackageType.monthly => '₹99',
-        PackageType.annual => '₹499',
-        PackageType.lifetime => '₹1,999',
-        _ => p.storeProduct.priceString,
-      };
+  /// Live store price for a package — uses Play Billing's localized
+  /// `storeProduct.priceString` (e.g. "₹99.00", "US$0.99") instead of
+  /// the previous hardcoded ₹99/₹499/₹1,999 override. The underlying
+  /// purchase still charges whatever the linked Play Store product costs,
+  /// so this is now display-only of the *real* price.
+  ///
+  /// Crashlytics log: when the device locale resolves to `en-IN` or any
+  /// Indian locale but the priceString doesn't contain "₹", that usually
+  /// means the Play Store account region doesn't match the device (e.g.
+  /// an Indian user logged into a US account) — useful telemetry for
+  /// explaining "wrong currency" support tickets.
+  String _livePriceFor(Package p) {
+    final priceString = p.storeProduct.priceString;
+    try {
+      final locale = Localizations.localeOf(context);
+      final isIndianLocale =
+          locale.countryCode == 'IN' || locale.languageCode == 'hi';
+      if (isIndianLocale && !priceString.contains('₹')) {
+        FirebaseCrashlytics.instance.log(
+          'paywall: Indian locale but priceString="$priceString" '
+          '(pkg=${p.identifier}, type=${p.packageType}) — Play account '
+          'region may not match device locale.',
+        );
+      }
+    } catch (_) {
+      // Localizations not ready yet — skip the soft check.
+    }
+    return priceString;
+  }
 
   Widget _buildPlansArea() {
     final tc = AppThemeColors.of(context);
@@ -339,7 +365,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
             Expanded(
               child: _PlanCard(
                 title: monthly.storeProduct.title,
-                price: _inrPriceFor(monthly),
+                price: _livePriceFor(monthly),
                 highlighted: false,
                 onTap: _purchasingPackageId == null
                     ? () => _buy(monthly)
@@ -354,7 +380,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
                   final y = yearly!;
                   return _PlanCard(
                     title: y.storeProduct.title,
-                    price: _inrPriceFor(y),
+                    price: _livePriceFor(y),
                     highlighted: true,
                     badge: 'Save 58%',
                     onTap: _purchasingPackageId == null
@@ -373,7 +399,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
             final l = lifetime!;
             return _PlanCard(
               title: l.storeProduct.title,
-              price: _inrPriceFor(l),
+              price: _livePriceFor(l),
               highlighted: false,
               fullWidth: true,
               onTap: _purchasingPackageId == null

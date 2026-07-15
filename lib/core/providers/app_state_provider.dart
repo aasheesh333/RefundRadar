@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:refund_radar/core/providers/premium_provider.dart';
 import 'package:refund_radar/core/providers/sms_detection_provider.dart';
 import 'package:refund_radar/services/notification_service.dart';
 
@@ -39,8 +40,18 @@ Future<void> markOnboardingComplete([dynamic ref]) async {
 }
 
 /// `true` when the user has an active premium subscription (RevenueCat).
-/// Defaults to `false`. Mutated only through `setPremium`.
-final isPremiumProvider = StateProvider<bool>((ref) => false);
+///
+/// **Task 8.3** moved this from a plain `StateProvider<bool>` declared
+/// here to a derived `Provider<bool>` in [`premium_provider.dart`] that
+/// reads from `premiumStatusProvider` (an `AsyncValue<bool>`). All existing
+/// `ref.watch(isPremiumProvider)` sites keep working as before — `loading`
+/// and `error` collapse to `false` (free), so paywall gates remain
+/// fail-safe during RevenueCat's brief startup fetch.
+///
+/// Re-exported here for the convenience of files that already
+/// `import 'app_state_provider.dart'`.
+export 'package:refund_radar/core/providers/premium_provider.dart'
+    show isPremiumProvider;
 
 /// Notification preference toggles (persisted). Defaults: deadline+daily on.
 final notifDeadlineProvider = StateProvider<bool>((ref) => true);
@@ -143,8 +154,11 @@ Future<({bool isPremium, int installedHours})> readFcmInputs(
 /// calls this after RevenueCat finishes configuring).
 Future<void> hydratePersistedAppState(dynamic ref) async {
   final sp = await SharedPreferences.getInstance();
-  ref.read(isPremiumProvider.notifier).state =
-      sp.getBool(_kPrefPremium) ?? false;
+  // Task 8.3 — seed the authoritative AsyncValue<bool> with the persisted
+  // premium state (or `false` on first install). This unblocks any UI
+  // showing a loading spinner while RevenueCat syncs, and consumer gates
+  // collapse loading → false (free) so paywalls stay fail-safe.
+  setPremiumStatus(ref, sp.getBool(_kPrefPremium) ?? false);
   ref.read(hasSeenOnboardingProvider.notifier).state =
       sp.getBool(_kPrefOnboarded) ?? false;
   ref.read(notifDeadlineProvider.notifier).state =
@@ -160,7 +174,10 @@ Future<void> hydratePersistedAppState(dynamic ref) async {
 
 /// Persist premium flag. Called by B3 RevenueCat purchase flow.
 Future<void> persistPremium(dynamic ref, bool value) async {
-  ref.read(isPremiumProvider.notifier).state = value;
+  // Mirror through the authoritative provider (Task 8.3) so premium-aware
+  // UI can render loading/data states distinctly. `isPremiumProvider`
+  // (the derived bool) follows automatically.
+  setPremiumStatus(ref, value);
   final sp = await SharedPreferences.getInstance();
   await sp.setBool(_kPrefPremium, value);
   if (value) {

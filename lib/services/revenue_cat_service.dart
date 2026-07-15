@@ -3,6 +3,7 @@ import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
+import 'package:refund_radar/core/constants/revenuecat_constants.dart';
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 
@@ -82,7 +83,8 @@ class RevenueCatService {
   }
 
   void _onCustomerInfo(CustomerInfo info) {
-    final premium = info.entitlements.active.containsKey('Premium');
+    final premium = info.entitlements.active
+        .containsKey(RevenueCatConstants.premiumEntitlementId);
     // Side-effect: persist + propagate.
     persistPremium(_ref, premium);
     _ref.read(analyticsServiceProvider).setPremiumUserProperty(premium);
@@ -108,7 +110,8 @@ class RevenueCatService {
     }
     try {
       final info = await Purchases.purchasePackage(pkg);
-      final premium = info.entitlements.active.containsKey('Premium');
+      final premium = info.entitlements.active
+          .containsKey(RevenueCatConstants.premiumEntitlementId);
       await persistPremium(_ref, premium);
       // Best-effort analytics — log price from package product if available.
       final product = pkg.storeProduct;
@@ -133,7 +136,8 @@ class RevenueCatService {
     if (!_configured) return false;
     try {
       final info = await Purchases.restorePurchases();
-      final premium = info.entitlements.active.containsKey('Premium');
+      final premium = info.entitlements.active
+          .containsKey(RevenueCatConstants.premiumEntitlementId);
       await persistPremium(_ref, premium);
       return premium;
     } catch (e) {
@@ -148,7 +152,8 @@ class RevenueCatService {
     if (!_configured) return false;
     try {
       final info = await Purchases.getCustomerInfo();
-      return info.entitlements.active.containsKey('Premium');
+      return info.entitlements.active
+          .containsKey(RevenueCatConstants.premiumEntitlementId);
     } catch (_) {
       return false;
     }
@@ -165,8 +170,8 @@ class RevenueCatService {
     if (trimmed.isEmpty || !_configured) return;
     try {
       final result = await Purchases.logIn(trimmed);
-      final premium =
-          result.customerInfo.entitlements.active.containsKey('Premium');
+      final premium = result.customerInfo.entitlements.active
+          .containsKey(RevenueCatConstants.premiumEntitlementId);
       await persistPremium(_ref, premium);
       _ref.read(analyticsServiceProvider).setPremiumUserProperty(premium);
     } on PlatformException catch (e) {

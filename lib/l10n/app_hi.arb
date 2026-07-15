@@ -209,6 +209,7 @@
   "paywallRestored": "प्रीमियम बहाल 🎉",
   "paywallNoPurchases": "कोई खरीद नहीं मिली।",
   "paywallRestoreFailed": "बहाली विफल: {error}",
+  "paywallRestoreFailedGeneric": "खरीद बहाल नहीं हो सकी। कनेक्शन जांचें और पुनः प्रयास करें।",
   "settingsSessionRefreshed": "सत्र रीफ़्रेश हो गया।",
   "homeViewAllDisputes": "सभी विवाद देखें",
   "homeBreakdownDisputed": "{disputed} विवादित · {penalty} जुर्माना अर्जित",
