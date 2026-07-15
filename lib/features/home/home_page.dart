@@ -247,7 +247,7 @@ class _Body extends ConsumerWidget {
                       border:
                           Border.all(color: AppColors.premiumGold, width: 2),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'A',
                         style: TextStyle(

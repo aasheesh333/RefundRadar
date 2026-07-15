@@ -545,7 +545,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                       ),
                       child: Text(
                         _typeShort(type),
-                        style: const TextStyle(
+                  style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           color: AppColors.accent,
@@ -1043,7 +1043,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                 backgroundColor: tc.surfaceAlt,
                 child: Text(
                   b.name.substring(0, 1).toUpperCase(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: tc.ctaBackground,
                     fontWeight: FontWeight.w700,
                   ),
