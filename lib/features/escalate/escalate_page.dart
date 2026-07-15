@@ -94,6 +94,7 @@ class _EscalatePageState extends ConsumerState<EscalatePage>
   @override
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     final uidAsync = ref.watch(userIdProvider);
     return Scaffold(
       backgroundColor: tc.bg,
@@ -108,7 +109,7 @@ class _EscalatePageState extends ConsumerState<EscalatePage>
           data: (uid) {
             if (uid == null || uid.isEmpty) {
               return BrandedErrorBanner(
-                message: 'Could not sign in. Tap retry.',
+                message: l10n?.commonCouldNotSignIn ?? 'Could not sign in. Tap retry.',
                 onRetry: () => ref.invalidate(userIdProvider),
               );
             }
@@ -124,7 +125,7 @@ class _EscalatePageState extends ConsumerState<EscalatePage>
                 }
                 if (dispute == null) {
                   return BrandedErrorBanner(
-                    message: 'Dispute not found.',
+                    message: l10n?.commonDisputeNotFound ?? 'Dispute not found.',
                     onRetry: () => ref.invalidate(disputesProvider(uid)),
                   );
                 }
@@ -641,7 +642,7 @@ class _Body extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'This is a Pro template — unlock to view & send',
+                      l10n?.escalateProTemplateLocked ?? 'This is a Pro template — unlock to view & send',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,

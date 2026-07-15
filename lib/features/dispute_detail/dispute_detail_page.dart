@@ -33,6 +33,7 @@ class DisputeDetailPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     final uidAsync = ref.watch(userIdProvider);
     return Scaffold(
       backgroundColor: tc.bg,
@@ -47,7 +48,7 @@ class DisputeDetailPage extends ConsumerWidget {
           data: (uid) {
             if (uid == null || uid.isEmpty) {
               return BrandedErrorBanner(
-                message: 'Could not sign in. Tap retry.',
+                message: l10n?.commonCouldNotSignIn ?? 'Could not sign in. Tap retry.',
                 onRetry: () => ref.invalidate(userIdProvider),
               );
             }
@@ -63,7 +64,7 @@ class DisputeDetailPage extends ConsumerWidget {
             }
             if (dispute == null) {
               return BrandedErrorBanner(
-                message: 'Dispute not found.',
+                message: l10n?.commonDisputeNotFound ?? 'Dispute not found.',
                 onRetry: () => ref.invalidate(disputesProvider(uid)),
               );
             }
@@ -246,9 +247,9 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                                   borderRadius:
                                       BorderRadius.circular(AppRadii.pill),
                                 ),
-                                child: const Text(
-                                  '⚠ Deadline missed',
-                                  style: TextStyle(
+                                child: Text(
+                                  l10n?.detailDeadlineMissed ?? '⚠ Deadline missed',
+                                  style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.error,
@@ -264,9 +265,9 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                                   borderRadius:
                                       BorderRadius.circular(AppRadii.pill),
                                 ),
-                                child: const Text(
-                                  '✓ Resolved',
-                                  style: TextStyle(
+                                child: Text(
+                                  l10n?.detailResolved ?? '✓ Resolved',
+                                  style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.success,
@@ -303,7 +304,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                   children: [
                     Expanded(
                       child: _ActionButton(
-                        label: deadlineMissed ? 'Escalate now' : 'Escalate',
+                        label: deadlineMissed ? (l10n?.detailEscalateNow ?? 'Escalate now') : (l10n?.detailEscalate ?? 'Escalate'),
                         color: AppColors.alert,
                         onTap: () => context.push(AppRoutes.wizard(dispute.id)),
                       ),
@@ -322,10 +323,10 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                         final isPremium = ref.read(isPremiumProvider);
                         if (!isPremium) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(
-                                  'Ombudsman letter generator is a Premium feature.'),
-                              duration: Duration(seconds: 2),
+                                  l10n?.detailOmbudsmanPremium ?? 'Ombudsman letter generator is a Premium feature.'),
+                              duration: const Duration(seconds: 2),
                             ),
                           );
                           context.push(
@@ -398,7 +399,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                             ),
                             TextSpan(
                               text: deadlineMissed
-                                  ? 'Window expired'
+                                  ? (l10n?.detailWindowExpired ?? 'Window expired')
                                   : '$hoursLeft hours until T+${dispute.type.tatDays ?? 5} deadline',
                               style: TextStyle(
                                 fontSize: 11,
@@ -412,7 +413,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                         ),
                       )
                     : Text(
-                        'This dispute is resolved.',
+                        l10n?.detailResolvedMessage ?? 'This dispute is resolved.',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -422,8 +423,8 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
               ),
               _ActionButton(
                 label: dispute.status == DisputeStatus.resolved
-                    ? 'Reopen'
-                    : 'Mark resolved',
+                    ? (l10n?.detailReopen ?? 'Reopen')
+                    : (l10n?.detailMarkResolved ?? 'Mark resolved'),
                 color: tc.surfaceAlt,
                 textColor: tc.ctaBackground,
                 onTap: _toggling
@@ -700,7 +701,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
           const SizedBox(height: 8),
           if (matchedTemplate == null)
             Text(
-              'No template found for this category',
+              l10n?.detailNoTemplateFound ?? 'No template found for this category',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,

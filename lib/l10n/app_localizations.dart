@@ -419,6 +419,77 @@ class AppLocalizations {
       'hi': 'क्लिपबोर्ड पर कॉपी हुआ',
     },
     'commonClose': {'en': 'Close', 'hi': 'बंद करें'},
+    'commonCouldNotSignIn': {
+      'en': 'Could not sign in. Tap retry.',
+      'hi': 'साइन इन नहीं हो सका। पुनः प्रयास करें।',
+    },
+    'commonDisputeNotFound': {
+      'en': 'Dispute not found.',
+      'hi': 'विवाद नहीं मिला।',
+    },
+    'detailEscalate': {'en': 'Escalate', 'hi': 'एस्केलेट'},
+    'detailEscalateNow': {'en': 'Escalate now', 'hi': 'अभी एस्केलेट करें'},
+    'detailReopen': {'en': 'Reopen', 'hi': 'फिर से खोलें'},
+    'detailMarkResolved': {
+      'en': 'Mark resolved',
+      'hi': 'हल किया गया चिह्नित करें',
+    },
+    'detailDeadlineMissed': {
+      'en': '⚠ Deadline missed',
+      'hi': '⚠ समयसीमा पार हुई',
+    },
+    'detailResolved': {'en': '✓ Resolved', 'hi': '✓ हल हुआ'},
+    'detailWindowExpired': {
+      'en': 'Window expired',
+      'hi': 'विंडो समाप्त',
+    },
+    'detailHoursUntilDeadline': {
+      'en': '{hours} hours until T+{days} deadline',
+      'hi': 'T+{days} समयसीमा तक {hours} घंटे',
+    },
+    'detailResolvedMessage': {
+      'en': 'This dispute is resolved.',
+      'hi': 'यह विवाद हल हो गया है।',
+    },
+    'detailOmbudsmanPremium': {
+      'en': 'Ombudsman letter generator is a Premium feature.',
+      'hi': 'ऑम्बुडस्मैन पत्र जनरेटर एक प्रीमियम सुविधा है।',
+    },
+    'detailNoTemplateFound': {
+      'en': 'No template found for this category',
+      'hi': 'इस श्रेणी के लिए कोई टेम्पलेट नहीं मिला',
+    },
+    'detailAutoMatched': {
+      'en': 'Auto-matched (tap pencil to change)',
+      'hi': 'स्वतः मिलान (बदलने के लिए पेंसिल टैप करें)',
+    },
+    'detailCustomTemplate': {
+      'en': 'Custom template',
+      'hi': 'कस्टम टेम्पलेट',
+    },
+    'detailFreeTab': {
+      'en': 'Free ({count})',
+      'hi': 'मुफ़्त ({count})',
+    },
+    'detailNoProTemplates': {
+      'en': 'No Pro templates for this category',
+      'hi': 'इस श्रेणी के लिए कोई Pro टेम्पलेट नहीं',
+    },
+    'detailNoFreeTemplates': {
+      'en': 'No free templates for this category',
+      'hi': 'इस श्रेणी के लिए कोई मुफ़्त टेम्पलेट नहीं',
+    },
+    'escalateProTemplateLocked': {
+      'en': 'This is a Pro template — unlock to view & send',
+      'hi': 'यह एक Pro टेम्पलेट है — देखने और भेजने के लिए अनलॉक करें',
+    },
+    'paywallCouldNotLoadPlans': {
+      'en': 'Could not load plans. Tap retry.',
+      'hi': 'योजनाएं लोड नहीं हो सकीं। पुनः प्रयास करें।',
+    },
+    'paywallMonthlyTitle': {'en': 'Monthly', 'hi': 'मासिक'},
+    'paywallYearlyTitle': {'en': 'Yearly', 'hi': 'वार्षिक'},
+    'paywallLifetimeTitle': {'en': 'Lifetime', 'hi': 'आजीवन'},
     // Screens still on hardcoded strings (Phase 3 background migration).
     'wizardTitle': {'en': 'Escalation steps', 'hi': 'बढ़ते कदम'},
     'wizardMarkFiled': {'en': 'Mark as filed', 'hi': 'दर्ज चिह्नित करें'},
@@ -1072,6 +1143,34 @@ class AppLocalizations {
   String get commonOffline => _t('commonOffline');
   String get commonCopied => _t('commonCopied');
   String get commonClose => _t('commonClose');
+  String get commonCouldNotSignIn => _t('commonCouldNotSignIn');
+  String get commonDisputeNotFound => _t('commonDisputeNotFound');
+  String get detailEscalate => _t('detailEscalate');
+  String get detailEscalateNow => _t('detailEscalateNow');
+  String get detailReopen => _t('detailReopen');
+  String get detailMarkResolved => _t('detailMarkResolved');
+  String get detailDeadlineMissed => _t('detailDeadlineMissed');
+  String get detailResolved => _t('detailResolved');
+  String get detailWindowExpired => _t('detailWindowExpired');
+  String detailHoursUntilDeadline(int hours, int days) =>
+      _t('detailHoursUntilDeadline', args: {
+        'hours': '$hours',
+        'days': '$days',
+      });
+  String get detailResolvedMessage => _t('detailResolvedMessage');
+  String get detailOmbudsmanPremium => _t('detailOmbudsmanPremium');
+  String get detailNoTemplateFound => _t('detailNoTemplateFound');
+  String get detailAutoMatched => _t('detailAutoMatched');
+  String get detailCustomTemplate => _t('detailCustomTemplate');
+  String detailFreeTab(int count) =>
+      _t('detailFreeTab', args: {'count': '$count'});
+  String get detailNoProTemplates => _t('detailNoProTemplates');
+  String get detailNoFreeTemplates => _t('detailNoFreeTemplates');
+  String get escalateProTemplateLocked => _t('escalateProTemplateLocked');
+  String get paywallCouldNotLoadPlans => _t('paywallCouldNotLoadPlans');
+  String get paywallMonthlyTitle => _t('paywallMonthlyTitle');
+  String get paywallYearlyTitle => _t('paywallYearlyTitle');
+  String get paywallLifetimeTitle => _t('paywallLifetimeTitle');
 
   // Phase 3 — per-screen strings (one-off migrations):
   String get wizardTitle => _t('wizardTitle');

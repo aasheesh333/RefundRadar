@@ -70,7 +70,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
       });
     } catch (e) {
       setState(() {
-        _error = 'Could not load plans. Tap retry.';
+        _error = AppLocalizations.of(context)?.paywallCouldNotLoadPlans ?? 'Could not load plans. Tap retry.';
         _loading = false;
       });
     }
@@ -268,7 +268,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
             children: [
               Expanded(
                 child: _PlanCard(
-                  title: 'Monthly',
+                  title: AppLocalizations.of(context)?.paywallMonthlyTitle ?? 'Monthly',
                   price: '₹99',
                   highlighted: false,
                   onTap: _purchasingPackageId == null
@@ -286,7 +286,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: _PlanCard(
-                  title: 'Yearly',
+                  title: AppLocalizations.of(context)?.paywallYearlyTitle ?? 'Yearly',
                   price: '₹499',
                   highlighted: true,
                   badge: 'Save 58%',
@@ -306,7 +306,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
           ),
           const SizedBox(height: 12),
           _PlanCard(
-            title: 'Lifetime',
+            title: AppLocalizations.of(context)?.paywallLifetimeTitle ?? 'Lifetime',
             price: '₹1,999',
             highlighted: false,
             fullWidth: true,
