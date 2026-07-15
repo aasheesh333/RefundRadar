@@ -614,7 +614,12 @@ class _Body extends ConsumerWidget {
           const SizedBox(height: 8),
           InkWell(
             onTap: () => context.push(
-              '/paywall?return=/home&trigger=template_locked',
+              AppRoutes.paywallWithParams(
+                trigger: 'template_locked',
+                returnPath: AppRoutes.home,
+                templateId: matchedTemplate!.id,
+                templateTitle: matchedTemplate.titleFor(localeCode),
+              ),
             ),
             borderRadius: BorderRadius.circular(AppRadii.sm),
             child: Container(
@@ -828,6 +833,8 @@ class _Body extends ConsumerWidget {
                   AppRoutes.paywallWithParams(
                     trigger: 'template_locked',
                     returnPath: AppRoutes.home,
+                    templateId: matchedTemplate!.id,
+                    templateTitle: matchedTemplate.titleFor(localeCode),
                   ),
                 );
                 return;
@@ -854,6 +861,8 @@ class _Body extends ConsumerWidget {
                     AppRoutes.paywallWithParams(
                       trigger: 'template_locked',
                       returnPath: AppRoutes.home,
+                      templateId: matchedTemplate!.id,
+                      templateTitle: matchedTemplate.titleFor(localeCode),
                     ),
                   );
                   return;

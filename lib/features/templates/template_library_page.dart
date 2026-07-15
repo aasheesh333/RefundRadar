@@ -98,6 +98,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
   }) {
     final selected = _selectedDispute(disputes);
     final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     final repo = ref.read(templateRepositoryProvider);
     final filtered = _selectedCategory == 'All'
         ? templates
@@ -117,7 +118,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Templates',
+                      l10n?.templateLibraryTitle ?? 'Templates',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
@@ -126,7 +127,8 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'RBI-compliant dispute letters',
+                      l10n?.templateLibrarySubtitle ??
+                          'RBI-compliant dispute letters',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -139,6 +141,83 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
             ],
           ),
         ),
+        // Premium upsell banner — makes templates a clear point-of-sale for
+        // free users. Always visible on the library so the value prop is
+        // front-and-center, not buried behind individual locked cards.
+        if (!isPremiumUser)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    tc.premiumGoldSoft,
+                    tc.surface,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(color: AppColors.premiumGold, width: 1),
+                borderRadius: BorderRadius.circular(AppRadii.lg),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.workspace_premium,
+                        color: AppColors.premiumGold,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          l10n?.templateLibraryUpsellTitle ??
+                              'Unlock 50+ premium templates',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: tc.textPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    l10n?.templateLibraryUpsellBody ??
+                        'Get faster refunds with ready-to-send complaints for RBI, NPCI, banking ombudsman and more.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: tc.textSecondary,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () => context.push(
+                        AppRoutes.paywallWithParams(
+                          trigger: 'templates_banner',
+                          returnPath: AppRoutes.templates,
+                        ),
+                      ),
+                      icon: const Icon(Icons.lock_open, size: 18),
+                      label: Text(
+                        l10n?.templateLibraryUpsellCta ?? 'Upgrade to Pro',
+                        style:
+                            const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         if (disputes.isNotEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),

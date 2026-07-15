@@ -786,6 +786,23 @@ class AppLocalizations {
       'en': 'Unlock with Premium',
       'hi': 'प्रीमियम से अनलॉक करें',
     },
+    'templateLibraryTitle': {'en': 'Templates', 'hi': 'टेम्पलेट'},
+    'templateLibrarySubtitle': {
+      'en': 'RBI-compliant dispute letters',
+      'hi': 'RBI-अनुपालित विवाद पत्र',
+    },
+    'templateLibraryUpsellTitle': {
+      'en': 'Unlock 50+ premium templates',
+      'hi': '50+ प्रीमियम टेम्पलेट अनलॉक करें',
+    },
+    'templateLibraryUpsellBody': {
+      'en': 'Get faster refunds with ready-to-send complaints for RBI, NPCI, banking ombudsman and more.',
+      'hi': 'RBI, NPCI, बैंकिंग ऑम्बुडस्मैन और अन्य के लिए तैयार शिकायतों के साथ तेजी से रिफंड पाएं।',
+    },
+    'templateLibraryUpsellCta': {
+      'en': 'Upgrade to Pro',
+      'hi': 'Pro में अपग्रेड करें',
+    },
     // Pass 2 residual i18n — dispute form / type page / escalate / wizard docs.
     'formClipboardEmpty': {
       'en': 'Clipboard empty — copy an SMS first.',
@@ -1226,6 +1243,11 @@ class AppLocalizations {
       _t('templateLevelLabel', args: {'level': '$level'});
   String get templateProBadge => _t('templateProBadge');
   String get templateUnlockCta => _t('templateUnlockCta');
+  String get templateLibraryTitle => _t('templateLibraryTitle');
+  String get templateLibrarySubtitle => _t('templateLibrarySubtitle');
+  String get templateLibraryUpsellTitle => _t('templateLibraryUpsellTitle');
+  String get templateLibraryUpsellBody => _t('templateLibraryUpsellBody');
+  String get templateLibraryUpsellCta => _t('templateLibraryUpsellCta');
 
   // Status pills.
   String get statusResolved => _t('statusResolved');
