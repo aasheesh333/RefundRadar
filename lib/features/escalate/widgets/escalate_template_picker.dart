@@ -5,6 +5,7 @@ import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/template.dart';
 import 'package:refund_radar/data/repositories/template_repository.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/features/templates/template_library_page.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/shared/widgets/status_pill.dart';
@@ -183,7 +184,12 @@ class EscalateTemplatePicker {
               ? () {
                   Navigator.pop(context);
                   context.push(
-                    '/paywall?return=/home&trigger=template_locked',
+                    AppRoutes.paywallWithParams(
+                      trigger: 'template_locked',
+                      returnPath: AppRoutes.home,
+                      templateId: t.id,
+                      templateTitle: t.titleFor(localeCode),
+                    ),
                   );
                 }
               : () {

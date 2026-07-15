@@ -142,6 +142,7 @@
   "wizardDocuments": "ज़रूरी दस्तावेज़",
   "wizardDoneSetReminder": "हो गया — रिमाइंडर लगाएं",
   "paywallHeadline": "और वसूली करें। असीमित विवाद + 50+ टेम्पलेट।",
+  "paywallHeadlineTemplate": "“{title}” और 50+ प्रीमियम टेम्पलेट अनलॉक करें।",
   "paywallSave": "58% बचाएं",
   "paywallMaybeLater": "बाद में",
   "paywallFreeRow": "मुफ़्त",

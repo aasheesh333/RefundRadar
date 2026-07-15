@@ -193,6 +193,10 @@ class AppLocalizations {
       'en': 'Recover more. Unlimited disputes + 50+ templates.',
       'hi': 'और वसूली करें। असीमित विवाद + 50+ टेम्पलेट।',
     },
+    'paywallHeadlineTemplate': {
+      'en': 'Unlock “{title}” and 50+ premium templates.',
+      'hi': '“{title}” और 50+ प्रीमियम टेम्पलेट अनलॉक करें।',
+    },
     'paywallMonthly': {'en': 'Monthly ₹99', 'hi': 'मासिक ₹99'},
     'paywallYearly': {'en': 'Yearly ₹499', 'hi': 'वार्षिक ₹499'},
     'paywallSave': {'en': 'Save 58%', 'hi': '58% बचाएं'},
@@ -957,6 +961,8 @@ class AppLocalizations {
   String get wizardCopyComplaint => _t('wizardCopyComplaint');
   String get wizardDoneSetReminder => _t('wizardDoneSetReminder');
   String get paywallHeadline => _t('paywallHeadline');
+  String paywallHeadlineTemplate(String title) =>
+      _t('paywallHeadlineTemplate', args: {'title': title});
   String get paywallMonthly => _t('paywallMonthly');
   String get paywallYearly => _t('paywallYearly');
   String get paywallSave => _t('paywallSave');

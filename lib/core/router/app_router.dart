@@ -75,6 +75,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         builder: (c, s) => PaywallPage(
           returnPath: s.uri.queryParameters['return'] ?? '/home',
           trigger: s.uri.queryParameters['trigger'] ?? 'generic',
+          templateId: s.uri.queryParameters['templateId'],
+          templateTitle: s.uri.queryParameters['templateTitle'],
         ),
       ),
       GoRoute(

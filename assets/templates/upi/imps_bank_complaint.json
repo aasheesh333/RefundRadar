@@ -4,7 +4,7 @@
   "titleHi": "IMPS — बैंक शिकायत (स्तर 1)",
   "category": "UPI / IMPS / ATM",
   "escalationLevel": 1,
-  "isPremium": true,
+  "isPremium": false,
   "bodyEn": "Subject: Failed IMPS Transaction — Refund + RBI TAT Compensation Demand — RRN {UTR}\n\nTo: {BANK_NAME} Grievance Redressal,\n\nDear Team,\n\nOn {TXN_DATE}, Rs. {AMOUNT} was debited from my account via IMPS (reference RRN {UTR}) but the beneficiary did not receive the funds and the transaction failed.\n\nAs per the RBI Harmonisation of TAT circular (20.09.2019), failed IMPS transactions must be reversed by T+1, failing which Rs. 100 per day compensation is payable.\n\n{DAYS_ELAPSED} days elapsed. Compensation due: Rs. {COMPENSATION_DUE}.\n\nReverse the failed transaction AND credit compensation within 24 hours, or I will approach NPCI and the RBI Ombudsman under RB-IOS 2026.\n\nComplaint reference: {TICKET_NO}\nAccount holder: {USER_NAME}\nMobile: {MOBILE_NO}\n\nRegards,\n{USER_NAME}",
   "bodyHi": "विषय: विफल IMPS लेनदेन — रिफंड + RBI TAT मुआवज़ा मांग — RRN {UTR}\n\nप्रति: {BANK_NAME} शिकायत निवारण,\n\nप्रिय टीम,\n\n{TXN_DATE} को मेरे खाते से Rs. {AMOUNT} IMPS के माध्यम से कटे (संदर्भ RRN {UTR}), परंतु प्राप्तकर्ता तक पैसा नहीं पहुँचा और लेनदेन विफल रहा।\n\nRBI TAT सर्कुलर (20.09.2019) के अनुसार विफल IMPS लेनदेन T+1 तक रिवर्स होनी चाहिए, अन्यथा Rs. 100/दिन मुआवज़ा देय है।\n\n{DAYS_ELAPSED} दिन बीत चुके हैं। देय मुआवज़ा: Rs. {COMPENSATION_DUE}।\n\nकृपया 24 घंटे के भीतर विफल लेनदेन रिवर्स करें और मुआवज़ा जमा करें, अन्यथा मैं NPCI और RBI लोकपाल (RB-IOS 2026) के पास जाऊँगा/जाऊँगी।\n\nशिकायत संदर्भ: {TICKET_NO}\nखाताधारक: {USER_NAME}\nमोबाइल: {MOBILE_NO}\n\nभवदीय,\n{USER_NAME}"
 }

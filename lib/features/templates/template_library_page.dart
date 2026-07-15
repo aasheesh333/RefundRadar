@@ -19,6 +19,7 @@ import '../../shared/widgets/status_pill.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/utils/indian_number_formatter.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 
 Map<String, String> templateFillValues(Dispute? dispute) =>
     fillValuesForDispute(dispute);
@@ -198,7 +199,12 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                 onTap: () {
                   if (locked) {
                     context.push(
-                      '/paywall?return=/templates&trigger=template_locked',
+                      AppRoutes.paywallWithParams(
+                        trigger: 'template_locked',
+                        returnPath: AppRoutes.templates,
+                        templateId: t.id,
+                        templateTitle: t.titleFor(localeCode),
+                      ),
                     );
                   } else {
                     _showTemplatePreview(c, t, localeCode, dispute: selected);
@@ -299,13 +305,11 @@ class _TemplateCard extends StatelessWidget {
             bg: tc.accentSoft,
           );
 
-    // Body preview: locked templates get a blur-style masked preview. We use
-    // a simple 2-line UIL-clip; actual on-screen blur is by ObscureText in
-    // the full preview dialog. For now, locked preview shows a generic
-    // placeholder hint. Unlocked cards fill common tokens (empty without dispute).
-    final preview = locked
-        ? 'Tap to unlock with Premium — 50+ RBI-compliant templates.'
-        : filledTemplateBody(template, localeCode, null);
+    // Body preview: render the actual template body (tokens fill with
+    // fallbacks without a dispute) so the user sees what they'd unlock —
+    // matches the Escalate picker's preview. Locked cards keep the Pro
+    // badge + "Unlock →" CTA below to signal the paywall (Task 7.2).
+    final preview = filledTemplateBody(template, localeCode, null);
 
     return InkWell(
       onTap: onTap,

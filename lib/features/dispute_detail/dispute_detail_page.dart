@@ -618,11 +618,6 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
   String _fmtDate(DateTime d) =>
       '${d.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]}, ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
-  /// F3 — category for this dispute's type. Delegates to the shared
-  /// [TemplateRepository.categoryFor] so the labels can't drift from the
-  /// escalate screen.
-  String _disputeCategory() => TemplateRepository.categoryFor(dispute.type);
-
   /// F3 — auto-match a template for the dispute's category. Delegates to
   /// the shared [TemplateRepository.matchForCategory] (ME-7) so the
   /// dispute-detail preview stays in lockstep with the escalate auto-match.

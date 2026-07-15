@@ -12,7 +12,6 @@ import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/utils/date_time_ext.dart';
-import 'package:refund_radar/shared/utils/indian_number_formatter.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/filter_pills.dart';

@@ -27,11 +27,15 @@ import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 class PaywallPage extends ConsumerStatefulWidget {
   final String returnPath;
   final String trigger;
+  final String? templateId;
+  final String? templateTitle;
 
   const PaywallPage({
     super.key,
     required this.returnPath,
     required this.trigger,
+    this.templateId,
+    this.templateTitle,
   });
 
   @override
@@ -162,8 +166,20 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
               size: 72, color: AppColors.alert),
           const SizedBox(height: 16),
           Text(
-            AppLocalizations.of(context)?.paywallHeadline ??
-                'Recover more. Unlimited disputes + 50+ templates.',
+            // Contextual paywall (Task 7.4): when triggered from a specific
+            // template, name it in the headline so the upsell feels directly
+            // tied to what the user tried to access. Fall back to the generic
+            // headline for non-template triggers (settings, free-limit hit).
+            () {
+              final l10n = AppLocalizations.of(context);
+              final title = widget.templateTitle;
+              if (title != null && title.isNotEmpty) {
+                return l10n?.paywallHeadlineTemplate(title) ??
+                    'Unlock “$title” and 50+ premium templates.';
+              }
+              return l10n?.paywallHeadline ??
+                  'Recover more. Unlimited disputes + 50+ templates.';
+            }(),
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
