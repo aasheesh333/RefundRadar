@@ -1060,7 +1060,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
         ],
       ),
     );
-    if (confirmed == true) await _toggleResolved(context, ref);
+    if (confirmed == true && mounted) await _toggleResolved(context, ref);
   }
 
   Future<void> _toggleResolved(BuildContext context, WidgetRef ref) async {
