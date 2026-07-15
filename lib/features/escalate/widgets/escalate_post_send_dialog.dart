@@ -108,7 +108,10 @@ class EscalatePostSendDialog {
                 context.push(AppRoutes.ombudsman(dispute.id));
               } else {
                 context.push(
-                  '/paywall?return=/home&trigger=post_escalation',
+                  AppRoutes.paywallWithParams(
+                    trigger: 'post_escalation',
+                    returnPath: AppRoutes.home,
+                  ),
                 );
               }
             },

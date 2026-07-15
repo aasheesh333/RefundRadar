@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
@@ -21,7 +22,10 @@ import 'package:refund_radar/shared/widgets/skeleton.dart';
 /// ombudsman letter page. Returns to the dispute detail so purchase success
 /// does not re-enter this gated page until premium is active.
 String ombudsmanLetterPaywallLocation(String disputeId) =>
-    '/paywall?return=/disputes/$disputeId&trigger=ombudsman_letter';
+    AppRoutes.paywallWithParams(
+      trigger: 'ombudsman_letter',
+      returnPath: AppRoutes.disputeDetail(disputeId),
+    );
 
 /// `true` when the letter page must redirect free users to the paywall.
 bool shouldGateOmbudsmanLetter(bool isPremium) => !isPremium;

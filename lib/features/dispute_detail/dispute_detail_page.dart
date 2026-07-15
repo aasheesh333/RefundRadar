@@ -331,7 +331,11 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                             ),
                           );
                           context.push(
-                              '/paywall?return=/disputes/${dispute.id}&trigger=ombudsman_letter');
+                            AppRoutes.paywallWithParams(
+                              trigger: 'ombudsman_letter',
+                              returnPath: AppRoutes.disputeDetail(dispute.id),
+                            ),
+                          );
                           return;
                         }
                         context.push(AppRoutes.ombudsman(dispute.id));
@@ -902,7 +906,12 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
               ? () {
                   Navigator.pop(context);
                   context.push(
-                    '/paywall?return=/disputes/${dispute.id}&trigger=template_locked',
+                    AppRoutes.paywallWithParams(
+                      trigger: 'template_locked',
+                      returnPath: AppRoutes.disputeDetail(dispute.id),
+                      templateId: t.id,
+                      templateTitle: t.titleFor(localeCode),
+                    ),
                   );
                 }
               : () {
