@@ -10,12 +10,11 @@ void main() {
         templateId: 'upi_ombudsman_l2',
         templateTitle: 'Ombudsman L2 Complaint',
       );
-      // Uri.encodeComponent is used for query values — spaces become %20
-      // and slashes in the return path become %2F.
+      // Uri.queryParameters encodes spaces as + and slashes as %2F.
       expect(url, contains('trigger=template_locked'));
       expect(url, contains('return=%2Fdisputes%2Fabc-123'));
       expect(url, contains('templateId=upi_ombudsman_l2'));
-      expect(url, contains('templateTitle=Ombudsman%20L2%20Complaint'));
+      expect(url, contains('templateTitle=Ombudsman+L2+Complaint'));
     });
 
     test('omits optional params when null', () {
@@ -38,10 +37,10 @@ void main() {
   });
 
   group('AppRoutes.paywallWithReturn', () {
-    test('encodes return path and trigger', () {
+    test('builds raw URL with return path and trigger', () {
+      // paywallWithReturn uses raw string concatenation (no encoding).
       final url = AppRoutes.paywallWithReturn('/disputes/x', 'free_second_dispute');
-      expect(url, contains('trigger=free_second_dispute'));
-      expect(url, contains('return=%2Fdisputes%2Fx'));
+      expect(url, '/paywall?return=/disputes/x&trigger=free_second_dispute');
     });
   });
 }
