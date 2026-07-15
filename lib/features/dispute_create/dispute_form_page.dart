@@ -554,7 +554,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                       ),
                       child: Text(
                         _typeShort(type),
-                  style: TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           color: AppColors.accent,

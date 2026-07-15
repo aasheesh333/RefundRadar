@@ -400,7 +400,8 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                             TextSpan(
                               text: deadlineMissed
                                   ? (l10n?.detailWindowExpired ?? 'Window expired')
-                                  : '$hoursLeft hours until T+${dispute.type.tatDays ?? 5} deadline',
+                                  : l10n?.detailHoursUntilDeadline(hoursLeft, dispute.type.tatDays ?? 5) ??
+                                      '$hoursLeft hours until T+${dispute.type.tatDays ?? 5} deadline',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -733,8 +734,8 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
             const SizedBox(height: 6),
             Text(
               (_selectedTemplateId == null
-                  ? 'Auto-matched (tap pencil to change)'
-                  : 'Custom template') +
+                  ? (l10n?.detailAutoMatched ?? 'Auto-matched (tap pencil to change)')
+                  : (l10n?.detailCustomTemplate ?? 'Custom template')) +
                   (matchedTemplate.isPremium &&
                           !isPremiumUser &&
                           !freeIds.contains(matchedTemplate.id)
@@ -819,7 +820,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                   ),
                   TabBar(
                     tabs: [
-                      Tab(text: 'Free (${freeTemplates.length})'),
+                      Tab(text: sheetL10n?.detailFreeTab(freeTemplates.length) ?? 'Free (${freeTemplates.length})'),
                       Tab(
                         text:
                             '${sheetL10n?.templateProBadge ?? 'Pro'} (${proTemplates.length})',
@@ -883,8 +884,8 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
           padding: const EdgeInsets.all(32),
           child: Text(
             isProTab
-                ? 'No Pro templates for this category'
-                : 'No free templates for this category',
+                ? (sheetL10n?.detailNoProTemplates ?? 'No Pro templates for this category')
+                : (sheetL10n?.detailNoFreeTemplates ?? 'No free templates for this category'),
             style: TextStyle(color: tc.textTertiary, fontSize: 14),
           ),
         ),
