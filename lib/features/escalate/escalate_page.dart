@@ -806,8 +806,9 @@ class _Body extends ConsumerWidget {
     required Set<String> freeIds,
     required bool isPremiumUser,
   }) {
-    final isMatchLocked = matchedTemplate != null &&
-        repo.isLocked(matchedTemplate, freeIds, isPremiumUser: isPremiumUser);
+    final lockedTemplate = matchedTemplate;
+    final isMatchLocked = lockedTemplate != null &&
+        repo.isLocked(lockedTemplate, freeIds, isPremiumUser: isPremiumUser);
     return Container(
       padding: EdgeInsets.fromLTRB(
         20,
