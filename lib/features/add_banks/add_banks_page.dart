@@ -397,7 +397,7 @@ class _BankRow extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadii.lg),
             border: Border.all(
-              color: selected ? AppColors.primary : tc.divider,
+              color: selected ? tc.ctaBackground : tc.divider,
               width: selected ? 2 : 1,
             ),
             boxShadow: AppShadows.card,
@@ -414,10 +414,10 @@ class _BankRow extends StatelessWidget {
                 child: Center(
                   child: Text(
                     _initials,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primary,
+                      color: tc.ctaBackground,
                     ),
                   ),
                 ),
@@ -456,20 +456,20 @@ class _BankRow extends StatelessWidget {
                 height: 22,
                 decoration: BoxDecoration(
                   color: selected
-                      ? AppColors.primary
+                      ? tc.ctaBackground
                       : tc.surface,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: selected
-                        ? AppColors.primary
+                        ? tc.ctaBackground
                         : tc.divider,
                     width: 2,
                   ),
                 ),
                 child: selected
-                    ? const Center(
+                    ? Center(
                         child: Icon(Icons.check,
-                            size: 12, color: Colors.white),
+                            size: 12, color: tc.ctaForeground),
                       )
                     : null,
               ),

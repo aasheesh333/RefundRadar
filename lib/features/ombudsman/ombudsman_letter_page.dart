@@ -169,9 +169,9 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.05),
+                          color: tc.ctaBackground.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.primary),
+                          border: Border.all(color: tc.ctaBackground),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,9 +181,9 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
                                     context,
                                   )?.ombudsmanPremiumFeature ??
                                   'Premium feature',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.primary,
+                                color: tc.ctaBackground,
                               ),
                             ),
                             const SizedBox(height: 4),

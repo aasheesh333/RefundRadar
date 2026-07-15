@@ -624,10 +624,10 @@ class _TemplateCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           'RBI/NPCI compliant',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
+                            color: tc.ctaBackground,
                           ),
                         ),
                       ),

@@ -92,17 +92,17 @@ class SettingsPage extends ConsumerWidget {
                     height: 42,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [AppColors.primary, AppColors.primaryDark],
+                        colors: [tc.ctaBackground, AppColors.primaryDark],
                       ),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'A',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: tc.ctaForeground,
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
@@ -159,9 +159,7 @@ class SettingsPage extends ConsumerWidget {
                           fontWeight: FontWeight.w600,
                           color: isPremium
                               ? AppColors.premiumGold
-                              : (tc.isDark
-                                  ? AppColors.accent
-                                  : AppColors.primary),
+                              : tc.ctaBackground,
                         ),
                       ),
                     ),
@@ -230,9 +228,9 @@ class SettingsPage extends ConsumerWidget {
                             children: [
                               TextSpan(
                                 text: l10n?.settingsOnDeviceLabel ?? 'On-device. ',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.primary,
+                                  color: tc.ctaBackground,
                                 ),
                               ),
                               TextSpan(

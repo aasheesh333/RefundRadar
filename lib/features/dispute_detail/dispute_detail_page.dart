@@ -210,9 +210,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                             fontFamily: AppTypography.family,
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
-                            color: tc.isDark
-                                ? AppColors.accent
-                                : AppColors.primary,
+                            color: tc.ctaBackground,
                             letterSpacing: -0.5,
                             fontFeatures: const [FontFeature.tabularFigures()],
                           ),
@@ -427,7 +425,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                     ? 'Reopen'
                     : 'Mark resolved',
                 color: tc.surfaceAlt,
-                textColor: AppColors.primary,
+                textColor: tc.ctaBackground,
                 onTap: _toggling
                     ? null
                     : () => _confirmToggle(ref),
@@ -1174,6 +1172,7 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
     return Material(
       color: color,
       borderRadius: BorderRadius.circular(AppRadii.md),
@@ -1190,7 +1189,7 @@ class _ActionButton extends StatelessWidget {
               fontFamily: AppTypography.family,
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: textColor ?? Colors.white,
+              color: textColor ?? tc.ctaForeground,
             ),
           ),
         ),
