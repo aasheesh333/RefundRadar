@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:refund_radar/core/providers/premium_provider.dart';
+export 'package:refund_radar/core/providers/premium_provider.dart'
+    show isPremiumProvider;
 import 'package:refund_radar/core/providers/sms_detection_provider.dart';
 import 'package:refund_radar/services/notification_service.dart';
 
@@ -48,10 +50,9 @@ Future<void> markOnboardingComplete([dynamic ref]) async {
 /// and `error` collapse to `false` (free), so paywall gates remain
 /// fail-safe during RevenueCat's brief startup fetch.
 ///
-/// Re-exported here for the convenience of files that already
+/// Re-exported at the top of this file (must come before declarations)
+/// for the convenience of files that already
 /// `import 'app_state_provider.dart'`.
-export 'package:refund_radar/core/providers/premium_provider.dart'
-    show isPremiumProvider;
 
 /// Notification preference toggles (persisted). Defaults: deadline+daily on.
 final notifDeadlineProvider = StateProvider<bool>((ref) => true);
