@@ -13,6 +13,8 @@ import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/features/dispute_create/create_dispute_auth_guard.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
+import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/widgets/stepper_timeline.dart';
@@ -154,18 +156,44 @@ class _WizardPageState extends ConsumerState<WizardPage> {
   @override
   Widget build(BuildContext context) {
     final rulesAsync = ref.watch(rulesEngineProvider);
+    final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context)?.wizardTitle ?? 'Escalation steps',
-        ),
-      ),
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        behavior: HitTestBehavior.opaque,
-        child: rulesAsync.when(
-          data: (rules) {
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Custom header (Task 9) — replaces default AppBar with the
+            // themed AppBackButton + title Row used across the app
+            // (escalate, dispute-detail, reminders). Stays dark-mode safe
+            // because every colour is pulled from AppThemeColors.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+              child: Row(
+                children: [
+                  AppBackButton(onTap: () => context.pop()),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      l10n?.wizardTitle ?? 'Escalation steps',
+                      style: TextStyle(
+                        fontFamily: AppTypography.family,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: tc.textPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(),
+                behavior: HitTestBehavior.opaque,
+                child: rulesAsync.when(
+                  data: (rules) {
             final uid = ref.watch(userIdProvider).asData?.value;
             Dispute? liveDispute;
             if (uid != null) {
@@ -374,6 +402,10 @@ class _WizardPageState extends ConsumerState<WizardPage> {
             message: e.toString(),
             onRetry: () => ref.invalidate(rulesEngineProvider),
           ),
+        ),
+              ),
+            ),
+          ],
         ),
       ),
     );

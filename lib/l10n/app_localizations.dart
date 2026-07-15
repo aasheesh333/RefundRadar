@@ -446,6 +446,10 @@ class AppLocalizations {
     },
     'addBanksSearchHint': {'en': 'Search your bank', 'hi': 'अपना बैंक खोजें'},
     'settingsDisclaimerTitle': {'en': 'Disclaimer', 'hi': 'अस्वीकरण'},
+    'settingsPrivacyTitle': {
+      'en': 'Privacy Policy',
+      'hi': 'प्राइवेसी नीति',
+    },
     // Settings page — fully i18n'd in Phase 3 follow-up.
     'settingsTitle': {'en': 'Settings', 'hi': 'सेटिंग्स'},
     'settingsSmsDetection': {'en': 'SMS detection', 'hi': 'SMS पहचान'},
@@ -650,7 +654,30 @@ class AppLocalizations {
       'en': 'Status changed',
       'hi': 'स्थिति बदली गई',
     },
-    // Dispute form labels + validation.
+    'disputeDetailMarkResolvedTitle': {
+      'en': 'Mark as resolved?',
+      'hi': 'हल किया गया चिह्नित करें?',
+    },
+    'disputeDetailReopenTitle': {
+      'en': 'Reopen dispute?',
+      'hi': 'विवाद फिर से खोलें?',
+    },
+    'disputeDetailMarkResolvedBody': {
+      'en':
+          'This will mark the dispute as resolved. Reminders will stop and it will move to your history. This can be undone.',
+      'hi':
+          'यह विवाद को हल किया गया चिह्नित कर देगा। रिमाइंडर बंद हो जाएंगे और यह आपके इतिहास में चला जाएगा। इसे वापस लिया जा सकता है।',
+    },
+    'disputeDetailReopenBody': {
+      'en':
+          'This will reopen the dispute. Reminders will resume from today.',
+      'hi':
+          'यह विवाद फिर से खोल देगा। रिमाइंडर आज से फिर से शुरू होंगे।',
+    },
+    'disputeDetailConfirm': {
+      'en': 'Confirm',
+      'hi': 'पुष्टि करें',
+    },
     'formEnterAmount': {
       'en': 'Enter the debited amount',
       'hi': 'कटी हुई राशि दर्ज करें',
@@ -1027,6 +1054,7 @@ class AppLocalizations {
   String get remindersEmptySubtitle => _t('remindersEmptySubtitle');
   String get addBanksSearchHint => _t('addBanksSearchHint');
   String get settingsDisclaimerTitle => _t('settingsDisclaimerTitle');
+  String get settingsPrivacyTitle => _t('settingsPrivacyTitle');
 
   // Settings page full i18n.
   String get settingsTitle => _t('settingsTitle');
@@ -1129,6 +1157,13 @@ class AppLocalizations {
   String get activityReminderFired => _t('activityReminderFired');
   String get activityUtrDetected => _t('activityUtrDetected');
   String get activityStatusChanged => _t('activityStatusChanged');
+  String get disputeDetailMarkResolvedTitle =>
+      _t('disputeDetailMarkResolvedTitle');
+  String get disputeDetailReopenTitle => _t('disputeDetailReopenTitle');
+  String get disputeDetailMarkResolvedBody =>
+      _t('disputeDetailMarkResolvedBody');
+  String get disputeDetailReopenBody => _t('disputeDetailReopenBody');
+  String get disputeDetailConfirm => _t('disputeDetailConfirm');
 
   // Dispute form validation + labels.
   String get formEnterAmount => _t('formEnterAmount');

@@ -170,7 +170,7 @@ class _Row extends StatelessWidget {
         decoration: BoxDecoration(
           color: tc.surface,
           border: Border.all(
-            color: selected ? AppColors.primary : tc.divider,
+            color: selected ? tc.ctaBackground : tc.divider,
             width: selected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(AppRadii.lg),
@@ -229,14 +229,14 @@ class _Row extends StatelessWidget {
                 ? Container(
                     width: 22,
                     height: 22,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
+                    decoration: BoxDecoration(
+                      color: tc.ctaBackground,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.check,
                       size: 14,
-                      color: Colors.white,
+                      color: tc.ctaForeground,
                     ),
                   )
                 : Container(

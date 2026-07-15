@@ -172,11 +172,11 @@ class _Body extends ConsumerWidget {
               children: [
                 Text(
                   AppLocalizations.of(context)?.appName ?? 'Refund Radar',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: AppTypography.family,
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    color: tc.ctaBackground,
                   ),
                 ),
                 const SizedBox(height: 1),
@@ -200,11 +200,11 @@ class _Body extends ConsumerWidget {
               child: InkWell(
                 onTap: () => context.push(AppRoutes.reminders),
                 borderRadius: BorderRadius.circular(24),
-                child: const SizedBox(
+                child: SizedBox(
                   width: 48,
                   height: 48,
                   child: Icon(Icons.notifications_outlined,
-                      size: 22, color: AppColors.primary),
+                      size: 22, color: tc.ctaBackground),
                 ),
               ),
             ),
@@ -217,11 +217,11 @@ class _Body extends ConsumerWidget {
               child: InkWell(
                 onTap: () => context.push(AppRoutes.templates),
                 borderRadius: BorderRadius.circular(24),
-                child: const SizedBox(
+                child: SizedBox(
                   width: 48,
                   height: 48,
                   child: Icon(Icons.description_outlined,
-                      size: 22, color: AppColors.primary),
+                      size: 22, color: tc.ctaBackground),
                 ),
               ),
             ),
@@ -253,7 +253,7 @@ class _Body extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.primary,
+                          color: tc.ctaBackground,
                         ),
                       ),
                     ),
@@ -592,8 +592,8 @@ class _DetectedCard extends ConsumerWidget {
               context.push(target);
             },
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.accent,
-              foregroundColor: Colors.white,
+              backgroundColor: tc.ctaBackground,
+              foregroundColor: tc.ctaForeground,
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               shape: RoundedRectangleBorder(

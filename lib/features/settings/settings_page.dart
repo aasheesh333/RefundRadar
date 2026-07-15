@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
+import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/providers/sms_detection_provider.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
@@ -444,6 +445,13 @@ class SettingsPage extends ConsumerWidget {
               _showDisclaimerDialog(context);
             },
             child: Text(l10n?.settingsDisclaimerTitle ?? 'Disclaimer'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(c);
+              await launchExternalUrl('https://refundradar.app/privacy');
+            },
+            child: Text(l10n?.settingsPrivacyTitle ?? 'Privacy Policy'),
           ),
           TextButton(
             onPressed: () {

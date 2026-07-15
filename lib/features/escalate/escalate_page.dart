@@ -514,8 +514,8 @@ class _Body extends ConsumerWidget {
       label: l10n?.escalateEmailPreview ?? 'EMAIL PREVIEW',
       labelAction: Tooltip(
         message: l10n?.escalateEditTemplate ?? 'Pick template',
-        child: InkWell(
-          onTap: () => EscalateTemplatePicker.show(
+        child: IconButton(
+          onPressed: () => EscalateTemplatePicker.show(
             context,
             dispute: dispute,
             templates: templates,
@@ -526,17 +526,12 @@ class _Body extends ConsumerWidget {
             selectedTemplateId: selectedTemplateId,
             onSelectTemplate: onSelectTemplate,
           ),
-          borderRadius: BorderRadius.circular(AppRadii.sm),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 4,
-              vertical: 2,
-            ),
-            child: Icon(
-              Icons.edit_outlined,
-              size: 18,
-              color: AppColors.accent,
-            ),
+          padding: const EdgeInsets.all(12),
+          splashRadius: 24,
+          icon: Icon(
+            Icons.edit_outlined,
+            size: 18,
+            color: tc.ctaBackground,
           ),
         ),
       ),

@@ -625,7 +625,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                       fontFamily: AppTypography.family,
                                       letterSpacing: 0.5,
                                     ),
-                                    cursorColor: AppColors.primary,
+                                    cursorColor: tc.ctaBackground,
                                     keyboardType: TextInputType.number,
                                     inputFormatters: [
                                       FilteringTextInputFormatter.digitsOnly,
@@ -684,7 +684,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                       color: tc.textPrimary,
                                       fontFamily: AppTypography.family,
                                     ),
-                                    cursorColor: AppColors.primary,
+                                    cursorColor: tc.ctaBackground,
                                     keyboardType: TextInputType.number,
                                     maxLength: 6,
                                     inputFormatters: [
@@ -761,7 +761,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                 fontFamily: AppTypography.family,
                                 height: 1.4,
                               ),
-                              cursorColor: AppColors.primary,
+                              cursorColor: tc.ctaBackground,
                               decoration: const InputDecoration(
                                 isCollapsed: true,
                                 isDense: true,
@@ -804,7 +804,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                           const SizedBox(height: 1),
                           Text(
                             _estimate(type),
-                            style: const TextStyle(
+                  style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                               color: AppColors.accent,
@@ -822,7 +822,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                         height: 52,
                         padding: const EdgeInsets.symmetric(horizontal: 22),
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
+                          color: tc.ctaBackground,
                           borderRadius: BorderRadius.circular(AppRadii.md),
                           boxShadow: AppShadows.button,
                         ),
@@ -836,13 +836,13 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                             onTap: _saving ? null : _save,
                             child: Center(
                               child: _saving
-                                  ? const SizedBox(
+                                  ? SizedBox(
                                       width: 22,
                                       height: 22,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2.4,
                                         valueColor: AlwaysStoppedAnimation(
-                                          Colors.white,
+                                          tc.ctaForeground,
                                         ),
                                       ),
                                     )
@@ -851,11 +851,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                             context,
                                           )?.formCreateDispute ??
                                           'Create dispute',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontFamily: AppTypography.family,
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
-                                        color: Colors.white,
+                                        color: tc.ctaForeground,
                                       ),
                                     ),
                             ),
@@ -1044,7 +1044,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                 child: Text(
                   b.name.substring(0, 1).toUpperCase(),
                   style: const TextStyle(
-                    color: AppColors.primary,
+                    color: tc.ctaBackground,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

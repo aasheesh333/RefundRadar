@@ -13,6 +13,7 @@ import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
+import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 
@@ -89,26 +90,49 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
 
     final rulesAsync = ref.watch(rulesEngineProvider);
     final uidAsync = ref.watch(userIdProvider);
+    final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context)?.ombudsmanLetterTitle ??
-              'Ombudsman letter',
-        ),
-      ),
-      body: uidAsync.when(
-        loading: () => const SkeletonList(itemCount: 3),
-        error: (e, _) => BrandedErrorBanner(
-          message: friendlyError(e),
-          detail: errorDetail(e),
-          onRetry: () => ref.invalidate(userIdProvider),
-        ),
-        data: (uid) {
-          if (uid == null || uid.isEmpty) {
-            return BrandedErrorBanner(
-              message: 'Could not sign in. Tap retry.',
-              onRetry: () => ref.invalidate(userIdProvider),
-            );
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Custom header (Task 9) — replaces default AppBar with themed
+            // AppBackButton + title Row, dark-mode safe.
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+              child: Row(
+                children: [
+                  AppBackButton(onTap: () => context.pop()),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      l10n?.ombudsmanLetterTitle ?? 'Ombudsman letter',
+                      style: TextStyle(
+                        fontFamily: AppTypography.family,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: tc.textPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: uidAsync.when(
+                loading: () => const SkeletonList(itemCount: 3),
+                error: (e, _) => BrandedErrorBanner(
+                  message: friendlyError(e),
+                  detail: errorDetail(e),
+                  onRetry: () => ref.invalidate(userIdProvider),
+                ),
+                data: (uid) {
+                  if (uid == null || uid.isEmpty) {
+                    return BrandedErrorBanner(
+                      message: 'Could not sign in. Tap retry.',
+                      onRetry: () => ref.invalidate(userIdProvider),
+                    );
           }
           final disputesAsync = ref.watch(disputesProvider(uid));
           return rulesAsync.when(
@@ -257,7 +281,11 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
               onRetry: () => ref.invalidate(rulesEngineProvider),
             ),
           );
-        },
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

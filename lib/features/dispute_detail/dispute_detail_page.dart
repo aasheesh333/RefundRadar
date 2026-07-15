@@ -426,7 +426,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                 textColor: AppColors.primary,
                 onTap: _toggling
                     ? null
-                    : () => _toggleResolved(context, ref),
+                    : () => _confirmToggle(context, ref),
               ),
             ],
           ),
@@ -672,8 +672,8 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
               ),
               Tooltip(
                 message: l10n?.escalateEditTemplate ?? 'Pick template',
-                child: InkWell(
-                  onTap: templates.isEmpty
+                child: IconButton(
+                  onPressed: templates.isEmpty
                       ? null
                       : () => _showTemplatePickerForDispute(
                             context,
@@ -684,17 +684,12 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                             localeCode,
                             l10n,
                           ),
-                  borderRadius: BorderRadius.circular(AppRadii.sm),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 2,
-                    ),
-                    child: Icon(
-                      Icons.edit_outlined,
-                      size: 18,
-                      color: AppColors.accent,
-                    ),
+                  padding: const EdgeInsets.all(12),
+                  splashRadius: 24,
+                  icon: Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                    color: tc.ctaBackground,
                   ),
                 ),
               ),
@@ -1029,6 +1024,43 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
         ],
       ),
     );
+  }
+
+  /// Task 9.5 — show a confirmation dialog before toggling the dispute status
+  /// (Mark Resolved / Reopen). Prevents accidental status changes and sets
+  /// user expectation about reminders stopping/resuming.
+  Future<void> _confirmToggle(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final isResolved = dispute.status == DisputeStatus.resolved;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(
+          isResolved
+              ? (l10n?.disputeDetailReopenTitle ?? 'Reopen dispute?')
+              : (l10n?.disputeDetailMarkResolvedTitle ??
+                  'Mark as resolved?'),
+        ),
+        content: Text(
+          isResolved
+              ? (l10n?.disputeDetailReopenBody ??
+                  'This will reopen the dispute. Reminders will resume from today.')
+              : (l10n?.disputeDetailMarkResolvedBody ??
+                  'This will mark the dispute as resolved. Reminders will stop and it will move to your history. This can be undone.'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: Text(l10n?.commonCancel ?? 'Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: Text(l10n?.disputeDetailConfirm ?? 'Confirm'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) await _toggleResolved(context, ref);
   }
 
   Future<void> _toggleResolved(BuildContext context, WidgetRef ref) async {
