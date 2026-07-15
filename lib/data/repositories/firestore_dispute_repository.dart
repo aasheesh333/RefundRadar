@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:refund_radar/data/models/activity_log_entry.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 
 abstract class DisputeRepository {
   Future<List<Dispute>> loadDisputes(String uid);
+  Future<List<Dispute>> syncExpiredStatuses(String uid, List<Dispute> current, DateTime now);
   Future<Dispute> saveDispute(String uid, Dispute dispute);
   Future<void> deleteDispute(String uid, String id);
   Future<void> deleteAllUserData(String uid);
@@ -116,7 +118,8 @@ class FirestoreDisputeRepository implements DisputeRepository {
   Future<List<Dispute>> loadDisputes(String uid) async {
     // Auth token check lives inside the retry loop so a cold-boot race
     // (uid known, request.auth still null) gets the same backoff as reads.
-    return _loadDisputesWithRetry(uid);
+    final loaded = await _loadDisputesWithRetry(uid);
+    return syncExpiredStatuses(uid, loaded, DateTime.now());
   }
 
   Future<T> _withAuthRetry<T>(String uid, Future<T> Function() action) async {
@@ -146,6 +149,54 @@ class FirestoreDisputeRepository implements DisputeRepository {
       }
     }
     throw lastError ?? StateError('withAuthRetry exhausted for $uid');
+  }
+
+  /// Tracks dispute ids currently being expired so a rapid rebuild doesn't
+  /// enqueue multiple writes for the same document.
+  final _expiringInFlight = <String>{};
+
+  /// Returns the input list with any inactivity-expired disputes updated to
+  /// [DisputeStatus.expired] and persisted to Firestore. Expiry is computed
+  /// against [now] and is idempotent per app session.
+  Future<List<Dispute>> syncExpiredStatuses(
+    String uid,
+    List<Dispute> current,
+    DateTime now,
+  ) async {
+    final expired = <Dispute>[];
+    final toWrite = <Dispute>[];
+    for (final d in current) {
+      if (d.shouldAutoExpire(now) && !_expiringInFlight.contains(d.id)) {
+        _expiringInFlight.add(d.id);
+        final updated = d.copyWith(
+          status: DisputeStatus.expired,
+          activityLog: [
+            ...d.activityLog,
+            ActivityLogEntry(
+              type: ActivityLogEntry.disputeExpired,
+              label: 'Dispute expired after 90 days of inactivity',
+              meta: '',
+              timestamp: now,
+              highlighted: false,
+            ),
+          ],
+        );
+        toWrite.add(updated);
+        expired.add(updated);
+      } else {
+        expired.add(d);
+      }
+    }
+    for (final d in toWrite) {
+      try {
+        await saveDispute(uid, d);
+      } catch (e) {
+        debugPrint('syncExpiredStatuses write failed: $e');
+      } finally {
+        _expiringInFlight.remove(d.id);
+      }
+    }
+    return expired;
   }
 
   @override

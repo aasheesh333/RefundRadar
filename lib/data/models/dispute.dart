@@ -123,10 +123,35 @@ class Dispute {
       );
 
   DisputeStatus reopenTarget() {
+    if (status == DisputeStatus.expired) {
+      if (filedDates['ombudsman'] != null) return DisputeStatus.ombudsman;
+      if (filedDates['l2'] != null) return DisputeStatus.filedL2;
+      if (filedDates['l1'] != null) return DisputeStatus.filedL1;
+      return DisputeStatus.draft;
+    }
     if (filedDates['ombudsman'] != null) return DisputeStatus.ombudsman;
     if (filedDates['l2'] != null) return DisputeStatus.filedL2;
     if (filedDates['l1'] != null) return DisputeStatus.filedL1;
     return DisputeStatus.draft;
+  }
+
+  /// The most recent activity date for this dispute. Used to compute the
+  /// 90-day inactivity auto-expiry window.
+  DateTime get lastActivityDate {
+    final dates = filedDates.values.whereType<DateTime>().toList();
+    if (dates.isEmpty) return createdAt;
+    return dates.reduce((a, b) => a.isAfter(b) ? a : b);
+  }
+
+  /// True if this dispute should be marked expired due to 90 days of
+  /// inactivity. Terminal statuses and drafts are never auto-expired.
+  bool shouldAutoExpire(DateTime now) {
+    if (status == DisputeStatus.resolved ||
+        status == DisputeStatus.expired ||
+        status == DisputeStatus.draft) {
+      return false;
+    }
+    return now.difference(lastActivityDate).inDays > 90;
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{

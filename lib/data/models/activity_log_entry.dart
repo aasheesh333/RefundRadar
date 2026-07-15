@@ -45,4 +45,5 @@ class ActivityLogEntry {
   static const reminderFired = 'reminder_fired';
   static const resolved = 'resolved';
   static const utrDetected = 'utr_detected';
+  static const disputeExpired = 'dispute_expired';
 }
