@@ -835,7 +835,7 @@ class _Body extends ConsumerWidget {
                 localeCode: localeCode,
               );
             },
-          ),,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: FooterButton(
@@ -848,7 +848,10 @@ class _Body extends ConsumerWidget {
                 // route to the paywall instead of leaking the premium body.
                 if (isMatchLocked) {
                   context.push(
-                    '/paywall?return=/home&trigger=template_locked',
+                    AppRoutes.paywallWithParams(
+                      trigger: 'template_locked',
+                      returnPath: AppRoutes.home,
+                    ),
                   );
                   return;
                 }

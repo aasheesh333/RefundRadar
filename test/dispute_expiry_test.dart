@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:refund_radar/data/models/activity_log_entry.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 
 void main() {

@@ -158,6 +158,7 @@ class FirestoreDisputeRepository implements DisputeRepository {
   /// Returns the input list with any inactivity-expired disputes updated to
   /// [DisputeStatus.expired] and persisted to Firestore. Expiry is computed
   /// against [now] and is idempotent per app session.
+  @override
   Future<List<Dispute>> syncExpiredStatuses(
     String uid,
     List<Dispute> current,
