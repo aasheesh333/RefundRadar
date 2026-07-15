@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/core/providers/sms_detection_provider.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/features/settings/settings_actions.dart';
 import '../../core/providers/app_state_provider.dart';
@@ -188,16 +190,35 @@ class SettingsPage extends ConsumerWidget {
                               ),
                             ),
                             ToggleSwitch(
-                              value: true,
-                              onChanged: (_) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      l10n?.settingsSmsPermissionHint ??
-                                          'SMS permission manages under Android settings.',
-                                    ),
-                                  ),
-                                );
+                              value: ref.watch(smsDetectionEnabledProvider),
+                              onChanged: (v) async {
+                                if (v) {
+                                  final status =
+                                      await Permission.sms.request();
+                                  if (!context.mounted) return;
+                                  if (status.isGranted) {
+                                    await setSmsDetectionEnabled(true);
+                                    ref
+                                        .read(smsDetectionEnabledProvider
+                                            .notifier)
+                                        .state = true;
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          l10n?.settingsSmsPermissionHint ??
+                                              'SMS permission manages under Android settings.',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  await setSmsDetectionEnabled(false);
+                                  ref
+                                      .read(smsDetectionEnabledProvider
+                                          .notifier)
+                                      .state = false;
+                                }
                               },
                             ),
                           ],
@@ -313,7 +334,9 @@ class SettingsPage extends ConsumerWidget {
                       children: [
                         _RowPair(
                           left: l10n?.settingsVersion ?? 'Version',
-                          right: '2.0 (build 389)',
+                          right:
+                              '${const String.fromEnvironment('VERSION_NAME', defaultValue: '1.0.0')}'
+                              ' (${const String.fromEnvironment('VERSION_CODE', defaultValue: '1')})',
                         ),
                         const SizedBox(height: 6),
                         _RowPair(

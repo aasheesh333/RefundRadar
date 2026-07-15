@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:refund_radar/core/providers/sms_detection_provider.dart';
 import 'package:refund_radar/services/notification_service.dart';
 
 /// App-level global state: premium-flag + install timestamp + free-dispute counter.
@@ -152,6 +153,8 @@ Future<void> hydratePersistedAppState(dynamic ref) async {
       sp.getBool(_kPrefNotifDaily) ?? true;
   ref.read(notifWeeklyProvider.notifier).state =
       sp.getBool(_kPrefNotifWeekly) ?? false;
+  ref.read(smsDetectionEnabledProvider.notifier).state =
+      await loadSmsDetectionEnabled();
   await ref.read(freeDisputesUsedProvider.notifier).hydrate();
 }
 

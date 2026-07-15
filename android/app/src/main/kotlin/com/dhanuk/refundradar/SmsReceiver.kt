@@ -17,6 +17,13 @@ import android.provider.Telephony
 /// `isListening` is toggled false in `onDestroy` so late deliveries after
 /// teardown become a no-op instead of crashing the engine with a dangling
 /// receiver invocation.
+///
+/// CR-3 kill-switch: before forwarding, we also consult the shared
+/// preference `settings.sms_detection_enabled`. When the user toggles the
+/// feature off in Settings, the Dart side writes that key to `false`; the
+/// receiver reads it on every incoming SMS and short-circuits. This keeps
+/// the off-toggle authoritative even while the SMS permission is still
+/// held and the Flutter engine is alive.
 class SmsReceiver(
     private val isListening: () -> Boolean,
     private val onSms: (sender: String, body: String, timestamp: Long) -> Unit,
@@ -25,6 +32,17 @@ class SmsReceiver(
     override fun onReceive(context: Context, intent: Intent) {
         if (!isListening()) return
         if (intent.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
+
+        // CR-3 kill-switch: honour the persisted user toggle.
+        // Flutter's shared_preferences Android plugin stores values in a
+        // file named "FlutterSharedPreferences", with bool keys written raw
+        // (no prefix). Singleton caching makes this read effectively free.
+        val prefs = context.getSharedPreferences(
+            "FlutterSharedPreferences",
+            Context.MODE_PRIVATE,
+        )
+        val enabled = prefs.getBoolean("settings.sms_detection_enabled", true)
+        if (!enabled) return
 
         val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
         for (sms in messages) {
