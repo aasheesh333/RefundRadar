@@ -884,8 +884,8 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
           padding: const EdgeInsets.all(32),
           child: Text(
             isProTab
-                ? (sheetL10n?.detailNoProTemplates ?? 'No Pro templates for this category')
-                : (sheetL10n?.detailNoFreeTemplates ?? 'No free templates for this category'),
+                ? (l10n?.detailNoProTemplates ?? 'No Pro templates for this category')
+                : (l10n?.detailNoFreeTemplates ?? 'No free templates for this category'),
             style: TextStyle(color: tc.textTertiary, fontSize: 14),
           ),
         ),
