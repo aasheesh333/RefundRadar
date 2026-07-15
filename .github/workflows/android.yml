@@ -164,12 +164,24 @@ jobs:
           VERSION_NAME: ${{ secrets.VERSION_NAME }}
         run: |
           mkdir -p build/app/outputs/symbols
+          # Derive build name from git tag (e.g. v1.0.0-beta5 → 1.0.0-beta5)
+          # so secrets don't need updating on every release. Fall back to
+          # the VERSION_NAME secret for manual dispatch builds.
+          TAG_NAME="${GITHUB_REF#refs/tags/v}"
+          if [ -n "$TAG_NAME" ] && [[ "$TAG_NAME" == *.* ]]; then
+            BUILD_NAME="$TAG_NAME"
+          else
+            BUILD_NAME="$VERSION_NAME"
+          fi
+          # Increment VERSION_CODE from secret; if not set, use pubspec.
+          BUILD_NUM="${VERSION_CODE:-4}"
+          echo "Building: name=$BUILD_NAME, code=$BUILD_NUM"
           flutter build appbundle --release \
             --no-tree-shake-icons \
             --obfuscate \
             --split-debug-info=build/app/outputs/symbols \
-            --build-name="$VERSION_NAME" \
-            --build-number="$VERSION_CODE" \
+            --build-name="$BUILD_NAME" \
+            --build-number="$BUILD_NUM" \
             --dart-define=FB_ANDROID_API_KEY="$FB_ANDROID_API_KEY" \
             --dart-define=FB_ANDROID_APP_ID="$FB_ANDROID_APP_ID" \
             --dart-define=FB_MESSAGING_SENDER_ID="$FB_MESSAGING_SENDER_ID" \
@@ -331,12 +343,21 @@ jobs:
           VERSION_CODE: ${{ secrets.VERSION_CODE }}
           VERSION_NAME: ${{ secrets.VERSION_NAME }}
         run: |
+          # Derive build name from git tag (e.g. v1.0.0-beta5 → 1.0.0-beta5)
+          TAG_NAME="${GITHUB_REF#refs/tags/v}"
+          if [ -n "$TAG_NAME" ] && [[ "$TAG_NAME" == *.* ]]; then
+            BUILD_NAME="$TAG_NAME"
+          else
+            BUILD_NAME="$VERSION_NAME"
+          fi
+          BUILD_NUM="${VERSION_CODE:-4}"
+          echo "Building: name=$BUILD_NAME, code=$BUILD_NUM"
           flutter build apk --release \
             --no-tree-shake-icons \
             --obfuscate \
             --split-debug-info=build/app/outputs/symbols \
-            --build-name="$VERSION_NAME" \
-            --build-number="$VERSION_CODE" \
+            --build-name="$BUILD_NAME" \
+            --build-number="$BUILD_NUM" \
             --dart-define=FB_ANDROID_API_KEY="$FB_ANDROID_API_KEY" \
             --dart-define=FB_ANDROID_APP_ID="$FB_ANDROID_APP_ID" \
             --dart-define=FB_MESSAGING_SENDER_ID="$FB_MESSAGING_SENDER_ID" \
