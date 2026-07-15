@@ -322,6 +322,7 @@
   "formEligiblePerDayComp": "आप T+{days} के बाद ₹100/दिन मुआवजे के हक़दार हैं।",
   "formSms": "SMS",
   "formFreeLimitReached": "मुफ़्त योजना में 1 सक्रिय विवाद है। असीमित के लिए अपग्रेड करें।",
+  "formFreeLimitUpgrade": "अपग्रेड",
   "formUtrRequired": "UTR दर्ज करें",
   "formAmountCap": "राशि ₹5,00,000 से कम होनी चाहिए",
   "disputeTypeStep1Of4": "चरण 1 / 4",

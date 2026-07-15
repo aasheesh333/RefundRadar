@@ -846,6 +846,10 @@ class AppLocalizations {
       'en': 'Free plan allows 1 active dispute. Upgrade for unlimited.',
       'hi': 'मुफ़्त योजना में 1 सक्रिय विवाद है। असीमित के लिए अपग्रेड करें।',
     },
+    'formFreeLimitUpgrade': {
+      'en': 'Upgrade',
+      'hi': 'अपग्रेड',
+    },
     'formUtrRequired': {
       'en': 'Enter the UTR / transaction ID',
       'hi': 'UTR दर्ज करें',
@@ -1349,6 +1353,7 @@ class AppLocalizations {
       _t('formEligiblePerDayComp', args: {'days': days});
   String get formSms => _t('formSms');
   String get formFreeLimitReached => _t('formFreeLimitReached');
+  String get formFreeLimitUpgrade => _t('formFreeLimitUpgrade');
   String get formUtrRequired => _t('formUtrRequired');
   String get formAmountCap => _t('formAmountCap');
 

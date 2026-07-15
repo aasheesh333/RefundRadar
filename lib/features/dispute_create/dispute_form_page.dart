@@ -366,10 +366,19 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                 AppLocalizations.of(context)?.formFreeLimitReached ??
                     'Free plan allows 1 active dispute. Upgrade for unlimited.',
               ),
-              duration: Duration(seconds: 3),
+              duration: const Duration(seconds: 3),
+              action: SnackBarAction(
+                label: AppLocalizations.of(context)?.formFreeLimitUpgrade ??
+                    'Upgrade',
+                onPressed: () => context.push(
+                  AppRoutes.paywallWithParams(
+                    trigger: 'free_second_dispute',
+                    returnPath: AppRoutes.home,
+                  ),
+                ),
+              ),
             ),
           );
-          context.push(AppRoutes.paywallWithReturn('/home', 'free_second_dispute'));
           return;
         }
       }

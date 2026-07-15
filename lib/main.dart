@@ -111,21 +111,19 @@ void main() {
     //     Use the container-managed singleton rather than a bare
     //     NotificationService() so any future per-instance state stays
     //     consistent.
-    if (_crashlyticsEnabled) {
-      final notifService = container.read(notificationServiceProvider);
-      FirebaseMessaging.onMessage.listen((message) {
-        final notification = message.notification;
-        if (notification == null) return;
-        try {
-          notifService.showSimpleNotification(
-            title: notification.title ?? '',
-            body: notification.body ?? '',
-          );
-        } catch (e) {
-          debugPrint('FCM foreground notification show failed: $e');
-        }
-      });
-    }
+    final notifService = container.read(notificationServiceProvider);
+    FirebaseMessaging.onMessage.listen((message) {
+      final notification = message.notification;
+      if (notification == null) return;
+      try {
+        notifService.showSimpleNotification(
+          title: notification.title ?? '',
+          body: notification.body ?? '',
+        );
+      } catch (e) {
+        debugPrint('FCM foreground notification show failed: $e');
+      }
+    });
     runApp(UncontrolledProviderScope(
       container: container,
       child: const RefundRadarApp(),
