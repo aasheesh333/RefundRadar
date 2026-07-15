@@ -22,7 +22,7 @@ android {
     // compileSdk ≥35. This keeps native libraries (libflutter.so,
     // libapp.so, Firebase/RC native libs) 16 KB aligned so the app
     // does not crash on 16 KB-page devices (Pixel 9, future devices).
-    compileSdk = 35
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
