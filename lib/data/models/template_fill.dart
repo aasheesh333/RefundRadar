@@ -1,6 +1,7 @@
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/template.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
+import 'package:refund_radar/shared/utils/date_time_ext.dart';
 
 /// Builds placeholder maps for [Template.fill] from an optional [Dispute].
 /// Covers every token used in `assets/templates/**/*.json` plus short aliases
@@ -38,7 +39,9 @@ Map<String, String> fillValuesForDispute(Dispute? dispute) {
 
   final comp = CompensationCalculator.compute(dispute);
   final compensationDue = comp.compensationDue.toStringAsFixed(0);
-  final daysElapsed = DateTime.now().difference(dispute.txnDate).inDays;
+  // ME-2: calendar-day math so a template letter written near midnight
+  // doesn't under-report the days elapsed since the transaction.
+  final daysElapsed = DateTime.now().differenceInDays(dispute.txnDate);
   final daysElapsedStr = daysElapsed < 0 ? '0' : '$daysElapsed';
 
   final desc = dispute.description ?? '';

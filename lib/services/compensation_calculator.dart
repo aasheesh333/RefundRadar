@@ -1,4 +1,6 @@
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/shared/utils/date_time_ext.dart';
+import 'package:refund_radar/shared/utils/indian_number_formatter.dart';
 
 class CompensationResult {
   final int daysElapsed;
@@ -32,7 +34,9 @@ class CompensationCalculator {
       );
     }
     final deadline = dispute.txnDate.add(Duration(days: dispute.type.tatDays!));
-    final elapsed = today.difference(deadline).inDays;
+    // ME-2: use calendar-day math so a wall-clock `now` taken at 23:59 vs a
+    // midnight-aligned deadline doesn't under-report by a day.
+    final elapsed = today.differenceInDays(deadline);
     final days = elapsed < 0 ? 0 : (elapsed > _displayCapDays ? _displayCapDays : elapsed);
     final comp = days * dispute.type.compensationPerDay!;
     return CompensationResult(
@@ -47,27 +51,20 @@ class CompensationCalculator {
   static int daysUntilChargebackExpiry(Dispute dispute, {DateTime? now}) {
     final today = (now ?? DateTime.now());
     const window = 45;
-    return dispute.txnDate.add(const Duration(days: window)).difference(today).inDays;
+    // ME-2: calendar-day math; deadline is midnight-aligned.
+    return dispute.txnDate.add(const Duration(days: window)).differenceInDays(today);
   }
 
   static int daysUntilFastagExpiry(Dispute dispute, {DateTime? now}) {
     final today = (now ?? DateTime.now());
-    return dispute.txnDate.add(const Duration(days: 30)).difference(today).inDays;
+    // ME-2: calendar-day math.
+    return dispute.txnDate.add(const Duration(days: 30)).differenceInDays(today);
   }
 
   static String formatIndian(double amount) {
-    final str = amount.toStringAsFixed(0);
-    final parts = <String>[];
-    int count = 0;
-    for (int i = str.length - 1; i >= 0; i--) {
-      if (count == 3) {
-        parts.insert(0, ',');
-      } else if (count > 3 && count % 2 == 1) {
-        parts.insert(0, ',');
-      }
-      parts.insert(0, str[i]);
-      count++;
-    }
-    return '₹${parts.join()}';
+    // LO-1: delegate to the single Indian grouping implementation so the
+    // three local copies (home_page, owed_counter_card, here) can be removed
+    // without behaviour drift.
+    return '₹${IndianNumberFormatter.format(amount)}';
   }
 }

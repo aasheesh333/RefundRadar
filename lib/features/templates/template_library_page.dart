@@ -18,6 +18,7 @@ import '../../shared/widgets/filter_pills.dart';
 import '../../shared/widgets/status_pill.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
+import 'package:refund_radar/shared/utils/indian_number_formatter.dart';
 
 Map<String, String> templateFillValues(Dispute? dispute) =>
     fillValuesForDispute(dispute);
@@ -154,7 +155,8 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                   DropdownMenuItem(
                     value: d.id,
                     child: Text(
-                      '${d.entityName ?? d.type.id} · ₹${d.amount.toStringAsFixed(0)}',
+                      // LO-1: Indian-grouped amount in the dispute selector.
+                      '${d.entityName ?? d.type.id} · ₹${IndianNumberFormatter.format(d.amount)}',
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),

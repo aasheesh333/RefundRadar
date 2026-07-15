@@ -618,47 +618,27 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
   String _fmtDate(DateTime d) =>
       '${d.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]}, ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
-  /// F3 — category for this dispute's type (matches template JSON categories).
-  String _disputeCategory() => switch (dispute.type) {
-        DisputeType.upiP2p ||
-        DisputeType.upiP2m ||
-        DisputeType.atm ||
-        DisputeType.imps => 'UPI / IMPS / ATM',
-        DisputeType.fastag => 'FASTag',
-        DisputeType.bankCharge => 'Bank charges',
-        DisputeType.wrongTransfer => 'Wrong transfer',
-      };
+  /// F3 — category for this dispute's type. Delegates to the shared
+  /// [TemplateRepository.categoryFor] so the labels can't drift from the
+  /// escalate screen.
+  String _disputeCategory() => TemplateRepository.categoryFor(dispute.type);
 
-  /// F3 — auto-match a template for the dispute's category, preferring
-  /// unlocked (free for this user) level-2 templates first; falls back to
-  /// a free template, then any template in the category. Mirrors the
-  /// escalate-page `_matchEscalationTemplate` logic (Task F1) so the
-  /// dispute-detail preview never leaks a premium body to free users.
+  /// F3 — auto-match a template for the dispute's category. Delegates to
+  /// the shared [TemplateRepository.matchForCategory] (ME-7) so the
+  /// dispute-detail preview stays in lockstep with the escalate auto-match.
   Template? _matchDisputeTemplate(
     List<Template> templates,
     Dispute d,
     TemplateRepository repo,
     Set<String> freeIds,
     bool isPremiumUser,
-  ) {
-    final category = _disputeCategory();
-    for (final t in templates) {
-      if (t.escalationLevel == 2 &&
-          t.category == category &&
-          !repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser)) {
-        return t;
-      }
-    }
-    for (final t in templates) {
-      if (t.escalationLevel == 2 && t.category == category && !t.isPremium) {
-        return t;
-      }
-    }
-    for (final t in templates) {
-      if (t.escalationLevel == 2 && t.category == category) return t;
-    }
-    return null;
-  }
+  ) =>
+      repo.matchForCategory(
+        templates,
+        d.type,
+        freeIds,
+        isPremiumUser: isPremiumUser,
+      );
 
   /// F3 — the template card shown on the dispute detail screen.
   Widget _buildTemplateCard(
@@ -792,18 +772,16 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
     AppLocalizations? l10n,
   ) {
     final tc = AppThemeColors.of(context);
-    final category = _disputeCategory();
-
-    final freeTemplates = <Template>[];
-    final proTemplates = <Template>[];
-    for (final t in templates) {
-      if (t.escalationLevel != 2 || t.category != category) continue;
-      if (repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser)) {
-        proTemplates.add(t);
-      } else {
-        freeTemplates.add(t);
-      }
-    }
+    // ME-7: partition via the shared helper so free/pro buckets match
+    // the escalate picker exactly.
+    final buckets = repo.splitForCategory(
+      templates,
+      dispute.type,
+      freeIds,
+      isPremiumUser: isPremiumUser,
+    );
+    final freeTemplates = buckets.free;
+    final proTemplates = buckets.pro;
 
     showModalBottomSheet<void>(
       context: context,

@@ -350,7 +350,8 @@ class _Body extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(AppRadii.pill),
               ),
               child: Text(
-                l10n?.escalateT5Missed ?? '⚠ T+5 missed',
+                l10n?.escalateDeadlineMissed(dispute.type.tatBasis) ??
+                    '⚠ ${dispute.type.tatBasis} missed',
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
@@ -415,9 +416,16 @@ class _Body extends ConsumerWidget {
               ),
               const SizedBox(width: 4),
               Text(
+                // ME-1: use the dispute type's TAT basis instead of a
+                // hardcoded "T+5" so FASTag / wrong-transfer disputes show
+                // their actual window label.
                 deadlineMissed
-                    ? 'T+5 deadline missed — claim full penalty'
-                    : 'T+5 deadline in $deadlineDays days',
+                    ? (l10n?.escalateDeadlineMissedPenalty(
+                            dispute.type.tatBasis) ??
+                        '${dispute.type.tatBasis} deadline missed — claim full penalty')
+                    : (l10n?.escalateDeadlineIn(
+                            dispute.type.tatBasis, deadlineDays) ??
+                        '${dispute.type.tatBasis} deadline in $deadlineDays days'),
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
@@ -944,36 +952,15 @@ class _Body extends ConsumerWidget {
     Set<String> freeIds,
     bool isPremiumUser,
   ) {
-    final category = switch (d.type) {
-      DisputeType.upiP2p ||
-      DisputeType.upiP2m ||
-      DisputeType.atm ||
-      DisputeType.imps => 'UPI / IMPS / ATM',
-      DisputeType.fastag => 'FASTag',
-      DisputeType.bankCharge => 'Bank charges',
-      DisputeType.wrongTransfer => 'Wrong transfer',
-    };
-    // First try unlocked level-2 templates only — prevents the auto-match
-    // from leaking premium template bodies to free users (Task F1).
-    for (final t in templates) {
-      if (t.escalationLevel == 2 &&
-          t.category == category &&
-          !repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser)) {
-        return t;
-      }
-    }
-    // Fallback: any free (non-premium) template in this category & level.
-    for (final t in templates) {
-      if (t.escalationLevel == 2 && t.category == category && !t.isPremium) {
-        return t;
-      }
-    }
-    // Last resort: any template in category (may be locked — picker & body
-    // preview handle the gating from here).
-    for (final t in templates) {
-      if (t.escalationLevel == 2 && t.category == category) return t;
-    }
-    return null;
+    // ME-7: delegate to the shared matcher so this screen stays in lockstep
+    // with the dispute-detail preview. The 3-tier fallback (unlocked →
+    // free-in-category → any-in-category) lives in one place now.
+    return repo.matchForCategory(
+      templates,
+      d.type,
+      freeIds,
+      isPremiumUser: isPremiumUser,
+    );
   }
 
   void _showFullEmail(BuildContext context, {required String body}) {

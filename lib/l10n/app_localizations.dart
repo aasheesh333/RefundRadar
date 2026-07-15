@@ -814,6 +814,18 @@ class AppLocalizations {
       'hi': 'अधिकतम दंड जिसका दावा आप कर सकते हैं',
     },
     'escalateT5Missed': {'en': '⚠ T+5 missed', 'hi': '⚠ T+5 चूका'},
+    'escalateDeadlineMissed': {
+      'en': '⚠ {basis} missed',
+      'hi': '⚠ {basis} चूका',
+    },
+    'escalateDeadlineIn': {
+      'en': '{basis} deadline in {days} days',
+      'hi': '{basis} समय-सीमा {days} दिन में',
+    },
+    'escalateDeadlineMissedPenalty': {
+      'en': '{basis} deadline missed — claim full penalty',
+      'hi': '{basis} समय-सीमा चूकी — पूरा दंड का दावा करें',
+    },
     'escalateNoAmount': {
       'en': 'No transaction amount on this dispute',
       'hi': 'इस विवाद में कोई लेन-देन राशि नहीं',
@@ -1276,6 +1288,12 @@ class AppLocalizations {
 
   String get escalateMaxPenaltyLabel => _t('escalateMaxPenaltyLabel');
   String get escalateT5Missed => _t('escalateT5Missed');
+  String escalateDeadlineMissed(String basis) =>
+      _t('escalateDeadlineMissed', args: {'basis': basis});
+  String escalateDeadlineIn(String basis, int days) =>
+      _t('escalateDeadlineIn', args: {'basis': basis, 'days': '$days'});
+  String escalateDeadlineMissedPenalty(String basis) =>
+      _t('escalateDeadlineMissedPenalty', args: {'basis': basis});
   String get escalateNoAmount => _t('escalateNoAmount');
   String get escalateTapToExpand => _t('escalateTapToExpand');
   String get escalateEditTemplate => _t('escalateEditTemplate');

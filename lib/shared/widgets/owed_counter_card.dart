@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../l10n/app_localizations.dart';
+import '../../shared/utils/indian_number_formatter.dart';
 
 /// Hero "You're owed" gradient card matching mockup Screen 4.
 /// Dark green gradient background, amber-heavy counter moved to WHITE per
@@ -186,18 +187,8 @@ class _OwedCounterCardState extends State<OwedCounterCard>
   }
 
   String _formatIndian(double amount) {
-    final str = amount.toStringAsFixed(0);
-    final parts = <String>[];
-    int count = 0;
-    for (int i = str.length - 1; i >= 0; i--) {
-      if (count == 3) {
-        parts.insert(0, ',');
-      } else if (count > 3 && count % 2 == 1) {
-        parts.insert(0, ',');
-      }
-      parts.insert(0, str[i]);
-      count++;
-    }
-    return '₹ ${parts.join()}';
+    // LO-1: delegate to the shared Indian grouping helper. The leading
+    // "₹ " (with space) is intentional to match the hero counter's styling.
+    return '₹ ${IndianNumberFormatter.format(amount)}';
   }
 }

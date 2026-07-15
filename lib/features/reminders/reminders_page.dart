@@ -12,6 +12,7 @@ import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
+import 'package:refund_radar/shared/utils/date_time_ext.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 
 class RemindersPage extends ConsumerWidget {
@@ -98,11 +99,16 @@ class _ReminderCard extends ConsumerWidget {
     final tc = AppThemeColors.of(context);
     final type = reminder.disputeType;
     final now = DateTime.now();
-    final delta = reminder.fireAt.difference(now);
-    final overdue = delta.isNegative;
-    final daysLeft = delta.inDays;
+    // LO-2 / ME-2: use calendar-day math so a reminder that crosses
+    // midnight relative to `fireAt` isn't reported with a truncated day
+    // count. `differenceInDays` returns (this - other) in whole calendar
+    // days, so a negative value means the fire date is in the past.
+    final daysLeft = reminder.fireAt.differenceInDays(now);
+    final overdue = daysLeft < 0;
     final subtitle = overdue
-        ? 'Overdue by ${-daysLeft} ${-daysLeft == 1 ? 'day' : 'days'}'
+        ? (daysLeft == -1
+            ? 'Overdue today — escalate now'
+            : 'Overdue by ${-daysLeft} ${-daysLeft == 1 ? 'day' : 'days'}')
         : daysLeft == 0
             ? 'Due today'
             : 'In $daysLeft ${daysLeft == 1 ? 'day' : 'days'}';

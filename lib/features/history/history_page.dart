@@ -7,9 +7,12 @@ import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/extensions/dispute_type_display.dart';
+import 'package:refund_radar/data/extensions/dispute_outcome.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
+import 'package:refund_radar/shared/utils/date_time_ext.dart';
+import 'package:refund_radar/shared/utils/indian_number_formatter.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/filter_pills.dart';
@@ -38,18 +41,9 @@ List<Dispute> filterHistoryDisputes(List<Dispute> disputes, String filter) {
       .toList();
   switch (filter) {
     case 'Won':
-      return past
-          .where((d) =>
-              d.status == DisputeStatus.resolved &&
-              (d.resolvedAmount ?? 0) > 0)
-          .toList();
+      return past.where((d) => d.isWon).toList();
     case 'Lost':
-      return past
-          .where((d) =>
-              d.status == DisputeStatus.expired ||
-              (d.status == DisputeStatus.resolved &&
-                  (d.resolvedAmount ?? 0) == 0))
-          .toList();
+      return past.where((d) => d.isLost).toList();
     case 'Escalated':
       return disputes.where(isEscalatedDispute).toList();
     default:
@@ -268,14 +262,12 @@ class _HistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
-    final won = dispute.status == DisputeStatus.resolved &&
-        (dispute.resolvedAmount ?? 0) > 0;
-    final lost = dispute.status == DisputeStatus.expired ||
-        (dispute.status == DisputeStatus.resolved &&
-            (dispute.resolvedAmount ?? 0) == 0);
-    final partial = dispute.status == DisputeStatus.resolved &&
-        won &&
-        (dispute.resolvedAmount ?? 0) < dispute.amount;
+    // ME-4: use the shared outcome helpers instead of inlining the
+    // (status, resolvedAmount) predicates; keeps the filter pills and the
+    // card in lockstep.
+    final won = dispute.isWon;
+    final lost = dispute.isLost;
+    final partial = dispute.isPartial;
 
     final amount = dispute.resolvedAmount ?? 0;
     final (cardBorderColor, emojiBg, amountColor, badge, statusLabel) = switch ((
@@ -413,10 +405,21 @@ class _HistoryCard extends StatelessWidget {
     final l1 = dispute.filedDates['l1'];
     final resolved = dispute.resolvedAt;
     if (dispute.status == DisputeStatus.resolved && resolved != null && l1 != null) {
-      final days = resolved.difference(l1).inDays;
-      final comp = (dispute.resolvedAmount ?? 0) > dispute.amount
-          ? ' · ₹100 comp included'
-          : ' · ₹${dispute.type.compensationPerDay ?? 100} comp';
+      // ME-2: calendar-day math so a resolution that lands the morning
+      // after an evening L1 filing isn't truncated to 0 days.
+      final days = resolved.differenceInDays(l1);
+      // LO-3: only show the comp suffix when the type actually carries
+      // daily compensation (TAT types) AND the resolved amount exceeds the
+      // debited principal — i.e. the user actually got comp. For
+      // fastag / bank_charge / wrong_transfer (compensationPerDay == null)
+      // and for plain refund-only outcomes, hide the label.
+      final perDay = dispute.type.compensationPerDay;
+      final recovered = dispute.resolvedAmount ?? 0;
+      final compLabel = (perDay == null || recovered <= dispute.amount)
+          ? ''
+          : (recovered > dispute.amount
+              ? ' · ₹100 comp included'
+              : ' · ₹$perDay comp');
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -424,11 +427,12 @@ class _HistoryCard extends StatelessWidget {
             'Filed ${_fmtDate(l1)} · resolved in $days days',
             style: TextStyle(fontSize: 11, color: tc.textSecondary),
           ),
-          Text(
-            comp,
-            style: const TextStyle(
-                fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.accent),
-          ),
+          if (compLabel.isNotEmpty)
+            Text(
+              compLabel,
+              style: const TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.accent),
+            ),
         ],
       );
     }

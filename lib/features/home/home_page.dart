@@ -15,6 +15,7 @@ import 'package:refund_radar/shared/widgets/dispute_card.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
+import 'package:refund_radar/shared/utils/indian_number_formatter.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
 
 /// Non-terminal disputes shown on Home (active only).
@@ -337,23 +338,10 @@ class _Body extends ConsumerWidget {
   }
 
   /// Format an amount using the Indian numbering system (e.g. 1,00,000)
-  /// without the leading ₹ symbol — matches OwedCounterCard._formatIndian
-  /// so the breakdown subtitle uses the same digit grouping as the hero.
-  static String _formatIndian(double amount) {
-    final str = amount.toStringAsFixed(0);
-    final parts = <String>[];
-    int count = 0;
-    for (int i = str.length - 1; i >= 0; i--) {
-      if (count == 3) {
-        parts.insert(0, ',');
-      } else if (count > 3 && count % 2 == 1) {
-        parts.insert(0, ',');
-      }
-      parts.insert(0, str[i]);
-      count++;
-    }
-    return parts.join();
-  }
+  /// without the leading ₹ symbol — delegates to the shared helper so the
+  /// breakdown subtitle matches the hero card exactly.
+  static String _formatIndian(double amount) =>
+      IndianNumberFormatter.format(amount);
 }
 
 class _EmptyState extends StatelessWidget {
@@ -500,23 +488,10 @@ class _DetectedCard extends ConsumerWidget {
   const _DetectedCard({required this.detection});
 
   /// Format an integer amount using the Indian numbering system
-  /// (1,00,000 etc.) without the leading ₹ symbol — matches the rest of
-  /// the home page's grouping.
-  static String _formatIndianAmount(double amount) {
-    final str = amount.toStringAsFixed(0);
-    final parts = <String>[];
-    int count = 0;
-    for (int i = str.length - 1; i >= 0; i--) {
-      if (count == 3) {
-        parts.insert(0, ',');
-      } else if (count > 3 && count % 2 == 1) {
-        parts.insert(0, ',');
-      }
-      parts.insert(0, str[i]);
-      count++;
-    }
-    return parts.join();
-  }
+  /// (1,00,000 etc.) without the leading ₹ symbol — delegates to the
+  /// shared helper so the detected card matches the rest of the home page.
+  static String _formatIndianAmount(double amount) =>
+      IndianNumberFormatter.format(amount);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

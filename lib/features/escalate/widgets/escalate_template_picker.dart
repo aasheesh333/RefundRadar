@@ -29,28 +29,17 @@ class EscalateTemplatePicker {
   }) {
     final tc = AppThemeColors.of(context);
 
-    final category = switch (dispute.type) {
-      DisputeType.upiP2p ||
-      DisputeType.upiP2m ||
-      DisputeType.atm ||
-      DisputeType.imps => 'UPI / IMPS / ATM',
-      DisputeType.fastag => 'FASTag',
-      DisputeType.bankCharge => 'Bank charges',
-      DisputeType.wrongTransfer => 'Wrong transfer',
-    };
-
-    // F2: split level-2 templates for this category into Free (unlocked
-    // for this user) and Pro (locked) buckets for the two-tab picker.
-    final freeTemplates = <Template>[];
-    final proTemplates = <Template>[];
-    for (final t in templates) {
-      if (t.escalationLevel != 2 || t.category != category) continue;
-      if (repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser)) {
-        proTemplates.add(t);
-      } else {
-        freeTemplates.add(t);
-      }
-    }
+    // ME-7: partition via the shared helper so the free/pro buckets match
+    // every other call site. The old inline `switch (dispute.type)` + loop
+    // is now one delegated call.
+    final buckets = repo.splitForCategory(
+      templates,
+      dispute.type,
+      freeIds,
+      isPremiumUser: isPremiumUser,
+    );
+    final freeTemplates = buckets.free;
+    final proTemplates = buckets.pro;
 
     showModalBottomSheet<void>(
       context: context,

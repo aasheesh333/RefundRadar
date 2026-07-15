@@ -85,14 +85,11 @@ void main() {
     //    this once it succeeds.
     final container = ProviderContainer();
     await hydratePersistedAppState(container);
-    // 5a. Initialise local notifications (B6 reminders local push). Safe
-    //     no-op if permission hasn't been granted yet — user grants via
-    //     settings UI or the onboarding SMS screen. Wire the notification
-    //     tap callback BEFORE init so the first tap routes correctly too
-    //     (Task C7): the static dispatch reads `goRouterProvider` from
-    //     the same container.
-    NotificationService.onNotificationTap =
-        _buildNotificationTapHandler(container);
+    // ME-8: notification deep-links can arrive before the widget tree /
+    // router exist (cold-launch tap on a UTR notification). Wire the tap
+    // handler through a queue that buffers taps until the router is ready.
+    final tapRouter = _NotificationTapRouter(container);
+    NotificationService.onNotificationTap = tapRouter.handle;
     await container.read(notificationServiceProvider).init();
     // 5. Configure RevenueCat in the same container so it can write into
     //    `isPremiumProvider` (and persist it) on purchase / restore.
@@ -133,6 +130,11 @@ void main() {
       container: container,
       child: const RefundRadarApp(),
     ));
+    // ME-8: the router is built lazily inside the handler; mark it ready
+    // on the first post-frame callback so a queued cold-launch tap drains
+    // only after the navigator is attached (otherwise `goRouter.go` is a
+    // no-op).
+    WidgetsBinding.instance.addPostFrameCallback((_) => tapRouter.markReady());
   }, (Object error, StackTrace stack) {
     if (_crashlyticsEnabled) {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: false);
@@ -144,29 +146,51 @@ void main() {
 
 /// Routes a UTR auto-detect notification tap to the dispute form (Task C7).
 ///
-/// UTR auto-detect notifications carry
-/// `utr_detected://utr=...&amount=...&sender=...` (see
-/// `NotificationService.showUtrDetectedNotification`). We rewrite the
-/// custom scheme into a `?`-style query and extract the three fields.
-/// The dispute form reads them as optional constructor params and
-/// pre-fills UTR / amount; a missing amount is dropped (the form still
-/// opens with the UTR only).
-void Function(String? payload) _buildNotificationTapHandler(
-  ProviderContainer container,
-) {
-  return (String? payload) {
+/// ME-8 wrapper: notification deep-links can arrive before the GoRouter's
+/// navigator is attached (cold-launch tap on a UTR notification while the
+/// Flutter engine is still wiring the tree). A direct `goRouter.go()`
+/// there is a no-op. This router buffers taps in `_pending` until
+/// [markReady] is called (post first-frame), then drains them. Once ready,
+/// taps dispatch immediately. Only `utr_detected://` payloads are routed;
+/// everything else is ignored.
+class _NotificationTapRouter {
+  _NotificationTapRouter(this._container);
+  final ProviderContainer _container;
+  bool _ready = false;
+  final List<String?> _pending = [];
+
+  void handle(String? payload) {
+    if (payload == null) return;
+    if (!_ready) {
+      _pending.add(payload);
+      return;
+    }
+    _dispatch(payload);
+  }
+
+  void markReady() {
+    _ready = true;
+    if (_pending.isEmpty) return;
+    final drained = List<String?>.from(_pending);
+    _pending.clear();
+    for (final p in drained) {
+      _dispatch(p);
+    }
+  }
+
+  // Rewrite `utr_detected://utr=X&amount=Y&sender=Z` → `?utr=X&amount=Y&sender=Z`
+  // so Uri.parse can pull the queryParameters. The scheme `utr_detected`
+  // has no host in our payloads, so inserting `?` after `://` is safe and
+  // lossless for the values we URL-encoded in the first place.
+  void _dispatch(String? payload) {
     if (payload == null || !payload.startsWith('utr_detected://')) return;
-    // Rewrite `utr_detected://utr=X&amount=Y&sender=Z` → `?utr=X&amount=Y&sender=Z`
-    // so Uri.parse can pull the queryParameters. The scheme `utr_detected`
-    // has no host in our payloads, so inserting `?` after `://` is safe and
-    // lossless for the values we URL-encoded in the first place.
     final rest = payload.substring('utr_detected://'.length);
     final uri = Uri.parse('utr_detected://?$rest');
     final utr = uri.queryParameters['utr'] ?? '';
     final amount = double.tryParse(uri.queryParameters['amount'] ?? '');
     final senderRaw = uri.queryParameters['sender'];
     if (utr.isEmpty) return;
-    final goRouter = container.read(goRouterProvider);
+    final goRouter = _container.read(goRouterProvider);
     final target = AppRoutes.disputesFormWithParams(
       type: 'upi_p2p',
       utr: utr,
@@ -174,7 +198,7 @@ void Function(String? payload) _buildNotificationTapHandler(
       sender: senderRaw,
     );
     goRouter.go(target);
-  };
+  }
 }
 
 class RefundRadarApp extends ConsumerWidget {
