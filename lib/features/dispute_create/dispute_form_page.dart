@@ -686,6 +686,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                     ),
                                     cursorColor: AppColors.primary,
                                     keyboardType: TextInputType.number,
+                                    maxLength: 6,
                                     inputFormatters: [
                                       FilteringTextInputFormatter.digitsOnly,
                                     ],
@@ -694,6 +695,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                       isDense: true,
                                       border: InputBorder.none,
                                       contentPadding: EdgeInsets.zero,
+                                      counterText: '',
                                     ),
                                     onChanged: (_) => setState(() {}),
                                   ),
@@ -968,10 +970,14 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
 
   String _estimate(DisputeType type) {
     final l10n = AppLocalizations.of(context);
-    final amount = double.tryParse(_amountCtrl.text);
-    if (amount == null || amount <= 0) {
+    final raw = double.tryParse(_amountCtrl.text);
+    if (raw == null || raw <= 0) {
       return l10n?.formAddAmountToEstimate ?? 'Add amount to estimate';
     }
+    // HI-1 / ME-3: cap the live preview at the ₹5,00,000 maximum the
+    // form accepts, so the estimate never shows a value the user can't
+    // actually submit.
+    final amount = raw > 500000 ? 500000.0 : raw;
     final amtStr = CompensationCalculator.formatIndian(amount);
     if (type.tatDays == null || type.compensationPerDay == null) {
       return l10n?.formClaimAmount(amtStr) ?? 'Claim $amtStr';
@@ -1108,7 +1114,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                 remaining.add(b);
               }
             }
-            final other = otherEntry ?? BankCatalog.banks.last;
+            // HI-3: never fall back to an arbitrary bank (the old `.last`
+            // could surface a random bank when the 'other' entry is renamed
+            // or removed). If 'other' is missing, simply hide the pinned
+            // tile — the user still has every real bank above.
+            final other = otherEntry;
 
             return SizedBox(
               height: MediaQuery.of(context).size.height * 0.7,
@@ -1203,14 +1213,15 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                             });
                             Navigator.pop(context);
                           }),
-                        // Other bank pinned at bottom
-                        _bankTile(sheetContext, other, tc, () {
-                          setState(() {
-                            _bankName = other.name;
-                            _selectedEntityId = other.id;
-                          });
-                          Navigator.pop(context);
-                        }),
+                        // Other bank pinned at bottom (only if present in the catalog)
+                        if (other != null)
+                          _bankTile(sheetContext, other, tc, () {
+                            setState(() {
+                              _bankName = other.name;
+                              _selectedEntityId = other.id;
+                            });
+                            Navigator.pop(context);
+                          }),
                       ],
                     ),
                   ),

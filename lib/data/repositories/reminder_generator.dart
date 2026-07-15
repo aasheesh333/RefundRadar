@@ -20,8 +20,11 @@ class ReminderGenerator {
     final out = <Reminder>[];
 
     // ----- L1 follow-up: 30 days after filing L1 (bank charge / UPI / etc.) -----
-    final l1Filed = d.filedDates['l1'];
-    if (l1Filed != null && d.status != DisputeStatus.resolved && d.status != DisputeStatus.expired) {
+    // ME-5: fall back to dispute createdAt when filedDates['l1'] is absent
+    // (corrupted / pre-feature data) so an L1-stage dispute still gets its
+    // 30-day follow-up reminder instead of silently never firing.
+    final l1Filed = d.filedDates['l1'] ?? d.createdAt;
+    if (d.status != DisputeStatus.resolved && d.status != DisputeStatus.expired) {
       final fire = l1Filed.add(const Duration(days: 30));
       if (fire.isAfter(effectiveNow) && d.status == DisputeStatus.filedL1) {
         out.add(_make(
@@ -36,8 +39,9 @@ class ReminderGenerator {
     }
 
     // ----- L2 escalation: 7 days after L2 filing (or 37 days after L1) -----
-    final l2Filed = d.filedDates['l2'];
-    if (l2Filed != null && d.status != DisputeStatus.resolved && d.status != DisputeStatus.expired) {
+    // ME-5: same fallback as L1 — use createdAt when l2 date is missing.
+    final l2Filed = d.filedDates['l2'] ?? d.createdAt;
+    if (d.status != DisputeStatus.resolved && d.status != DisputeStatus.expired) {
       final fire = l2Filed.add(const Duration(days: 7));
       if (fire.isAfter(effectiveNow) && d.status == DisputeStatus.filedL2) {
         out.add(_make(

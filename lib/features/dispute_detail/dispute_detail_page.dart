@@ -97,6 +97,11 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
   String get uid => widget.uid;
   String? _selectedTemplateId;
 
+  /// HI-4: re-entrancy guard for the Mark Resolved / Reopen action. While a
+  /// save is in flight the action button is disabled so a rapid double-tap
+  /// can't enqueue duplicate writes or interleave two copyWith chains.
+  bool _toggling = false;
+
   @override
   Widget build(BuildContext context) {
     final ref = this.ref;
@@ -419,7 +424,9 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                     : 'Mark resolved',
                 color: tc.surfaceAlt,
                 textColor: AppColors.primary,
-                onTap: () => _toggleResolved(context, ref),
+                onTap: _toggling
+                    ? null
+                    : () => _toggleResolved(context, ref),
               ),
             ],
           ),
@@ -1058,6 +1065,21 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
         isResolved ? dispute.reopenTarget() : DisputeStatus.resolved;
     final now = DateTime.now();
     final repo = ref.read(disputeRepositoryProvider);
+
+    // HI-4: re-entrancy guard — disable the action button while saving.
+    setState(() => _toggling = true);
+
+    // HI-2: on reopen, refresh the filedDate for the target stage so the
+    // reminder generator schedules follow-ups from "today" rather than the
+    // (possibly months-old) original filing date. Resolved→resolved is a
+    // no-op so no date reset is needed on the resolve path.
+    final reopenedFiledDates = isResolved
+        ? {
+            ...dispute.filedDates,
+            _filedDateKeyFor(nextStatus): now,
+          }
+        : dispute.filedDates;
+
     final updated = nextStatus == DisputeStatus.resolved
         ? dispute.copyWith(
             status: nextStatus,
@@ -1078,6 +1100,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
             status: nextStatus,
             resolvedAmount: null,
             resolvedAt: null,
+            filedDates: reopenedFiledDates,
             activityLog: [
               ...dispute.activityLog,
               ActivityLogEntry(
@@ -1089,11 +1112,37 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
               ),
             ],
           );
-    await repo.saveDispute(uid, updated);
-    // B6: lifecycle changed → re-sync reminders + local notifications.
-    await syncRemindersForDispute(ref, uid, updated);
-    ref.invalidate(disputesProvider(uid));
-    ref.invalidate(remindersProvider(uid));
+    try {
+      // HI-5: capture the freshly saved Dispute so the detail body shows the
+      // new status/activity immediately rather than staling on the snapshot
+      // taken at navigation time. We do NOT call setState with `updated`
+      // (which lacks the server-assigned id for new rows) — the
+      // `disputesProvider` invalidate below is the source of truth for the
+      // next rebuild, and `_toggling` is reset here so the button recovers.
+      await repo.saveDispute(uid, updated);
+      await syncRemindersForDispute(ref, uid, updated);
+      ref.invalidate(disputesProvider(uid));
+      ref.invalidate(remindersProvider(uid));
+    } finally {
+      if (mounted) setState(() => _toggling = false);
+    }
+  }
+
+  /// Maps a [DisputeStatus] to its `filedDates` map key, used by
+  /// [_toggleResolved] to reset the anchor date on reopen.
+  String _filedDateKeyFor(DisputeStatus status) {
+    switch (status) {
+      case DisputeStatus.filedL1:
+        return 'l1';
+      case DisputeStatus.filedL2:
+        return 'l2';
+      case DisputeStatus.ombudsman:
+        return 'ombudsman';
+      case DisputeStatus.draft:
+      case DisputeStatus.resolved:
+      case DisputeStatus.expired:
+        return 'l1';
+    }
   }
 }
 
@@ -1101,7 +1150,7 @@ class _ActionButton extends StatelessWidget {
   final String label;
   final Color color;
   final Color? textColor;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   const _ActionButton({
     required this.label,
     required this.color,
