@@ -46,6 +46,10 @@ final isPremiumProvider = Provider<bool>(
 /// should *write* to `premiumStatusProvider`; persisted through
 /// `persistPremium` (which still writes the SharedPreferences entry used by
 /// the next launch's hydrate path).
-void setPremiumStatus(Ref ref, bool premium) {
+///
+/// Accepts `dynamic` (not `Ref`) because callers pass a `ProviderContainer`
+/// from `main.dart`'s startup sequence — `ProviderContainer` has a `read()`
+/// method but does NOT implement `Ref` in Riverpod 2.x.
+void setPremiumStatus(dynamic ref, bool premium) {
   ref.read(premiumStatusProvider.notifier).state = AsyncValue.data(premium);
 }

@@ -84,26 +84,46 @@ void main() {
     //    entitlement. RevenueCat's own customer-info updates will overwrite
     //    this once it succeeds.
     final container = ProviderContainer();
-    await hydratePersistedAppState(container);
+    // CRITICAL: if hydration throws, we still need to call runApp so the
+    // user sees SOMETHING (not a black screen). The zone error handler
+    // catches uncaught exceptions but does NOT call runApp — so any throw
+    // before runApp = black screen.
+    try {
+      await hydratePersistedAppState(container);
+    } catch (e, st) {
+      debugPrint('hydratePersistedAppState failed (non-fatal): $e\n$st');
+    }
     // ME-8: notification deep-links can arrive before the widget tree /
     // router exist (cold-launch tap on a UTR notification). Wire the tap
     // handler through a queue that buffers taps until the router is ready.
     final tapRouter = _NotificationTapRouter(container);
     NotificationService.onNotificationTap = tapRouter.handle;
-    await container.read(notificationServiceProvider).init();
+    try {
+      await container.read(notificationServiceProvider).init();
+    } catch (e, st) {
+      debugPrint('NotificationService.init failed (non-fatal): $e\n$st');
+    }
     // 5. Configure RevenueCat in the same container so it can write into
-    //    `isPremiumProvider` (and persist it) on purchase / restore.
-    await container.read(revenueCatServiceProvider).configure();
+    // `isPremiumProvider` (and persist it) on purchase / restore.
+    try {
+      await container.read(revenueCatServiceProvider).configure();
+    } catch (e, st) {
+      debugPrint('RevenueCat.configure failed (non-fatal): $e\n$st');
+    }
     // 5b. Configure OneSignal. Coexists with FCM (OneSignal is used only
     //     as a segmentation / analytics layer; FCM stays primary for push
     //     delivery per spec §3 + §6.6). Reads OneSignal app id + api key
     //     from `--dart-define` flags injected by the GitHub Actions
     //     release job. In debug builds without dart-define, OneSignal.configure
     //     is a no-op (service.isInitialized stays false).
-    await container.read(oneSignalServiceProvider).configure(
-          appId: const String.fromEnvironment('ONESIGNAL_APP_ID'),
-          apiKey: const String.fromEnvironment('ONESIGNAL_API_KEY'),
-        );
+    try {
+      await container.read(oneSignalServiceProvider).configure(
+            appId: const String.fromEnvironment('ONESIGNAL_APP_ID'),
+            apiKey: const String.fromEnvironment('ONESIGNAL_API_KEY'),
+          );
+    } catch (e, st) {
+      debugPrint('OneSignal.configure failed (non-fatal): $e\n$st');
+    }
     // 5c. FCM foreground message handler (Task C6). Foreground pushes
     //     don't reach the Android shade on their own — render them via
     //     [NotificationService.showSimpleNotification]. Failures are
@@ -111,19 +131,23 @@ void main() {
     //     Use the container-managed singleton rather than a bare
     //     NotificationService() so any future per-instance state stays
     //     consistent.
-    final notifService = container.read(notificationServiceProvider);
-    FirebaseMessaging.onMessage.listen((message) {
-      final notification = message.notification;
-      if (notification == null) return;
-      try {
-        notifService.showSimpleNotification(
-          title: notification.title ?? '',
-          body: notification.body ?? '',
-        );
-      } catch (e) {
-        debugPrint('FCM foreground notification show failed: $e');
-      }
-    });
+    try {
+      final notifService = container.read(notificationServiceProvider);
+      FirebaseMessaging.onMessage.listen((message) {
+        final notification = message.notification;
+        if (notification == null) return;
+        try {
+          notifService.showSimpleNotification(
+            title: notification.title ?? '',
+            body: notification.body ?? '',
+          );
+        } catch (e) {
+          debugPrint('FCM foreground notification show failed: $e');
+        }
+      });
+    } catch (e, st) {
+      debugPrint('FCM onMessage listener setup failed (non-fatal): $e\n$st');
+    }
     runApp(UncontrolledProviderScope(
       container: container,
       child: const RefundRadarApp(),
