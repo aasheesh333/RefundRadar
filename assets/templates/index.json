@@ -153,5 +153,15 @@
   "bank_charges/bank_charge_section_13_fair_practices_l3.json",
   "wrong_transfer/wrong_transfer_pcr_police_l3.json",
   "upi/upi_imp_personally_visit_branch_l1.json",
-  "bank_charges/bank_charge_rbi_supervisor_section_35a_l4.json"
+  "bank_charges/bank_charge_rbi_supervisor_section_35a_l4.json",
+  "upi/upi_personal_branch_onepager_l1.json",
+  "upi/upi_ucpmp_fraud_l3.json",
+  "fastag/fastag_personal_branch_onepager_l1.json",
+  "bank_charges/bank_charge_minbalance_bsa_2024_l1.json",
+  "bank_charges/bank_charge_payments_bank_master_l2.json",
+  "wrong_transfer/wrong_transfer_initial_friendly_l1.json",
+  "wrong_transfer/wrong_transfer_specific_bank_drm_l2.json",
+  "advanced/advanced_advanced_l2_ombudsman_misc.json",
+  "upi/upi_initial_chat_friendly_l1.json",
+  "fastag/fastag_issuer_legal_notice_l3.json"
 ]
