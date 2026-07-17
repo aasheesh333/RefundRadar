@@ -139,5 +139,19 @@
   "fastag/fastag_rti_nhai_l5.json",
   "fastag/fastag_banking_l4_followup.json",
   "upi/upi_legal_notice_through_advocate_l5.json",
-  "fastag/fastag_rbi_supervisor_l4.json"
+  "fastag/fastag_rbi_supervisor_l4.json",
+  "advanced/advanced_rti_imd_l4.json",
+  "advanced/advanced_harassment_compensation_l4.json",
+  "advanced/advanced_consumer_court_banking_ombudsman_secl3.json",
+  "advanced/advanced_ombudsman_upi_l3.json",
+  "advanced/advanced_ombudsman_fastag_l3.json",
+  "advanced/advanced_ombudsman_bank_charge_l3.json",
+  "advanced/advanced_ombudsman_wrong_transfer_l3.json",
+  "advanced/advanced_legal_notice_general_l4.json",
+  "upi/upi_chargeback_45_day_brdc_l2.json",
+  "fastag/fastag_acquirer_neg_l3.json",
+  "bank_charges/bank_charge_section_13_fair_practices_l3.json",
+  "wrong_transfer/wrong_transfer_pcr_police_l3.json",
+  "upi/upi_imp_personally_visit_branch_l1.json",
+  "bank_charges/bank_charge_rbi_supervisor_section_35a_l4.json"
 ]
