@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_12_l1",
+  "titleEn": "UPI / IMPS / ATM — UPI payment to a personal VPA — labeled as business",
+  "titleHi": "UPI / IMPS / ATM — UPI व्यक्तिगत VPA पर भुगतान — business बताकर",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "1. I paid Rs. {AMOUNT} to VPA {VPA_PAYEE} on {TXN_DATE} (UTR {UTR}) expecting a business / merchant counter-party. The VPA is registered as personal but is collecting high-ticket amounts. NPCI UPI guidelines require merchants to use a verified 'merchant' handle. Please flag this VPA and refund me as a customer-protection measure.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मैंने VPA {VPA_PAYEE} को {TXN_DATE} को Rs. {AMOUNT} (UTR {UTR}) business / merchant काउंटर-पार्टी मानकर भेजा। VPA personal के रूप में रजिस्टर है, फिर भी बड़ी रकमें कलेक्ट कर रहा है। NPCI UPI दिशानिर्देश अनुसार merchants को सत्यापित 'merchant' हैंडल का उपयोग करना चाहिए। कृपया इस VPA को flag कर मुझे कस्टमर-प्रोटेक्शन के तहत रिफंड करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

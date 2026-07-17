@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_06_l2",
+  "titleEn": "FASTag — FASTag penalty for non-utilisation (paid annual pass unused)",
+  "titleHi": "FASTag — FASTag वार्षिक पास उपयोग न करने पर जुर्माना",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. The FASTag Annual Pass has a 200-crossing valid limit; my Tag {TAG_ID} (vehicle {VEHICLE_NO}) does not cross 200 toll plazas a year. I should not be charged an utilisation penalty. If any such amount Rs. {AMOUNT} (UTR {UTR}) was deducted, please reverse.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. FASTag वार्षिक पास की 200 क्रॉसिंग वैध सीमा है; मेरा Tag {TAG_ID} (वाहन {VEHICLE_NO}) साल में 200 टोल प्लाज़ा क्रॉस नहीं करता। मुझ पर utilisation जुर्माना नहीं लगना चाहिए। यदि ऐसी कोई राशि Rs. {AMOUNT} (UTR {UTR}) कटी हो तो रिवर्स करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

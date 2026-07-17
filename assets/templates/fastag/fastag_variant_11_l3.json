@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_11_l3",
+  "titleEn": "FASTag — FASTag wallet closed but auto-load mandate still debits",
+  "titleHi": "FASTag — FASTag वॉलेट बंद, ऑटो-लोड मैंडेट अभी भी डेबिट",
+  "category": "FASTag",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. I closed my FASTag on {TXN_DATE} but the auto-load mandate from {BANK_NAME} (Tag {TAG_ID}) continues to debit Rs. {AMOUNT} (UTR {UTR}). Cancel the mandate per RBI's e-mandate revocation rule (T+24 hours).\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मैंने {TXN_DATE} को अपना FASTag बंद किया, पर {BANK_NAME} (Tag {TAG_ID}) का ऑटो-लोड मैंडेट अभी भी Rs. {AMOUNT} (UTR {UTR}) डेबिट कर रहा है। RBI e-mandate revocation नियम (T+24 घंटे) के अनुसार मैंडेट रद्द करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

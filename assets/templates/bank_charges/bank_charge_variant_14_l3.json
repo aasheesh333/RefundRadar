@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_variant_14_l3",
+  "titleEn": "Bank charges — Loan pre-closure penalty dispute",
+  "titleHi": "बैंक शुल्क — ऋण पूर्व-समापन जुर्माना विवाद",
+  "category": "Bank charges",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. On pre-closure of my loan with {BANK_NAME} on {TXN_DATE}, a penalty of Rs. {AMOUNT} (UTR {UTR}) was levied. As per RBI's 2014 Fair Practice Code, floating-rate loans cannot be charged a pre-payment penalty.\n\nAttachments: bank statement, sanction letter, RBI Master Circular reference.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} के मेरे ऋण के {TXN_DATE} को पूर्व-समापन पर Rs. {AMOUNT} (UTR {UTR}) जुर्माना लगाया। RBI के 2014 फेयर प्रैक्टिस कोड के अनुसार फ्लोटिंग-दर ऋणों पर पूर्व-भुगतान जुर्माना नहीं लगाया जा सकता।\n\nसंलग्न: बैंक स्टेटमेंट, स्वीकृति पत्र, RBI मास्टर सर्कुलर संदर्भ।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

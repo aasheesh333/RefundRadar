@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_07_l3",
+  "titleEn": "FASTag — FASTag dispute closed without resolution, refund still pending",
+  "titleHi": "FASTag — FASTag विवाद बिना समाधान बंद, रिफंड लंबित",
+  "category": "FASTag",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. My FASTag dispute for Rs. {AMOUNT} (UTR {UTR}, Tag {TAG_ID}) was closed without a resolution and the refund has not reached me. Please reopen and resolve per the IHMCL SOP timeline.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मेरा FASTag विवाद Rs. {AMOUNT} (UTR {UTR}, Tag {TAG_ID}) बिना समाधान बंद कर दिया गया और रिफंड मुझ तक नहीं पहुँचा। कृपया IHMCL SOP टाइमलाइन के अनुसार पुनः खोलें और हल करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

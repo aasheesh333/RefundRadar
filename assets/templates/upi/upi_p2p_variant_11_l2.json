@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_11_l2",
+  "titleEn": "UPI / IMPS / ATM — UPI disputed after fallback to non-UPI rail (Pay to non-VPA)",
+  "titleHi": "UPI / IMPS / ATM — UPI असफल होने पर fallback चैनल से पैसा कटा (Pay to non-VPA)",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. My UPI transaction Rs. {AMOUNT} to non-VPA phone/IFSC {BENEFICIARY_ACCOUNT_NO} via PSP app fallback on {TXN_DATE} (UTR {UTR}) was completed but no UPI success message was sent. Reverse this manual fallback credit and re-route through UPI per the user's consent.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. PSP ऐप fallback के माध्यम से non-VPA फ़ोन/IFSC {BENEFICIARY_ACCOUNT_NO} पर {TXN_DATE} को मेरा Rs. {AMOUNT} UPI लेनदेन (UTR {UTR}) पूर्ण हुआ पर कोई UPI success मैसेज नहीं आया। इस manual fallback credit को रिवर्स कर उपयोगकर्ता सहमति के अनुसार UPI से पुनः रूट करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

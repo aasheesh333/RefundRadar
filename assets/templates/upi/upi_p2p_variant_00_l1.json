@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_00_l1",
+  "titleEn": "UPI / IMPS / ATM — UPI declined at merchant — bank refund pending",
+  "titleHi": "UPI / IMPS / ATM — UPI मर्चेंट पर declined — बैंक रिफंड लंबित",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "1. UPI transaction Rs. {AMOUNT} to VPA {VPA_PAYEE} on {TXN_DATE} (UTR {UTR}) returned as 'declined by remitter bank / issuer'. The merchant portal shows successful delivery of the service / product, but my account was debited. Please reconcile the bank leg immediately.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} को VPA {VPA_PAYEE} पर Rs. {AMOUNT} UPI लेनदेन (UTR {UTR}) 'issuer bank द्वारा declined' के रूप में वापस आया। मर्चेंट पोर्टल पर सेवा / उत्पाद की सफल डिलीवरी दिखती है, लेकिन मेरे खाते से पैसा कटा है। कृपया बैंक लेग तुरंत reconcile करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

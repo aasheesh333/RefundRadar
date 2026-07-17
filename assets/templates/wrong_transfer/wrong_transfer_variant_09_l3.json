@@ -1,0 +1,10 @@
+{
+  "id": "wrong_transfer_variant_09_l3",
+  "titleEn": "Wrong transfer — Wrong-transfer — bank RTGS refund timeline breached",
+  "titleHi": "गलत ट्रांसफर — गलत-ट्रांसफर — बैंक RTGS रिफंड टाइमलाइन उल्लंघन",
+  "category": "Wrong transfer",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. Wrong-RTGS Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE} to account {BENEFICIARY_ACCOUNT_NO} at {BENEFICIARY_BANK}. The bank's RTGS recall window (T+1) has been breached by {DAYS_ELAPSED} days. Reverse today.\n\nAttachments: UPI / IMPS transaction screenshot, beneficiary-bank acknowledgement, complaint copy.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} (UTR {UTR}) को खाता {BENEFICIARY_ACCOUNT_NO} ({BENEFICIARY_BANK}) पर गलत-RTGS Rs. {AMOUNT}। बैंक की RTGS रिकॉल विंडो (T+1) {DAYS_ELAPSED} दिनों से अधिक हो चुकी है। आज रिवर्स करें।\n\nसंलग्न: UPI / IMPS लेनदेन स्क्रीनशॉट, लाभार्थी-बैंक स्वीकृति, शिकायत प्रति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

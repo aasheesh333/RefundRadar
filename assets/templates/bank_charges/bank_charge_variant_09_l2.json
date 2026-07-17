@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_variant_09_l2",
+  "titleEn": "Bank charges — Cheque-book issuance charge dispute",
+  "titleHi": "बैंक शुल्क — चेक-बुक जारी शुल्क विवाद",
+  "category": "Bank charges",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. {BANK_NAME} charged Rs. {AMOUNT} on {TXN_DATE} (UTR {UTR}) for issuance of a cheque-book beyond the prescribed free quota (20 leaves/quarter for savings). Reverse the excess.\n\nAttachments: bank statement, sanction letter, RBI Master Circular reference.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} ने {TXN_DATE} (UTR {UTR}) को निर्धारित मुफ्त कोटा (बचत के लिए 20 पत्ते/तिमाही) से अधिक चेक-बुक जारी करने पर Rs. {AMOUNT} काटा। अतिरिक्त राशि रिवर्स करें।\n\nसंलग्न: बैंक स्टेटमेंट, स्वीकृति पत्र, RBI मास्टर सर्कुलर संदर्भ।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

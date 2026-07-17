@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_16_l2",
+  "titleEn": "FASTag — FASTag wallet top-up not credited within T+1",
+  "titleHi": "FASTag — FASTag वॉलेट top-up T+1 में क्रेडिट नहीं",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. I topped up my FASTag wallet with {BANK_NAME} (Tag {TAG_ID}) by Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE}. The credit has not reached the wallet after T+1. Trace and credit immediately.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मैंने {BANK_NAME} (Tag {TAG_ID}) के अपने FASTag वॉलेट में {TXN_DATE} को Rs. {AMOUNT} (UTR {UTR}) top-up किया। T+1 के बाद भी क्रेडिट वॉलेट तक नहीं पहुँचा। Trace कर तुरंत जमा करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

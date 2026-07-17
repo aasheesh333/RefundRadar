@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_14_l2",
+  "titleEn": "UPI / IMPS / ATM — ATM card-skimming dispute — unauthorised POS",
+  "titleHi": "UPI / IMPS / ATM — ATM कार्ड-स्किमिंग विवाद — अनधिकृत POS",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. My debit card ending {CARD_LAST4} issued by {BANK_NAME} was used at an unauthorised POS location (suspected skimmer) on or before {TXN_DATE} for the disputed Rs. {AMOUNT} (UTR {UTR}). Please lodge a fraud claim, block the card, and refund per RBI Customer Protection 2024.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} द्वारा जारी मेरे डेबिट कार्ड {CARD_LAST4} से {TXN_DATE} को या उससे पहले किसी अनधिकृत POS (संदिग्ध स्कीमर) पर Rs. {AMOUNT} (UTR {UTR}) खर्चा गया। कृपया fraud claim दर्ज करें, कार्ड ब्लॉक करें और RBI 2024 के तहत रिफंड करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_13_l2",
+  "titleEn": "FASTag — FASTag Acquirer wrong-rate challenge — round-off error",
+  "titleHi": "FASTag — FASTag अधिग्रहण गलत-दर — राउंड-ऑफ़ त्रुटि",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. The fare at plaza {PLAZA_NAME} on {TXN_DATE} is Rs. {AMOUNT} per the official gazette notification, but the FASTag deduction (UTR {UTR}, Tag {TAG_ID}) shows a higher amount due to a per-plaza round-off. Please reconcile to the notified rate.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. आधिकारिक गजट अधिसूचना के अनुसार {TXN_DATE} को प्लाज़ा {PLAZA_NAME} का किराया Rs. {AMOUNT} है, पर FASTag कटौती (UTR {UTR}, Tag {TAG_ID}) प्रति-प्लाज़ा round-off के कारण अधिक दिख रही है। कृपया अधिसूचित दर से reconcile करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

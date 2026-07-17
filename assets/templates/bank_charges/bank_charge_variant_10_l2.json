@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_variant_10_l2",
+  "titleEn": "Bank charges — ATM interchange fee dispute — own-network usage",
+  "titleHi": "बैंक शुल्क — ATM interchange शुल्क विवाद — अपने-नेटवर्क उपयोग",
+  "category": "Bank charges",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. Rs. {AMOUNT} was charged as ATM interchange fee on {TXN_DATE} (UTR {UTR}) by {BANK_NAME} even though the transaction was at an own-network ATM. RBI's 2014 directive exempts own-network usage; reverse.\n\nAttachments: bank statement, sanction letter, RBI Master Circular reference.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} ने {TXN_DATE} (UTR {UTR}) को ATM interchange शुल्क Rs. {AMOUNT} काटा, भले ही लेनदेन own-network ATM पर हुआ। RBI की 2014 निर्देश own-network उपयोग को छूट देता है; रिवर्स करें।\n\nसंलग्न: बैंक स्टेटमेंट, स्वीकृति पत्र, RBI मास्टर सर्कुलर संदर्भ।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

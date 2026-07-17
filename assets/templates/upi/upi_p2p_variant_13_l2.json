@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_13_l2",
+  "titleEn": "UPI / IMPS / ATM — UPI chargeback dispute — timeline extension",
+  "titleHi": "UPI / IMPS / ATM — UPI चार्जबैक विवाद — समयसीमा विस्तार",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. My chargeback on UPI Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE}) was initiated within the 45-day chargeback window but the bank / merchant is refusing to extend beyond the merchant's 'delivery-pipeline' cap. Per NPCI dispute redressal circular, the chargeback window applies to the customer, not the merchant.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} को Rs. {AMOUNT} UPI (UTR {UTR}) पर chargeback 45-दिन विंडो में शुरू किया, पर बैंक / मर्चेंट 'delivery-pipeline' कैप के बहाने विस्तार से मना कर रहा है। NPCI dispute redressal सर्कुलर के अनुसार चार्जबैक विंडो ग्राहक पर लागू होती है, मर्चेंट पर नहीं।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

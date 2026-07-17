@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_08_l2",
+  "titleEn": "FASTag — FASTag repeated deduction at same plaza within minutes",
+  "titleHi": "FASTag — FASTag एक ही प्लाज़ा पर मिनटों में बार-बार कटौती",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. Vehicle {VEHICLE_NO} (Tag {TAG_ID}) was charged Rs. {AMOUNT} twice within minutes on {TXN_DATE} (UTRs {TXN_ID}, {TXN_ID_2}) at plaza {PLAZA_NAME}. Reverse the duplicate deduction.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. वाहन {VEHICLE_NO} (Tag {TAG_ID}) से प्लाज़ा {PLAZA_NAME} पर {TXN_DATE} को मिनटों में दो बार Rs. {AMOUNT} (UTRs {TXN_ID}, {TXN_ID_2}) काटा गया। डुप्लिकेट कटौती रिवर्स करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

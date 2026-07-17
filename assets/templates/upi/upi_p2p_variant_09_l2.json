@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_09_l2",
+  "titleEn": "UPI / IMPS / ATM — UPI complaint not acknowledged past T+1",
+  "titleHi": "UPI / IMPS / ATM — UPI शिकायत T+1 के बाद भी acknowledge नहीं हुई",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. UPI transaction Rs. {AMOUNT} to VPA {VPA_PAYEE} on {TXN_DATE} (UTR {UTR}) failed but my complaint was not acknowledged within the T+1 RBI mandate. The complaint is now {DAYS_ELAPSED} days old. Please acknowledge and assign a ticket immediately.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} को VPA {VPA_PAYEE} पर Rs. {AMOUNT} UPI लेनदेन (UTR {UTR}) विफल हुआ, लेकिन मेरी शिकायत T+1 RBI मैंडेट के भीतर acknowledge नहीं हुई। शिकायत अब {DAYS_ELAPSED} दिन पुरानी है। कृपया तुरंत acknowledge कर ticket दें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

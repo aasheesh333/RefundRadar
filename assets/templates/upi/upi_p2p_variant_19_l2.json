@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_19_l2",
+  "titleEn": "UPI / IMPS / ATM — UPI P2P sent by mistake to wrong VPA — refund request",
+  "titleHi": "UPI / IMPS / ATM — गलती से गलत VPA पर UPI P2P भेजा — रिफंड अनुरोध",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. I accidentally sent Rs. {AMOUNT} from VPA {VPA} to VPA {VPA_PAYEE} on {TXN_DATE} (UTR {UTR}). I have contacted the recipient and they refuse to refund. Per RBI's NPCI DRM process, the receiving bank must act on a beneficiary-bank request within 2 working days. Please file the DRM.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मैंने गलती से {TXN_DATE} को अपने VPA {VPA} से VPA {VPA_PAYEE} को Rs. {AMOUNT} (UTR {UTR}) भेज दिया। प्राप्तकर्ता से संपर्क किया पर वे रिफंड करने से मना कर रहे हैं। RBI NPCI DRM प्रक्रिया के अनुसार प्राप्त बैंक 2 कार्य दिवसों में लाभार्थी-बैंक अनुरोध पर कार्य करेगा। कृपया DRM दर्ज करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

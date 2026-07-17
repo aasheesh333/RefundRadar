@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_04_l1",
+  "titleEn": "UPI / IMPS / ATM — UPI collect / request money fraud — OTP-based scam",
+  "titleHi": "UPI / IMPS / ATM — UPI कलेक्ट धोखाधड़ी — OTP आधारित",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "1. I was tricked into approving a UPI collect request for Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE} by someone impersonating a customer-care agent. This is a UPI social-engineering fraud. The receiving VPA is {VPA_PAYEE}. Please freeze the beneficiary account and refund the amount under the RBI Master Direction on Customer Protection 2024.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} को किसी ने कस्टमर-केयर एजेंट बनकर Rs. {AMOUNT} की UPI कलेक्ट रिक्वेस्ट (UTR {UTR}) स्वीकार करने के लिए धोखा दिया। यह UPI सोशल-इंजीनियरिंग धोखाधड़ी है। प्राप्तकर्ता VPA {VPA_PAYEE} का खाता फ्रीज़ करें और RBI 2024 मास्टर डायरेक्शन के तहत राशि वापस करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

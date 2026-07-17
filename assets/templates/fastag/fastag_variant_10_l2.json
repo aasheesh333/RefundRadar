@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_10_l2",
+  "titleEn": "FASTag — FASTag cross-tagging — wrong vehicle attached to Tag",
+  "titleHi": "FASTag — FASTag क्रॉस-टैगिंग — गलत वाहन से Tag जुड़ा",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. My FASTag {TAG_ID} from {BANK_NAME} is being attached to vehicle {VEHICLE_NO} but the RC belongs to a different vehicle. Rectify and issue a new Tag against the correct vehicle.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} का मेरा FASTag {TAG_ID} वाहन {VEHICLE_NO} से जुड़ा है पर RC एक अलग वाहन का है। ठीक करें और सही वाहन के विरुद्ध नया Tag जारी करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

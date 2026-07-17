@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_05_l2",
+  "titleEn": "FASTag — FASTag SMS / email alert missing for deduction",
+  "titleHi": "FASTag — FASTag कटौती पर SMS / ईमेल अलर्ट नहीं",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. No SMS / email alert was received for a FASTag deduction of Rs. {AMOUNT} on {TXN_DATE} (UTR {UTR}, Tag {TAG_ID}) at plaza {PLAZA_NAME}. Per RBI's Customer Protection notification, every debit requires an instant alert; please enable for my Tag.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} (UTR {UTR}, Tag {TAG_ID}) को प्लाज़ा {PLAZA_NAME} पर Rs. {AMOUNT} FASTag कटौती का कोई SMS / ईमेल अलर्ट नहीं मिला। RBI ग्राहक सुरक्षा अधिसूचना के अनुसार हर डेबिट पर तत्काल अलर्ट आवश्यक है; कृपया मेरे Tag के लिए सक्षम करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

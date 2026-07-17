@@ -1,0 +1,10 @@
+{
+  "id": "wrong_transfer_variant_04_l2",
+  "titleEn": "Wrong transfer — Wrong UPI-VPA — beneficiary withdraws funds immediately",
+  "titleHi": "गलत ट्रांसफर — गलत UPI-VPA — लाभार्थी तुरंत फंड निकासी",
+  "category": "Wrong transfer",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. Despite my DRM filing on UPI wrong-transfer Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE}), {BENEFICIARY_BANK} reports beneficiary has already withdrawn the funds. This is a negligent retention. Reverse via nodal-officer and criminally pursue under Section 403 of IPC.\n\nAttachments: UPI / IMPS transaction screenshot, beneficiary-bank acknowledgement, complaint copy.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. UPI गलत-ट्रांसफर Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE}) पर मेरी DRM फाइलिंग के बावजूद, {BENEFICIARY_BANK} बताता है कि लाभार्थी फंड निकासी कर चुका है। यह लापरवाह retention है। नोडल-अधिकारी के माध्यम से रिवर्स करें और IPC धारा 403 के तहत आपराधिक कार्रवाई करें।\n\nसंलग्न: UPI / IMPS लेनदेन स्क्रीनशॉट, लाभार्थी-बैंक स्वीकृति, शिकायत प्रति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

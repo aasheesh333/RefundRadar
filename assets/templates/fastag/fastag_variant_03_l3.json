@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_03_l3",
+  "titleEn": "FASTag — FASTag Annual Pass wrongly charged against non-NHAI FASTag",
+  "titleHi": "FASTag — FASTag वार्षिक पास गलती से non-NHAI FASTag पर",
+  "category": "FASTag",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. I purchased the FASTag Annual Pass (Rs. 3075 / 200 crossings) on {TXN_DATE} from {BANK_NAME} via Tag {TAG_ID}. The pass is being applied to a wrong Tag at plaza {PLAZA_NAME}. Re-route the pass to the correct Tag or refund and re-purchase.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मैंने {TXN_DATE} को {BANK_NAME} से Tag {TAG_ID} पर FASTag वार्षिक पास (Rs. 3075 / 200 क्रॉसिंग) खरीदा। पास प्लाज़ा {PLAZA_NAME} पर गलत Tag पर apply हो रहा है। पास को सही Tag पर re-route करें या रिफंड कर पुनः खरीदें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

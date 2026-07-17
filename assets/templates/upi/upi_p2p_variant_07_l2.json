@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_07_l2",
+  "titleEn": "UPI / IMPS / ATM — ATM cash not dispensed but account debited",
+  "titleHi": "UPI / IMPS / ATM — ATM में पैसा नहीं निकला, लेकिन खाता कटा",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. ATM ID {ATM_ID}, card ending {CARD_LAST4}, on {TXN_DATE} (UTR {UTR}) at {BANK_NAME}: I attempted to withdraw Rs. {AMOUNT}, the amount was debited from my account but the ATM did not dispense any cash. Please reconcile the ATM journal and reverse the debit per RBI circular DPSS.CO.PD.629/02.06.005/2019-20.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. ATM {ATM_ID}, कार्ड {CARD_LAST4}, {TXN_DATE} (UTR {UTR}) {BANK_NAME}: मैंने Rs. {AMOUNT} निकालने का प्रयास किया, खाते से राशि कट गई पर ATM ने पैसा नहीं दिया। कृपया ATM journal reconcile कर RBI DPSS.CO.PD.629/02.06.005/2019-20 सर्कुलर के अनुसार डेबिट वापस करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_variant_19_l3",
+  "titleEn": "Bank charges — Debit card lost — annual fee on lost card",
+  "titleHi": "बैंक शुल्क — डेबिट कार्ड खोया — खोए कार्ड पर वार्षिक शुल्क",
+  "category": "Bank charges",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. I lost my debit card (last 4: {CARD_LAST4}) on {TXN_DATE} and had it blocked by {BANK_NAME}. The annual fee of Rs. {AMOUNT} (UTR {UTR}) was still charged against this lost / blocked card. Reverse.\n\nAttachments: bank statement, sanction letter, RBI Master Circular reference.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मैंने {TXN_DATE} को अपना डेबिट कार्ड (अंतिम 4: {CARD_LAST4}) खो दिया और {BANK_NAME} ने ब्लॉक कर दिया। फिर भी इस खोए / ब्लॉक कार्ड पर Rs. {AMOUNT} (UTR {UTR}) की वार्षिक फी काटी गई। रिवर्स करें।\n\nसंलग्न: बैंक स्टेटमेंट, स्वीकृति पत्र, RBI मास्टर सर्कुलर संदर्भ।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

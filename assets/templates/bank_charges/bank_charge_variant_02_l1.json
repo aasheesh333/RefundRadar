@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_variant_02_l1",
+  "titleEn": "Bank charges — Savings account minimum-balance shortfall penalty",
+  "titleHi": "बैंक शुल्क — बचत खाता न्यूनतम-बैलेंस शॉर्टफॉल जुर्माना",
+  "category": "Bank charges",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "1. Rs. {AMOUNT} was levied as minimum-balance shortfall penalty on {TXN_DATE} (UTR {UTR}) by {BANK_NAME}. RBI has removed the penal minimum-balance requirement for basic savings accounts under the 2024 customer-protection framework. Reverse.\n\nAttachments: bank statement, sanction letter, RBI Master Circular reference.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} ने {TXN_DATE} (UTR {UTR}) को minimum-balance शॉर्टफॉल जुर्माना Rs. {AMOUNT} लगाया। RBI ने 2024 ग्राहक-सुरक्षा ढाँचे के तहत बुनियादी बचत खातों के लिए penal minimum-balance आवश्यकता हटा दी है। रिवर्स करें।\n\nसंलग्न: बैंक स्टेटमेंट, स्वीकृति पत्र, RBI मास्टर सर्कुलर संदर्भ।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_00_l2",
+  "titleEn": "FASTag — FASTag KYC mismatch — vehicle class rejected",
+  "titleHi": "FASTag — FASTag KYC असंगति — वाहन श्रेणी अस्वीकृत",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. FASTag issued by {BANK_NAME} (Tag {TAG_ID}, vehicle {VEHICLE_NO}) is being rejected at plaza {PLAZA_NAME} for 'vehicle-class mismatch' despite KYC documents being in order. Please update the issuer records to match RC and re-issue a compliant Tag.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} द्वारा जारी FASTag (Tag {TAG_ID}, वाहन {VEHICLE_NO}) को प्लाज़ा {PLAZA_NAME} पर 'vehicle-class mismatch' बताकर अस्वीकार किया जा रहा है, जबकि KYC दस्तावेज़ सही हैं। कृपया issuer records RC से मिलान कर अद्यतन करें और अनुरूप Tag पुनः जारी करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

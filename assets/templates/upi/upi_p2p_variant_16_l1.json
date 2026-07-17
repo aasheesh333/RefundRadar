@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_16_l1",
+  "titleEn": "UPI / IMPS / ATM — UPI auto-pay mandate paused but debit continued",
+  "titleHi": "UPI / IMPS / ATM — UPI ऑटो-पे मैंडेट pause किया पर डेबिट जारी रहा",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "1. I paused my UPI mandate to VPA {VPA_PAYEE} on the NPCI UPI app before {TXN_DATE}, but a debit of Rs. {AMOUNT} (UTR {UTR}) continued after the pause window. Pause mandates are effective within T+24 hours; refund the disputed debit.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मैंने {TXN_DATE} से पहले NPCI UPI ऐप पर VPA {VPA_PAYEE} को अपना UPI मैंडेट pause किया था, पर Rs. {AMOUNT} (UTR {UTR}) का डेबिट pause window के बाद भी जारी रहा। Pause मैंडेट T+24 घंटे में प्रभावी होते हैं; विवादित डेबिट वापस करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_18_l2",
+  "titleEn": "UPI / IMPS / ATM — UPI P2P personal transfer recovery request",
+  "titleHi": "UPI / IMPS / ATM — UPI P2P व्यक्तिगत ट्रांसफर रिकवरी अनुरोध",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. I transferred Rs. {AMOUNT} from my VPA {VPA} to {VPA_PAYEE} on {TXN_DATE} (UTR {UTR}). The recipient claims they did not authorise the debit. Under the RBI's UPI circular, the receiving bank must block the credit pending customer confirmation.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मैंने अपने VPA {VPA} से {TXN_DATE} को VPA {VPA_PAYEE} को Rs. {AMOUNT} (UTR {UTR}) ट्रांसफर किया। प्राप्तकर्ता का कहना है कि उन्होंने डेबिट authorize नहीं किया। RBI UPI सर्कुलर के अनुसार प्राप्त करने वाला बैंक ग्राहक पुष्टि लंबित होने तक क्रेडिट ब्लॉक करेगा।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

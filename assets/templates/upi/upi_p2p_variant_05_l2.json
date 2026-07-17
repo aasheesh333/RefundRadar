@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_05_l2",
+  "titleEn": "UPI / IMPS / ATM — IMPS not credited — beneficiary bank shows success",
+  "titleHi": "UPI / IMPS / ATM — IMPS क्रेडिट नहीं हुआ — लाभार्थी बैंक सफल दिखा रहा है",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. My IMPS transfer of Rs. {AMOUNT} from {BANK_NAME} to beneficiary account {BENEFICIARY_ACCOUNT_NO} (IFSC {BENEFICIARY_IFSC}, {BENEFICIARY_BANK}) on {TXN_DATE} (UTR {UTR}) was debited from my account, and the beneficiary bank is showing a successful credit, but the funds have not reached the beneficiary. Please escalate to the IMPS settlement window and credit the beneficiary.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} से लाभार्थी खाता {BENEFICIARY_ACCOUNT_NO} (IFSC {BENEFICIARY_IFSC}, {BENEFICIARY_BANK}) को {TXN_DATE} को Rs. {AMOUNT} IMPS ट्रांसफर (UTR {UTR}) मेरे खाते से कटा और लाभार्थी बैंक सफलता दिखा रहा है, पर लाभार्थी को पैसा नहीं मिला। कृपया IMPS settlement window को escalate कर लाभार्थी को क्रेडिट करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

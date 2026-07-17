@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_15_l3",
+  "titleEn": "FASTag — FASTag dispute dual charge — single crossing double lane",
+  "titleHi": "FASTag — FASTag एकल क्रॉसिंग पर दो लेन से चार्ज",
+  "category": "FASTag",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. Vehicle {VEHICLE_NO} (Tag {TAG_ID}) was charged at plaza {PLAZA_NAME} on {TXN_DATE} for two lanes despite being recorded once. ANPR log shows single crossing. Rs. {AMOUNT} (UTR {UTR}) excess to be reversed.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. वाहन {VEHICLE_NO} (Tag {TAG_ID}) से प्लाज़ा {PLAZA_NAME} पर {TXN_DATE} को एक बार क्रॉसिंग रिकॉर्ड होने पर भी दो लेनों से शुल्क लिया। ANPR लॉग एक क्रॉसिंग दिखाता है। Rs. {AMOUNT} (UTR {UTR}) अतिरिक्त वापस करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

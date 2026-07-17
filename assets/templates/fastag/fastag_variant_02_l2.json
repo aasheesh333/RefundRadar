@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_02_l2",
+  "titleEn": "FASTag — FASTag parked for refund — Tag closure refused",
+  "titleHi": "FASTag — FASTag बंद करने पर रिफंड — Tag closure मना",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. I closed my FASTag account {TAG_ID} (vehicle {VEHICLE_NO}) with {BANK_NAME} on {TXN_DATE}. The Tag closure balance has not been refunded (Rs. {AMOUNT}) for {DAYS_ELAPSED} days. Please refund the wallet balance and full closure amount per IHMCL SOP.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मैंने {TXN_DATE} को {BANK_NAME} के अपने FASTag खाते {TAG_ID} (वाहन {VEHICLE_NO}) को बंद किया। Tag closure balance (Rs. {AMOUNT}) {DAYS_ELAPSED} दिनों से वापस नहीं हुआ। कृपया IHMCL SOP के अनुसार वॉलेट बैलेंस और पूर्ण राशि वापस करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

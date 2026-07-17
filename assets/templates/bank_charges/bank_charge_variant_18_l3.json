@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_variant_18_l3",
+  "titleEn": "Bank charges — Duplicate EMI debit on the same day",
+  "titleHi": "बैंक शुल्क — एक ही दिन डुप्लिकेट EMI डेबिट",
+  "category": "Bank charges",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. EMI of Rs. {AMOUNT} was debited twice on {TXN_DATE} (UTR {UTR} & UTR {TXN_ID_2}) by {BANK_NAME}. Reverse the duplicate debit.\n\nAttachments: bank statement, sanction letter, RBI Master Circular reference.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. EMI Rs. {AMOUNT} को {BANK_NAME} ने {TXN_DATE} (UTR {UTR} और UTR {TXN_ID_2}) को दो बार डेबिट किया। डुप्लिकेट डेबिट रिवर्स करें।\n\nसंलग्न: बैंक स्टेटमेंट, स्वीकृति पत्र, RBI मास्टर सर्कुलर संदर्भ।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

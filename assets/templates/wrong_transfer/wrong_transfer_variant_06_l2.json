@@ -1,0 +1,10 @@
+{
+  "id": "wrong_transfer_variant_06_l2",
+  "titleEn": "Wrong transfer — Wrong account-number — beneficiary bank dispute reply",
+  "titleHi": "गलत ट्रांसफर — गलत खाता-संख्या — लाभार्थी बैंक विवाद उत्तर",
+  "category": "Wrong transfer",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. Follow-up on IMPS wrong-account Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE}). {BENEFICIARY_BANK} replied 'received in good faith, no lien possible'. We dispute this — IMPS recall per RBI 2017 predates 'good-faith receipt' defence.\n\nAttachments: UPI / IMPS transaction screenshot, beneficiary-bank acknowledgement, complaint copy.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. IMPS गलत-खाता Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE}) पर फॉलो-अप। {BENEFICIARY_BANK} ने 'good faith में प्राप्त, कोई lien संभव नहीं' उत्तर दिया। हम इसका विरोध करते हैं — RBI 2017 के अनुसार IMPS recall 'good-faith receipt' बचाव से पहले आता है।\n\nसंलग्न: UPI / IMPS लेनदेन स्क्रीनशॉट, लाभार्थी-बैंक स्वीकृति, शिकायत प्रति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

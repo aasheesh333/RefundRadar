@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_18_l2",
+  "titleEn": "FASTag — FASTag onboard by someone using my RC — disputed",
+  "titleHi": "FASTag — मेरे RC का उपयोग कर किसी और ने FASTag जारी किया",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. A FASTag has been issued against my RC (vehicle {VEHICLE_NO}) without my consent, in the name of another Tag holder. This is identity / RC misuse. Cancel the rogue Tag and issue a fresh one.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मेरे RC (वाहन {VEHICLE_NO}) के विरुद्ध बिना मेरी सहमति के एक FASTag जारी किया गया है, जो किसी अन्य Tag धारक के नाम पर है। यह पहचान / RC का दुरुपयोग है। Rogue Tag रद्द कर नया जारी करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

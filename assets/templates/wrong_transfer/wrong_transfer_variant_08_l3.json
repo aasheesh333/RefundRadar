@@ -1,0 +1,10 @@
+{
+  "id": "wrong_transfer_variant_08_l3",
+  "titleEn": "Wrong transfer — UPI QR-code scam — payments to merchant impersonator",
+  "titleHi": "गलत ट्रांसफर — UPI QR-कोड घोटाला — नकली मर्चेंट को भुगतान",
+  "category": "Wrong transfer",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. I scanned a QR code for an intended merchant payment of Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE}) but the QR routed to a fraud VPA {VPA_PAYEE} at {BENEFICIARY_BANK}. Reverse per RBI Master Direction on Payment Frauds.\n\nAttachments: UPI / IMPS transaction screenshot, beneficiary-bank acknowledgement, complaint copy.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मैंने एक असली मर्चेंट भुगतान Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE}) के लिए QR कोड स्कैन किया, पर QR ने फ्रॉड VPA {VPA_PAYEE} ({BENEFICIARY_BANK}) पर रूट किया। RBI पेमेंट फ्रॉड्स मास्टर डायरेक्शन के तहत रिवर्स करें।\n\nसंलग्न: UPI / IMPS लेनदेन स्क्रीनशॉट, लाभार्थी-बैंक स्वीकृति, शिकायत प्रति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

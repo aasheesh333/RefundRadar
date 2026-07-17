@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_17_l2",
+  "titleEn": "UPI / IMPS / ATM — UPI chargeback declined without merchant evidence",
+  "titleHi": "UPI / IMPS / ATM — UPI चार्जबैक मर्चेंट साक्ष्य बिना declined",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. My UPI chargeback for Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE} was declined by {BANK_NAME} without providing the merchant's evidence as required by RBI's Fair Practices Code. Please share the merchant's representation before declining and re-process the chargeback.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} को Rs. {AMOUNT} (UTR {UTR}) UPI चार्जबैक {BANK_NAME} ने बिना RBI फेयर प्रैक्टिसेज कोड के अनुसार मर्चेंट साक्ष्य दिए declined किया। Declined करने से पहले कृपया मर्चेंट का प्रतिनिधित्व साझा करें और चार्जबैक पुनः process करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

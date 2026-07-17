@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_04_l2",
+  "titleEn": "FASTag — FASTag low balance — penal deduction at plaza",
+  "titleHi": "FASTag — FASTag कम बैलेंस — प्लाज़ा पर जुर्माना कटौती",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. Despite adequate FASTag balance on {TAG_ID} (vehicle {VEHICLE_NO}) with {BANK_NAME}, plaza {PLAZA_NAME} deducted a 'negative-balance penalty' of Rs. {AMOUNT} on {TXN_DATE} (UTR {UTR}). Negative balance should not arise on an issuer wallet — reverse the penalty.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} के {TAG_ID} (वाहन {VEHICLE_NO}) पर पर्याप्त बैलेंस होने के बावजूद, प्लाज़ा {PLAZA_NAME} ने {TXN_DATE} (UTR {UTR}) को 'negative-balance penalty' के रूप में Rs. {AMOUNT} काटा। Issuer वॉलेट पर negative balance नहीं होना चाहिए — जुर्माना रिवर्स करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

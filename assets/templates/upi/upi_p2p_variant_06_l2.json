@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_06_l2",
+  "titleEn": "UPI / IMPS / ATM — IMPS rejection credit delayed past T+1",
+  "titleHi": "UPI / IMPS / ATM — IMPS अस्वीकृति क्रेडिट T+1 के बाद भी नहीं आया",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. My IMPS transfer Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE} was rejected by the beneficiary bank. The reverse credit has not reached my account even after the standard T+1 IMPS settlement window. Please trace the failed-batch and credit the amount immediately.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मेरा IMPS ट्रांसफर Rs. {AMOUNT} (UTR {UTR}) दिनांक {TXN_DATE} को लाभार्थी बैंक ने अस्वीकार कर दिया। मानक T+1 IMPS settlement window बाद भी reverse credit मेरे खाते में नहीं आया। कृपया failed-batch trace कर राशि तुरंत जमा करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

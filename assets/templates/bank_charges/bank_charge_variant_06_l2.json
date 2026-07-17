@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_variant_06_l2",
+  "titleEn": "Bank charges — Cheque return / inward bounce charge dispute",
+  "titleHi": "बैंक शुल्क — चेक रिटर्न / इनवर्ड बाउंस शुल्क विवाद",
+  "category": "Bank charges",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. Cheque-return / inward bounce charge of Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE} by {BANK_NAME} is unreasonable in a digital age. As per RBI's Chhokar Committee report the charge is capped. Reverse any amount over the cap.\n\nAttachments: bank statement, sanction letter, RBI Master Circular reference.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} द्वारा {TXN_DATE} (UTR {UTR}) को चेक-रिटर्न / इनवर्ड बाउंस शुल्क Rs. {AMOUNT} डिजिटल युग में अनुचित है। RBI की छोकर समिति रिपोर्ट के अनुसार शुल्क सीमित है। सीमा से अधिक राशि रिवर्स करें।\n\nसंलग्न: बैंक स्टेटमेंट, स्वीकृति पत्र, RBI मास्टर सर्कुलर संदर्भ।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

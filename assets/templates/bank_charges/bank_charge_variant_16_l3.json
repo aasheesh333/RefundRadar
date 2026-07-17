@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_variant_16_l3",
+  "titleEn": "Bank charges — Door-step banking service charge dispute",
+  "titleHi": "बैंक शुल्क — डोर-स्टेप बैंकिंग सेवा शुल्क विवाद",
+  "category": "Bank charges",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. Door-step banking service charge of Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE} by {BANK_NAME} was not pre-disclosed. Per RBI's Doorstep Banking circular 2020, charges must be prominently communicated before delivery. Reverse.\n\nAttachments: bank statement, sanction letter, RBI Master Circular reference.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} ने {TXN_DATE} (UTR {UTR}) को डोर-स्टेप बैंकिंग सेवा शुल्क Rs. {AMOUNT} पूर्व-प्रकटित नहीं किया। RBI के डोरस्टेप बैंकिंग 2020 सर्कुलर के अनुसार डिलीवरी से पहले शुल्क प्रमुखता से संप्रेषित होना चाहिए। रिवर्स करें।\n\nसंलग्न: बैंक स्टेटमेंट, स्वीकृति पत्र, RBI मास्टर सर्कुलर संदर्भ।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

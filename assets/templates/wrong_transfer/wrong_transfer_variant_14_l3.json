@@ -1,0 +1,10 @@
+{
+  "id": "wrong_transfer_variant_14_l3",
+  "titleEn": "Wrong transfer — Wrong-transfer — free-pay/wrong-VPA clarification",
+  "titleHi": "गलत ट्रांसफर — गलत-ट्रांसफर — फ्री-पे/गलत-VPA स्पष्टीकरण",
+  "category": "Wrong transfer",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. I used FreePay / a phone number mistakenly thinking I was paying {VPA}, but the debit routed to UTR {UTR} (Rs. {AMOUNT}) on {TXN_DATE} at {BENEFICIARY_BANK}. As per NPCI's UPI interoperability note, payee lookup should still display the registered name. Reverse.\n\nAttachments: UPI / IMPS transaction screenshot, beneficiary-bank acknowledgement, complaint copy.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मैंने {VPA} को भुगतान सोचकर FreePay / फ़ोन नंबर का उपयोग किया, पर डेबिट {BENEFICIARY_BANK} में UTR {UTR} (Rs. {AMOUNT}) पर {TXN_DATE} को गया। NPCI UPI interoperability नोट के अनुसार payee lookup अभी भी पंजीकृत नाम दिखाना चाहिए। रिवर्स करें।\n\nसंलग्न: UPI / IMPS लेनदेन स्क्रीनशॉट, लाभार्थी-बैंक स्वीकृति, शिकायत प्रति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

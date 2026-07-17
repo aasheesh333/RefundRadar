@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_10_l2",
+  "titleEn": "UPI / IMPS / ATM — UPI limit exceeded — auto-reject",
+  "titleHi": "UPI / IMPS / ATM — UPI लिमिट पार — ऑटो-रिजेक्ट",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. My UPI transaction Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE} to VPA {VPA_PAYEE} was auto-rejected citing 'limit exceeded'. The NPCI UPI circular mandates dynamic limits based on risk profile. Please reassess my limit and re-attempt the transfer or refund any holding charge.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} को VPA {VPA_PAYEE} पर मेरा Rs. {AMOUNT} UPI लेनदेन (UTR {UTR}) 'limit exceeded' बताकर ऑटो-रिजेक्ट हुआ। NPCI UPI सर्कुलर जोखिम प्रोफाइल के आधार पर डायनामिक लिमिट निर्धारित करता है। कृपया मेरी लिमिट पुनः मूल्यांकन कर ट्रांसफर पुनः करें या कोई होल्डिंग शुल्क वापस करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

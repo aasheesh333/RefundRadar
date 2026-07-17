@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_variant_07_l2",
+  "titleEn": "Bank charges — Failed-transaction charge — debit despite reversal",
+  "titleHi": "बैंक शुल्क — विफल-लेनदेन शुल्क — रिवर्सल के बाद भी डेबिट",
+  "category": "Bank charges",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. Failed UPI / IMPS transaction Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE} was reversed but the per-failed-transaction charge (Rs. {AMOUNT}) was still levied by {BANK_NAME}. Reverse the per-failure fee.\n\nAttachments: bank statement, sanction letter, RBI Master Circular reference.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} को विफल UPI / IMPS लेनदेन Rs. {AMOUNT} (UTR {UTR}) रिवर्स हो गया पर {BANK_NAME} ने प्रति-विफल-लेनदेन शुल्क (Rs. {AMOUNT}) फिर भी लगाया। प्रति-विफल शुल्क रिवर्स करें।\n\nसंलग्न: बैंक स्टेटमेंट, स्वीकृति पत्र, RBI मास्टर सर्कुलर संदर्भ।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

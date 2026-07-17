@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_19_l3",
+  "titleEn": "FASTag — FASTag NOC submission for new car — existing Tag dispute",
+  "titleHi": "FASTag — नई कार के लिए FASTag NOC जमा — मौजूदा Tag विवाद",
+  "category": "FASTag",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. My FASTag on the previous vehicle {VEHICLE_NO} (Tag {TAG_ID}) is being held while I submit NOC for the new vehicle with {BANK_NAME}. Deductions are still happening. Pause and reverse the erroneous deductions.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. पिछले वाहन {VEHICLE_NO} (Tag {TAG_ID}) का FASTag {BANK_NAME} के साथ NOC जमा करने तक रोक दिया गया है। फिर भी कटौती जारी है। गलत कटौती रोकें और रिवर्स करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

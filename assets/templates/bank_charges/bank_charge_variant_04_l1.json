@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_variant_04_l1",
+  "titleEn": "Bank charges — NEFT / RTGS charge dispute — beyond free quota",
+  "titleHi": "बैंक शुल्क — NEFT / RTGS शुल्क विवाद — मुफ्त कोटा से परे",
+  "category": "Bank charges",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "1. NEFT charge of Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE} by {BANK_NAME} exceeds the RBI-prescribed free limit (NEFT digital channel is free). Reverse.\n\nAttachments: bank statement, sanction letter, RBI Master Circular reference.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} द्वारा {TXN_DATE} (UTR {UTR}) को NEFT शुल्क Rs. {AMOUNT} RBI-निर्धारित मुफ्त सीमा से अधिक है (NEFT डिजिटल चैनल मुफ्त है)। रिवर्स करें।\n\nसंलग्न: बैंक स्टेटमेंट, स्वीकृति पत्र, RBI मास्टर सर्कुलर संदर्भ।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

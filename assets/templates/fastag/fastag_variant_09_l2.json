@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_09_l2",
+  "titleEn": "FASTag — FASTag non-issuance / tag dispatch never received",
+  "titleHi": "FASTag — FASTag जारी नहीं / Tag डिस्पैच प्राप्त नहीं",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. I ordered a FASTag from {BANK_NAME} on {TXN_DATE} and paid Rs. {AMOUNT} (UTR {UTR}). The Tag dispatch has not been received. Issue the Tag or refund the amount.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. मैंने {BANK_NAME} से {TXN_DATE} को FASTag ऑर्डर किया और Rs. {AMOUNT} (UTR {UTR}) भुगतान किया। Tag dispatch प्राप्त नहीं हुआ। Tag जारी करें या राशि वापस करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

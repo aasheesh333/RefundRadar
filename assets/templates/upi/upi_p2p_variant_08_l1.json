@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_08_l1",
+  "titleEn": "UPI / IMPS / ATM — ATM transaction declined but SMS shows debit",
+  "titleHi": "UPI / IMPS / ATM — ATM लेनदेन declined हुआ पर SMS में debit दिखा",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "1. ATM {ATM_ID}, card {CARD_LAST4}, {BANK_NAME}: On {TXN_DATE} the ATM screen showed 'transaction declined' (UTR {UTR}), but my account was debited Rs. {AMOUNT}. As per RBI DPSS circular, the bank must reverse a failed ATM debit within T+5 and pay Rs. 100/day compensation beyond T+5.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. ATM {ATM_ID}, कार्ड {CARD_LAST4}, {BANK_NAME}: {TXN_DATE} को ATM स्क्रीन पर 'transaction declined' दिखा (UTR {UTR}), लेकिन मेरे खाते से Rs. {AMOUNT} कट गया। RBI DPSS सर्कुलर के अनुसार बैंक T+5 के भीतर विफल ATM डेबिट वापस करेगा और T+5 के बाद Rs. 100/दिन मुआवज़ा देगा।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

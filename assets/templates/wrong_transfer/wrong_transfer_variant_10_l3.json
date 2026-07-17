@@ -1,0 +1,10 @@
+{
+  "id": "wrong_transfer_variant_10_l3",
+  "titleEn": "Wrong transfer — Wrong-transfer — escalate to NPCI appellate authority",
+  "titleHi": "गलत ट्रांसफर — गलत-ट्रांसफर — NPCI अपीलीय प्राधिकरण को escalate",
+  "category": "Wrong transfer",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. Wrong-transfer Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE}) via {BENEFICIARY_BANK} has been open for {DAYS_ELAPSED} days. Escalate to NPCI's Appellate Authority under the RBI Banking Ombudsman scheme.\n\nAttachments: UPI / IMPS transaction screenshot, beneficiary-bank acknowledgement, complaint copy.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BENEFICIARY_BANK} के माध्यम से गलत-ट्रांसफर Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE}) {DAYS_ELAPSED} दिनों से खुला है। RBI बैंकिंग लोकपाल योजना के तहत NPCI अपीलीय प्राधिकरण को escalate करें।\n\nसंलग्न: UPI / IMPS लेनदेन स्क्रीनशॉट, लाभार्थी-बैंक स्वीकृति, शिकायत प्रति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

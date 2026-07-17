@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_variant_00_l1",
+  "titleEn": "Bank charges — SMS-charge dispute — RBI cap",
+  "titleHi": "बैंक शुल्क — SMS-शुल्क विवाद — RBI सीमा",
+  "category": "Bank charges",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "1. {BANK_NAME} charged Rs. {AMOUNT} as SMS-alert fee on {TXN_DATE} (UTR {UTR}). RBI's 2011 Master Circular caps SMS alerts at Rs. 25 per quarter — this breach reverses the charge.\n\nAttachments: bank statement, sanction letter, RBI Master Circular reference.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} ने {TXN_DATE} (UTR {UTR}) को SMS-अलर्ट फी के रूप में Rs. {AMOUNT} काटा। RBI के 2011 मास्टर सर्कुलर के अनुसार SMS अलर्ट प्रति तिमाही Rs. 25 सीमित है — यह उल्लंघन कटौती रिवर्स करता है।\n\nसंलग्न: बैंक स्टेटमेंट, स्वीकृति पत्र, RBI मास्टर सर्कुलर संदर्भ।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

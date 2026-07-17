@@ -1,0 +1,10 @@
+{
+  "id": "wrong_transfer_variant_19_l3",
+  "titleEn": "Wrong transfer — Wrong-transfer — request for Magistrate fee waiver",
+  "titleHi": "गलत ट्रांसफर — गलत-ट्रांसफर — मजिस्ट्रेट फी छूट का अनुरोध",
+  "category": "Wrong transfer",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. Wrong-transfer Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE}) to account {BENEFICIARY_ACCOUNT_NO} (IFSC {BENEFICIARY_IFSC}). I'm filing a Magistrate's complaint under Section 200 CrPC. Request fee waiver given my income.\n\nAttachments: UPI / IMPS transaction screenshot, beneficiary-bank acknowledgement, complaint copy.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. खाता {BENEFICIARY_ACCOUNT_NO} (IFSC {BENEFICIARY_IFSC}) को गलत-ट्रांसफर Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE})। मैं Section 200 CrPC के तहत मजिस्ट्रेट शिकायत दर्ज कर रहा हूँ। अपनी आय को देखते हुए फी छूट का अनुरोध।\n\nसंलग्न: UPI / IMPS लेनदेन स्क्रीनशॉट, लाभार्थी-बैंक स्वीकृति, शिकायत प्रति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_01_l2",
+  "titleEn": "UPI / IMPS / ATM — UPI collect request money not refunded by merchant",
+  "titleHi": "UPI / IMPS / ATM — UPI कलेक्ट रिक्वेस्ट का पैसा मर्चेंट ने वापस नहीं किया",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. I accepted a UPI collect request from VPA {VPA_PAYEE} for Rs. {AMOUNT} on {TXN_DATE} (UTR {UTR}). The merchant failed to deliver the product and has not refunded the amount. As the paying customer, I am entitled to a reversal under RBI's Master Direction on UPI.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} को मैंने VPA {VPA_PAYEE} से Rs. {AMOUNT} की UPI कलेक्ट रिक्वेस्ट स्वीकार की (UTR {UTR})। मर्चेंट ने उत्पाद देने में विफल रहा और राशि वापस नहीं की। भुगतान करने वाले ग्राहक के रूप में RBI मास्टर डायरेक्शन के तहत मैं रिवर्सल का हकदार हूँ।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

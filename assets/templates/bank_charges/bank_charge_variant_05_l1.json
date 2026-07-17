@@ -1,0 +1,10 @@
+{
+  "id": "bank_charge_variant_05_l1",
+  "titleEn": "Bank charges — IMPS charge dispute beyond RBI free allowance",
+  "titleHi": "बैंक शुल्क — IMPS शुल्क विवाद — RBI मुफ्त भत्ते से परे",
+  "category": "Bank charges",
+  "escalationLevel": 1,
+  "isPremium": true,
+  "bodyEn": "1. IMPS charge of Rs. {AMOUNT} was levied on {TXN_DATE} (UTR {UTR}) by {BANK_NAME}. As per RBI's digital-payment directive, IMPS via digital channel is free for amounts up to Rs. 1,000 and capped thereafter. Reverse the excess.\n\nAttachments: bank statement, sanction letter, RBI Master Circular reference.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BANK_NAME} ने {TXN_DATE} (UTR {UTR}) को IMPS शुल्क Rs. {AMOUNT} लगाया। RBI के डिजिटल-भुगतान निर्देश के अनुसार Rs. 1,000 तक की IMPS डिजिटल चैनल से मुफ्त है और उसके बाद सीमित। अतिरिक्त राशि रिवर्स करें।\n\nसंलग्न: बैंक स्टेटमेंट, स्वीकृति पत्र, RBI मास्टर सर्कुलर संदर्भ।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

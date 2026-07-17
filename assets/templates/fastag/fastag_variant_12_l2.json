@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_12_l2",
+  "titleEn": "FASTag — FASTag customer-care pickup — penalty abatement",
+  "titleHi": "FASTag — FASTag कस्टमर-केयर पिकअप — जुर्माना माफी",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. Customer care has acknowledged the FASTag dispute Rs. {AMOUNT} (UTR {UTR}) and pledged resolution. Please abate any further penalties while the dispute is open.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. कस्टमर-केयर ने FASTag विवाद Rs. {AMOUNT} (UTR {UTR}) acknowledge किया और समाधान का वादा किया। विवाद खुला रहने तक कृपया और जुर्माना माफ करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

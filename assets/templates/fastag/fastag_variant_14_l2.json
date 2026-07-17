@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_14_l2",
+  "titleEn": "FASTag — FASTag at non-NHAI plaza — invoice demanded",
+  "titleHi": "FASTag — non-NHAI प्लाज़ा पर FASTag — बिल माँग",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. FASTag deduction Rs. {AMOUNT} (UTR {UTR}, Tag {TAG_ID}) at plaza {PLAZA_NAME} (a non-NHAI concession plaza) does not match the invoice / receipt provided. Issue GST invoice or reverse the deduction.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. प्लाज़ा {PLAZA_NAME} (गैर-NHAI प्लाज़ा) पर FASTag कटौती Rs. {AMOUNT} (UTR {UTR}, Tag {TAG_ID}) प्रदान बिल / रसीद से मेल नहीं खाती। GST बिल जारी करें या कटौती रिवर्स करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

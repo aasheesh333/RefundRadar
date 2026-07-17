@@ -1,0 +1,10 @@
+{
+  "id": "wrong_transfer_variant_12_l3",
+  "titleEn": "Wrong transfer — Wrong-transfer — nodal-officer settlement request",
+  "titleHi": "गलत ट्रांसफर — गलत-ट्रांसफर — नोडल-अधिकारी समझौता अनुरोध",
+  "category": "Wrong transfer",
+  "escalationLevel": 3,
+  "isPremium": true,
+  "bodyEn": "1. Withdraw the FIR conditional on a {BENEFICIARY_BANK} nodal-officer-mediated settlement within 14 days. Wrong-transfer Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE}) to VPA {VPA_PAYEE}.\n\nAttachments: UPI / IMPS transaction screenshot, beneficiary-bank acknowledgement, complaint copy.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {BENEFICIARY_BANK} नोडल-अधिकारी मध्यस्थता के तहत 14 दिनों में निपटान होने पर FIR वापस लें। VPA {VPA_PAYEE} को गलत-ट्रांसफर Rs. {AMOUNT} (UTR {UTR}, {TXN_DATE})।\n\nसंलग्न: UPI / IMPS लेनदेन स्क्रीनशॉट, लाभार्थी-बैंक स्वीकृति, शिकायत प्रति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

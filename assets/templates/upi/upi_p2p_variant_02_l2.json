@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_02_l2",
+  "titleEn": "UPI / IMPS / ATM — UPI payment timed-out but merchant kept the goods",
+  "titleHi": "UPI / IMPS / ATM — UPI भुगतान timeout हुआ लेकिन मर्चेंट ने सामान रख लिया",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. UPI payment of Rs. {AMOUNT} to VPA {VPA_PAYEE} on {TXN_DATE} (UTR {UTR}) timed out on my UPI app but the merchant confirmed receipt and delivered the goods. Please reconcile with NPCI to confirm the bank leg and refund the duplicate collection, if any.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} को VPA {VPA_PAYEE} पर Rs. {AMOUNT} UPI भुगमेंट (UTR {UTR}) मेरे UPI ऐप पर timeout हुआ, लेकिन मर्चेंट ने पुष्टि कर सामान भेज दिया। कृपया NPCI से reconcile कर duplicate कलेक्शन, यदि हो, वापस करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

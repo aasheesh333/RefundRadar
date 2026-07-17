@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_01_l2",
+  "titleEn": "FASTag — FASTag two wheeler / over-dimensional vehicle deduction",
+  "titleHi": "FASTag — FASTag दुपहिया / ओवर-डायमेंशनल वाहन कटौती",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. Vehicle {VEHICLE_NO} (FASTag {TAG_ID}) is a {VEHICLE_NO} per RC but toll plazas are applying car-class rates. Please correct the vehicle-class mapping at the issuer.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. वाहन {VEHICLE_NO} (FASTag {TAG_ID}) RC के अनुसार वही है, पर टोल प्लाज़ा car-class दरें लागू कर रहे हैं। कृपया issuer पर vehicle-class मैपिंग ठीक करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

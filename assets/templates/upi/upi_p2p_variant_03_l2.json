@@ -1,0 +1,10 @@
+{
+  "id": "upi_p2p_variant_03_l2",
+  "titleEn": "UPI / IMPS / ATM — UPI mandate auto-debited without consent",
+  "titleHi": "UPI / IMPS / ATM — UPI मैंडेट से बिना सहमति के auto-debit",
+  "category": "UPI / IMPS / ATM",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. A UPI mandate / auto-debit of Rs. {AMOUNT} was executed against my VPA {VPA} on {TXN_DATE} (UTR {UTR}) without my explicit one-time password / consent at the time of debit. This violates the RBI UPI Authentication guideline and the NPCI e-mandate framework. Pause the mandate and refund the amount.\n\nAttachments: UPI transaction screenshot, PSP complaint acknowledgement, bank statement extract for the debit.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} को मेरे VPA {VPA} से Rs. {AMOUNT} की UPI मैंडेट / ऑटो-डेबिट (UTR {UTR}) मेरी स्पष्ट OTP / सहमति के बिना हुई। यह RBI UPI प्रमाणीकरण दिशानिर्देश और NPCI e-mandate फ्रेमवर्क का उल्लंघन है। मैंडेट रोकें और राशि वापस करें।\n\nसंलग्न: UPI लेनदेन स्क्रीनशॉट, PSP शिकायत स्वीकृति, बैंक स्टेटमेंट अंश।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

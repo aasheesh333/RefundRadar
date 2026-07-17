@@ -1,0 +1,10 @@
+{
+  "id": "fastag_variant_17_l2",
+  "titleEn": "FASTag — FASTag auto-debit SMS alert missing — dispute upheld",
+  "titleHi": "FASTag — FASTag ऑटो-डेबिट SMS अलर्ट गायब — विवाद कायम",
+  "category": "FASTag",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. No SMS alert was sent for an auto-debit of Rs. {AMOUNT} (UTR {UTR}, Tag {TAG_ID}) on {TXN_DATE}, in breach of RBI's customer-protection notification. Reverse the debit.\n\nAttachments: Tag statement, plaza receipt, ANPR screenshot (if available).\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. RBI ग्राहक-सुरक्षा अधिसूचना के उल्लंघन में {TXN_DATE} को Rs. {AMOUNT} (UTR {UTR}, Tag {TAG_ID}) के ऑटो-डेबिट का कोई SMS अलर्ट नहीं भेजा गया। डेबिट रिवर्स करें।\n\nसंलग्न: Tag स्टेटमेंट, प्लाज़ा रसीद, ANPR स्क्रीनशॉट (यदि उपलब्ध)।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}

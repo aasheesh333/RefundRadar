@@ -1,0 +1,10 @@
+{
+  "id": "wrong_transfer_variant_05_l2",
+  "titleEn": "Wrong transfer — Wrong account-number transfer — IMPS reversal",
+  "titleHi": "गलत ट्रांसफर — गलत खाता-संख्या ट्रांसफर — IMPS रिवर्सल",
+  "category": "Wrong transfer",
+  "escalationLevel": 2,
+  "isPremium": true,
+  "bodyEn": "1. IMPS transfer of Rs. {AMOUNT} (UTR {UTR}) on {TXN_DATE} to account {BENEFICIARY_ACCOUNT_NO} (IFSC {BENEFICIARY_IFSC}, {BENEFICIARY_BANK}) was meant for a different person. Please initiate IMPS recall per RBI's Customer Protection 2017 circular.\n\nAttachments: UPI / IMPS transaction screenshot, beneficiary-bank acknowledgement, complaint copy.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
+  "bodyHi": "1. {TXN_DATE} को खाता {BENEFICIARY_ACCOUNT_NO} (IFSC {BENEFICIARY_IFSC}, {BENEFICIARY_BANK}) को Rs. {AMOUNT} का IMPS ट्रांसफर (UTR {UTR}) किसी अन्य व्यक्ति के लिए था। कृपया RBI Customer Protection 2017 सर्कुलर के अनुसार IMPS recall शुरू करें।\n\nसंलग्न: UPI / IMPS लेनदेन स्क्रीनशॉट, लाभार्थी-बैंक स्वीकृति, शिकायत प्रति।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
+}
