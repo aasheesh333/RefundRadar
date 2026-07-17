@@ -17,6 +17,8 @@ import 'package:refund_radar/features/ombudsman/ombudsman_letter_page.dart';
 import 'package:refund_radar/features/escalate/escalate_page.dart';
 import 'package:refund_radar/features/history/history_page.dart';
 import 'package:refund_radar/features/templates/template_library_page.dart';
+import 'package:refund_radar/features/templates/template_picker_page.dart';
+import 'package:refund_radar/features/templates/template_preview_page.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -86,6 +88,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
           path: '/templates',
           builder: (c, s) => const TemplateLibraryPage()),
+      // Wave 4a — full-screen Template Picker + Preview used by
+      // DisputeDetail (and reusable from Escalate) for "change template".
+      GoRoute(
+        path: '/templates/picker',
+        builder: (c, s) => TemplatePickerPage(
+          disputeId: s.uri.queryParameters['disputeId'] ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/templates/preview',
+        builder: (c, s) => TemplatePreviewPage(
+          disputeId: s.uri.queryParameters['disputeId'] ?? '',
+          templateId: s.uri.queryParameters['templateId'] ?? '',
+        ),
+      ),
       GoRoute(path: '/history', builder: (c, s) => const HistoryPage()),
       GoRoute(
           path: '/onboard/sms',

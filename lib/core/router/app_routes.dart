@@ -26,6 +26,24 @@ class AppRoutes {
   static String wizard(String disputeId) => '/wizard/$disputeId';
   static String ombudsman(String disputeId) => '/ombudsman/$disputeId';
 
+  // Wave 4a — full-screen Template Picker + Preview.
+  static const templatePicker = '/templates/picker';
+  static const templatePreview = '/templates/preview';
+  static String templatePickerWithDispute(String disputeId) =>
+      Uri(path: templatePicker, queryParameters: {'disputeId': disputeId})
+          .toString();
+  static String templatePreviewWith({
+    required String disputeId,
+    required String templateId,
+  }) =>
+      Uri(
+        path: templatePreview,
+        queryParameters: {
+          'disputeId': disputeId,
+          'templateId': templateId,
+        },
+      ).toString();
+
   static String paywallWithReturn(String returnPath, String trigger) =>
       '$paywall?return=$returnPath&trigger=$trigger';
 

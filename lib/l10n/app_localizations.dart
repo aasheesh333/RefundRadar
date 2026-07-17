@@ -810,6 +810,50 @@ class AppLocalizations {
       'en': 'DESCRIPTION (optional)',
       'hi': 'विवरण (वैकल्पिक)',
     },
+    // Wave 4a — full-screen Template Picker + Preview.
+    'templatePickerTitle': {'en': 'Pick a template', 'hi': 'टेम्पलेट चुनें'},
+    'templatePickerSubtitle': {
+      'en': '{count} template(s) for {category}',
+      'hi': '{category} के लिए {count} टेम्पलेट',
+    },
+    'templatePickerLocked': {
+      'en': 'Locked preview',
+      'hi': 'लॉक पूर्वावलोकन',
+    },
+    'templatePickerLockedHint': {
+      'en':
+          'Subject line visible. Tap to upgrade and see the full body pre-filled for your dispute.',
+      'hi':
+          'विषय लाइन दिख रही है। अपग्रेड करके अपने विवाद के लिए पूरा शरीर देखें।',
+    },
+    'templatePickerEmpty': {
+      'en': 'No templates for this category',
+      'hi': 'इस श्रेणी के लिए कोई टेम्पलेट नहीं',
+    },
+    'templatePickerNeedPremium': {
+      'en': 'Unlock',
+      'hi': 'अनलॉक',
+    },
+    'templatePreviewUpgrade': {
+      'en': 'Unlock with Premium',
+      'hi': 'प्रीमियम से अनलॉक',
+    },
+    'templatePreviewSelect': {
+      'en': 'Use this template',
+      'hi': 'यह टेम्पलेट चुनें',
+    },
+    'templatePreviewChange': {
+      'en': 'Change template',
+      'hi': 'टेम्पलेट बदलें',
+    },
+    'templatePreviewSelected': {
+      'en': 'Selected',
+      'hi': 'चुना गया',
+    },
+    'templatePreviewFree': {'en': 'Free', 'hi': 'फ्री'},
+    'templatePreviewSubject': {'en': 'Subject', 'hi': 'विषय'},
+    'templatePreviewBody': {'en': 'Body', 'hi': 'संदेश'},
+    'templatePreviewBackCta': {'en': 'Back to picker', 'hi': 'चयन पर वापस'},
     // Wave 2 — category-specific fields captured so the escalation-email
     // merge tokens (VPA, VEHICLE_NO, …) are pre-filled and the user only
     // has to tap "Send Email".
@@ -1325,6 +1369,24 @@ class AppLocalizations {
   String get detailResolvedMessage => _t('detailResolvedMessage');
   String get detailOmbudsmanPremium => _t('detailOmbudsmanPremium');
   String get detailNoTemplateFound => _t('detailNoTemplateFound');
+  // Wave 4a — full-screen Template Picker + Preview.
+  String get templatePickerTitle => _t('templatePickerTitle');
+  String templatePickerSubtitle(String count, String category) => _t(
+        'templatePickerSubtitle',
+        args: {'count': count, 'category': category},
+      );
+  String get templatePickerLocked => _t('templatePickerLocked');
+  String get templatePickerLockedHint => _t('templatePickerLockedHint');
+  String get templatePickerEmpty => _t('templatePickerEmpty');
+  String get templatePickerNeedPremium => _t('templatePickerNeedPremium');
+  String get templatePreviewUpgrade => _t('templatePreviewUpgrade');
+  String get templatePreviewSelect => _t('templatePreviewSelect');
+  String get templatePreviewChange => _t('templatePreviewChange');
+  String get templatePreviewSelected => _t('templatePreviewSelected');
+  String get templatePreviewFree => _t('templatePreviewFree');
+  String get templatePreviewSubject => _t('templatePreviewSubject');
+  String get templatePreviewBody => _t('templatePreviewBody');
+  String get templatePreviewBackCta => _t('templatePreviewBackCta');
   String get detailAutoMatched => _t('detailAutoMatched');
   String get detailCustomTemplate => _t('detailCustomTemplate');
   String detailFreeTab(int count) =>

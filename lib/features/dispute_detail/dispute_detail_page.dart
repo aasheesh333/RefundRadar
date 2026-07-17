@@ -15,7 +15,6 @@ import 'package:refund_radar/data/models/template.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/data/repositories/template_repository.dart';
-import 'package:refund_radar/features/templates/template_library_page.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
@@ -24,7 +23,6 @@ import 'package:refund_radar/shared/widgets/activity_log.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
-import 'package:refund_radar/shared/widgets/status_pill.dart';
 
 class DisputeDetailPage extends ConsumerWidget {
   final String id;
@@ -678,17 +676,13 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
               Tooltip(
                 message: l10n?.escalateEditTemplate ?? 'Pick template',
                 child: IconButton(
-                  onPressed: templates.isEmpty
-                      ? null
-                      : () => _showTemplatePickerForDispute(
-                            context,
-                            templates,
-                            repo,
-                            freeIds,
-                            isPremiumUser,
-                            localeCode,
-                            l10n,
-                          ),
+                  onPressed: () {
+                    // Wave 4a: navigate to the new full-screen Template
+                    // Picker (replaces the old in-page bottom sheet).
+                    context.push(
+                      AppRoutes.templatePickerWithDispute(dispute.id),
+                    );
+                  },
                   padding: const EdgeInsets.all(12),
                   splashRadius: 24,
                   icon: Icon(
@@ -749,288 +743,6 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
               ),
             ),
           ],
-        ],
-      ),
-    );
-  }
-
-  /// F3 — opens the Free/Pro template picker for this dispute (same
-  /// structure as the escalate-page picker). Selecting a template updates
-  /// local state (preview-only; not persisted to the dispute record).
-  void _showTemplatePickerForDispute(
-    BuildContext context,
-    List<Template> templates,
-    TemplateRepository repo,
-    Set<String> freeIds,
-    bool isPremiumUser,
-    String localeCode,
-    AppLocalizations? l10n,
-  ) {
-    final tc = AppThemeColors.of(context);
-    // ME-7: partition via the shared helper so free/pro buckets match
-    // the escalate picker exactly.
-    final buckets = repo.splitForCategory(
-      templates,
-      dispute.type,
-      freeIds,
-      isPremiumUser: isPremiumUser,
-    );
-    final freeTemplates = buckets.free;
-    final proTemplates = buckets.pro;
-
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: tc.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetCtx) {
-        final sheetTc = AppThemeColors.of(sheetCtx);
-        final sheetL10n = AppLocalizations.of(sheetCtx);
-        return SafeArea(
-          child: DefaultTabController(
-            length: 2,
-            child: SizedBox(
-              height: MediaQuery.of(sheetCtx).size.height * 0.65,
-              child: Column(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(top: 12, bottom: 8),
-                    decoration: BoxDecoration(
-                      color: sheetTc.divider,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        sheetL10n?.escalatePickTemplate ??
-                            'Pick escalation template',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: sheetTc.textPrimary,
-                        ),
-                      ),
-                    ),
-                  ),
-                  TabBar(
-                    tabs: [
-                      Tab(text: sheetL10n?.detailFreeTab(freeTemplates.length) ?? 'Free (${freeTemplates.length})'),
-                      Tab(
-                        text:
-                            '${sheetL10n?.templateProBadge ?? 'Pro'} (${proTemplates.length})',
-                      ),
-                    ],
-                    labelColor: AppColors.accent,
-                    unselectedLabelColor: sheetTc.textTertiary,
-                    indicatorColor: AppColors.accent,
-                    indicatorSize: TabBarIndicatorSize.label,
-                  ),
-                  Expanded(
-                    child: TabBarView(
-                      children: [
-                        _disputeTemplateList(
-                          sheetCtx,
-                          freeTemplates,
-                          repo,
-                          freeIds,
-                          isPremiumUser,
-                          localeCode,
-                          sheetL10n,
-                          isProTab: false,
-                        ),
-                        _disputeTemplateList(
-                          sheetCtx,
-                          proTemplates,
-                          repo,
-                          freeIds,
-                          isPremiumUser,
-                          localeCode,
-                          sheetL10n,
-                          isProTab: true,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// F3 helper — renders a Free or Pro tab for the dispute-detail picker.
-  Widget _disputeTemplateList(
-    BuildContext context,
-    List<Template> templates,
-    TemplateRepository repo,
-    Set<String> freeIds,
-    bool isPremiumUser,
-    String localeCode,
-    AppLocalizations? l10n, {
-    required bool isProTab,
-  }) {
-    final tc = AppThemeColors.of(context);
-    if (templates.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Text(
-            isProTab
-                ? (l10n?.detailNoProTemplates ?? 'No Pro templates for this category')
-                : (l10n?.detailNoFreeTemplates ?? 'No free templates for this category'),
-            style: TextStyle(color: tc.textTertiary, fontSize: 14),
-          ),
-        ),
-      );
-    }
-    return ListView.separated(
-      padding: const EdgeInsets.all(20),
-      itemCount: templates.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
-      itemBuilder: (context, index) {
-        final t = templates[index];
-        final isSelected = t.id == _selectedTemplateId;
-        final isLocked = isProTab &&
-            repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser);
-
-        return InkWell(
-          onTap: isLocked
-              ? () {
-                  Navigator.pop(context);
-                  context.push(
-                    AppRoutes.paywallWithParams(
-                      trigger: 'template_locked',
-                      returnPath: AppRoutes.disputeDetail(dispute.id),
-                      templateId: t.id,
-                      templateTitle: t.titleFor(localeCode),
-                    ),
-                  );
-                }
-              : () {
-                  setState(() => _selectedTemplateId = t.id);
-                  Navigator.pop(context);
-                },
-          borderRadius: BorderRadius.circular(AppRadii.lg),
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: isSelected ? AppColors.accent : tc.divider,
-                width: isSelected ? 2 : 1,
-              ),
-              borderRadius: BorderRadius.circular(AppRadii.lg),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        t.titleFor(localeCode),
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: isLocked ? tc.textTertiary : tc.textPrimary,
-                        ),
-                      ),
-                    ),
-                    if (isLocked)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: StatusPill(
-                          label: l10n?.templateProBadge ?? 'Pro',
-                          fg: AppColors.premiumGold,
-                          bg: tc.premiumGoldSoft,
-                          prefix: '🔒',
-                        ),
-                      ),
-                    if (isSelected)
-                      const Padding(
-                        padding: EdgeInsets.only(left: 8),
-                        child: Icon(
-                          Icons.check_circle,
-                          size: 20,
-                          color: AppColors.accent,
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Level ${t.escalationLevel} · ${t.category}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isLocked ? tc.textTertiary : tc.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                if (isLocked)
-                  _blurredPreview(
-                    filledTemplateBody(t, localeCode, dispute),
-                    tc,
-                  )
-                else
-                  Text(
-                    filledTemplateBody(t, localeCode, dispute),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: tc.textSecondary,
-                      height: 1.4,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  /// F3 helper — fades the bottom of a locked template preview.
-  Widget _blurredPreview(String body, AppThemeColors tc) {
-    return ClipRect(
-      child: Stack(
-        children: [
-          Text(
-            body,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 13,
-              color: tc.textSecondary,
-              height: 1.4,
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 20,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    tc.surface.withValues(alpha: 0),
-                    tc.surface,
-                  ],
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
