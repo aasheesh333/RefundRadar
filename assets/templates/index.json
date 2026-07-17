@@ -129,5 +129,15 @@
   "wrong_transfer/wrong_transfer_variant_16_l3.json",
   "wrong_transfer/wrong_transfer_variant_17_l3.json",
   "wrong_transfer/wrong_transfer_variant_18_l3.json",
-  "wrong_transfer/wrong_transfer_variant_19_l3.json"
+  "wrong_transfer/wrong_transfer_variant_19_l3.json",
+  "upi/upi_ombudsman_appellate_l4.json",
+  "fastag/fastag_nhai_appellate_l4.json",
+  "bank_charges/bank_charge_consumer_court_l5.json",
+  "bank_charges/bank_charge_rti_application_l5.json",
+  "wrong_transfer/wrong_transfer_state_consumer_l5.json",
+  "upi/upi_npci_appellate_l4.json",
+  "fastag/fastag_rti_nhai_l5.json",
+  "fastag/fastag_banking_l4_followup.json",
+  "upi/upi_legal_notice_through_advocate_l5.json",
+  "fastag/fastag_rbi_supervisor_l4.json"
 ]
