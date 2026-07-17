@@ -385,7 +385,7 @@ class _Body extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'TOTAL CLAIMABLE',
+            l10n?.escalateTotalClaimable ?? 'TOTAL CLAIMABLE',
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w700,

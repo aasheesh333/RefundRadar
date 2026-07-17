@@ -179,17 +179,18 @@ class NotificationService {
   /// routing side parses the payload in the notification-tap handler in
   /// `main.dart`.
   ///
-  /// Notification id is `utr.hashCode.abs()` so each UTR falls in a stable
-  /// bucket (a re-detection of the same UTR replaces the previous banner
-  /// rather than stacking them). UTR hashes live in a different ID range
-  /// than the daily/weekly digest IDs (9001/9002) and the FNV-1a-derived
-  /// reminder IDs in `scheduledIdFor`, so `cancelAll` paths stay clean.
+  /// Notification id is the NEGATIVE of `utr.hashCode.abs()` so each UTR
+  /// falls in a stable bucket in the negative id space — guaranteed
+  /// disjoint from all positive scheduled ids (FNV-1a-derived reminder
+  /// ids + daily/weekly 9001/9002), so an instant UTR `show` can never
+  /// overwrite a pending scheduled reminder alarm. A re-detection of the
+  /// same UTR replaces the previous banner rather than stacking them.
   Future<void> showUtrDetectedNotification({
     required String utr,
     required double? amount,
     required String sender,
   }) async {
-    final id = utr.hashCode.abs();
+    final id = -(utr.hashCode.abs() + 1);
     final title = amount != null
         ? 'Transaction detected — ₹${amount.toInt()}'
         : 'Bank transaction detected';
@@ -230,7 +231,10 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
-    final id = DateTime.now().millisecondsSinceEpoch.remainder(0x7FFFFFFF);
+    // Negative id space (disjoint from positive scheduled reminder/daily/
+    // weekly ids) so a foreground push can never overwrite a pending
+    // scheduled alarm.
+    final id = -(DateTime.now().millisecondsSinceEpoch.remainder(0x7FFFFFFF) + 1);
     await _plugin.show(
       id,
       title,

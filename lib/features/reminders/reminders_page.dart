@@ -21,6 +21,7 @@ class RemindersPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     final uidAsync = ref.watch(userIdProvider);
     return Scaffold(
       backgroundColor: tc.bg,
@@ -36,7 +37,7 @@ class RemindersPage extends ConsumerWidget {
                   const AppBackButton(),
                   const SizedBox(width: 8),
                   Text(
-                    'Reminders',
+                    l10n?.remindersTitle ?? 'Reminders',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                           color: tc.textPrimary,
@@ -54,7 +55,22 @@ class RemindersPage extends ConsumerWidget {
                   onRetry: () => ref.invalidate(userIdProvider),
                 ),
                 data: (uid) {
-                  if (uid == null) return const _EmptyState();
+                  if (uid == null) {
+                    // Auth failed — show a retry banner, not a misleading
+                    // "No upcoming reminders" empty state.
+                    final authErr = ref.watch(lastAuthErrorProvider);
+                    return BrandedErrorBanner(
+                      message: authErr != null &&
+                              authErr.toLowerCase().contains('operation-not-allowed')
+                          ? 'Anonymous sign-in is disabled. Enable it in Firebase Console → Authentication → Sign-in method → Anonymous.'
+                          : 'Could not sign in. Check your connection and try again.',
+                      detail: authErr,
+                      onRetry: () async {
+                        await ref.read(reauthProvider)();
+                        ref.invalidate(userIdProvider);
+                      },
+                    );
+                  }
                   final remindersAsync = ref.watch(remindersProvider(uid));
                   return remindersAsync.when(
                     loading: () => const SkeletonList(itemCount: 4, itemHeight: 84),
@@ -97,6 +113,7 @@ class _ReminderCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     final type = reminder.disputeType;
     final now = DateTime.now();
     // LO-2 / ME-2: use calendar-day math so a reminder that crosses
@@ -221,12 +238,12 @@ class _ReminderCard extends ConsumerWidget {
                       },
                       child: Semantics(
                         button: true,
-                        label: 'Dismiss reminder',
+                        label: l10n?.remindersDismiss ?? 'Dismiss reminder',
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 14),
                           child: Text(
-                            'Dismiss',
+                            l10n?.remindersDismissAction ?? 'Dismiss',
                             style: Theme.of(context)
                                 .textTheme
                                 .labelMedium
@@ -241,15 +258,15 @@ class _ReminderCard extends ConsumerWidget {
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () =>
-                          context.go(AppRoutes.disputeDetail(reminder.disputeId)),
+                          context.push(AppRoutes.disputeDetail(reminder.disputeId)),
                       child: Semantics(
                         button: true,
-                        label: 'Open dispute',
+                        label: l10n?.remindersOpen ?? 'Open dispute',
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 14),
                           child: Text(
-                            'Open',
+                            l10n?.remindersOpenAction ?? 'Open',
                             style: Theme.of(context)
                                 .textTheme
                                 .labelMedium

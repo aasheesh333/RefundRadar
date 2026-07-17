@@ -522,7 +522,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            l10n?.formStep2Of4 ?? 'STEP 2 OF 4',
+                            l10n?.formStep2Of4 ?? 'STEP 2 OF 2',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -1051,7 +1051,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
               leading: CircleAvatar(
                 backgroundColor: tc.surfaceAlt,
                 child: Text(
-                  b.name.substring(0, 1).toUpperCase(),
+                  b.name.isEmpty ? '?' : b.name.substring(0, 1).toUpperCase(),
                   style: TextStyle(
                     color: tc.ctaBackground,
                     fontWeight: FontWeight.w700,
@@ -1068,7 +1068,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         ),
       ),
     );
-    if (picked != null) {
+    if (picked != null && mounted) {
       setState(() {
         _bankName = picked!.name;
         _selectedEntityId = picked!.id;
@@ -1239,7 +1239,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
             );
           },
         );
-      },
+},
     );
   }
 

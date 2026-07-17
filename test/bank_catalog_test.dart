@@ -3,8 +3,10 @@ import 'package:refund_radar/data/constants/bank_catalog.dart';
 
 void main() {
   group('BankCatalog.banks', () {
-    test('has 55 entries (PSB+PVB+SFB+PB+Foreign+other)', () {
-      expect(BankCatalog.banks.length, 55);
+    test('has 54 entries (PSB+PVB+SFB+PB+Foreign+other; Citibank removed)', () {
+      // Citibank India consumer business was acquired by Axis Bank (2024) and
+      // removed from the catalog — count dropped from 55 to 54.
+      expect(BankCatalog.banks.length, 54);
     });
 
     test('all ids are lowercase', () {
@@ -66,9 +68,11 @@ void main() {
     });
 
     test('returns known nodal email for tmb (one of the new banks)', () {
+      // Corrected from the generic customer-care address to the nodal
+      // officer mailbox for consistency with every other entry.
       expect(
         BankCatalog.nodalEmailFor('tmb'),
-        'customercare@tmb.in',
+        'nodal.officer@tmb.in',
       );
     });
 

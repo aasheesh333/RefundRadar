@@ -1,5 +1,9 @@
 /// A single entry in a dispute's activity log.
 /// Stored as a list on the Dispute document in Firestore.
+library;
+
+import 'package:refund_radar/shared/utils/date_codec.dart';
+
 class ActivityLogEntry {
   final String type;
   final String label;
@@ -19,7 +23,7 @@ class ActivityLogEntry {
         'type': type,
         'label': label,
         'meta': meta,
-        'timestamp': timestamp.toIso8601String(),
+        'timestamp': toUtcIso(timestamp),
         'highlighted': highlighted,
       };
 
@@ -28,9 +32,7 @@ class ActivityLogEntry {
       type: json['type'] as String? ?? '',
       label: json['label'] as String? ?? '',
       meta: json['meta'] as String? ?? '',
-      timestamp:
-          DateTime.tryParse(json['timestamp'] as String? ?? '') ??
-              DateTime.now(),
+      timestamp: parseDate(json['timestamp'] as String?) ?? DateTime.now(),
       highlighted: json['highlighted'] as bool? ?? false,
     );
   }

@@ -12,14 +12,27 @@ service cloud.firestore {
       return isAuth() && request.auth.uid == uid;
     }
 
+    // Hard cap on a single document's write size (1 MiB is the Firestore
+    // server limit; we enforce a tighter 512 KiB here so a runaway client
+    // can't balloon a doc — defensive against bugs, not a real attack
+    // surface since each user only writes their own data).
+    function isReasonableSize() {
+      return request.resource.data.size() < 524288;
+    }
+
     // users/{uid}
     match /users/{uid} {
       allow read: if isOwner(uid);
       // Allow create/update of the user root doc (profile + timestamps).
       // Clients call this on first launch to ensure the parent path exists.
+      // The uid field is immutable on update so a buggy/malicious client
+      // can't re-assign the doc's ownership marker to another uid.
       allow create: if isOwner(uid)
-                    && request.resource.data.uid == uid;
-      allow update: if isOwner(uid);
+                    && request.resource.data.uid == uid
+                    && isReasonableSize();
+      allow update: if isOwner(uid)
+                    && request.resource.data.uid == uid
+                    && isReasonableSize();
       allow delete: if isOwner(uid);
 
       // users/{uid}/disputes/{disputeId}
@@ -27,25 +40,31 @@ service cloud.firestore {
       match /disputes/{disputeId} {
         allow read: if isOwner(uid);
         allow create: if isOwner(uid)
-                      && request.resource.data.uid == uid;
+                      && request.resource.data.uid == uid
+                      && isReasonableSize();
         allow update: if isOwner(uid)
                       && resource.data.uid == uid
-                      && request.resource.data.uid == uid;
-        allow delete: if isOwner(uid);
+                      && request.resource.data.uid == uid
+                      && isReasonableSize();
+        allow delete: if isOwner(uid)
+                      && resource.data.uid == uid;
       }
 
       // users/{uid}/reminders/{reminderId}
       match /reminders/{reminderId} {
         allow read: if isOwner(uid);
         allow create: if isOwner(uid)
-                      && request.resource.data.uid == uid;
+                      && request.resource.data.uid == uid
+                      && isReasonableSize();
         // Mirror the disputes block: both the existing resource AND the
         // incoming write must still own the same uid. Prevents a reminder
         // `update` from silently re-assigning it to another uid string.
         allow update: if isOwner(uid)
                       && resource.data.uid == uid
-                      && request.resource.data.uid == uid;
-        allow delete: if isOwner(uid);
+                      && request.resource.data.uid == uid
+                      && isReasonableSize();
+        allow delete: if isOwner(uid)
+                      && resource.data.uid == uid;
       }
     }
 

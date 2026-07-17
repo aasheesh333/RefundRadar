@@ -71,7 +71,13 @@ class _AddBanksPageState extends ConsumerState<AddBanksPage> {
   }
 
   void _finish() async {
-    _persist();
+    // Await the persisted bank selection BEFORE marking onboarding complete
+    // + navigating. Previously `_persist()` was fire-and-forget, so a fast
+    // user could land on Home and open the dispute form before the
+    // SharedPreferences write flushed — `loadSelectedBanks()` would then
+    // return stale (empty) data and the bank picker's "Your banks"
+    // section would be blank on first run.
+    await _persist();
     // Mark onboarding complete so the router redirect skips the slides on
     // every subsequent cold boot. Pass the live ref so the in-memory
     // provider flips immediately (router redirect reads it).
@@ -117,14 +123,14 @@ class _AddBanksPageState extends ConsumerState<AddBanksPage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: OnboardingStepHeader(
-                      step: 'Setup',
+                      step: l10n?.addBanksStep ?? 'Setup',
                       title: l10n?.addBanksTitle ?? 'Add your banks',
                     ),
                   ),
                   GestureDetector(
                     onTap: _finish,
-                    child: const Text(
-                      'Skip',
+                    child: Text(
+                      l10n?.addBanksSkip ?? 'Skip',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -169,7 +175,7 @@ class _AddBanksPageState extends ConsumerState<AddBanksPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Tell us your banks',
+                                l10n?.addBanksTitle ?? 'Add your bank',
                                 style: TextStyle(
                                   fontFamily: AppTypography.family,
                                   fontSize: 18,
@@ -180,7 +186,8 @@ class _AddBanksPageState extends ConsumerState<AddBanksPage> {
                               ),
                               SizedBox(height: 4),
                               Text(
-                                'Pick accounts where Refund Radar should auto-fill the nodal officer details.',
+                                l10n?.addBanksSubtitle ??
+                                    'Pick accounts where Refund Radar should auto-fill the nodal officer details.',
                                 style: TextStyle(
                                   fontSize: 11,
                                   height: 1.45,
@@ -201,7 +208,8 @@ class _AddBanksPageState extends ConsumerState<AddBanksPage> {
                           autofocus: true,
                           onChanged: (v) => setState(() => _query = v),
                           decoration: InputDecoration(
-                            hintText: 'Search your bank',
+                            hintText:
+                                l10n?.addBanksSearchHint ?? 'Search your bank',
                             hintStyle: TextStyle(
                                 fontSize: 13,
                                 color: tc.textSecondary),
@@ -303,8 +311,10 @@ class _AddBanksPageState extends ConsumerState<AddBanksPage> {
                         ),
                         child: Text(
                           _selected.isEmpty
-                              ? 'Select at least one bank'
-                              : 'Continue (${_selected.length} selected)',
+                              ? (l10n?.addBanksSelectAtLeast ??
+                                  'Select at least one bank')
+                              : (l10n?.addBanksContinueN(_selected.length) ??
+                                  'Continue (${_selected.length} selected)'),
                           style: const TextStyle(
                             fontFamily: AppTypography.family,
                             fontSize: 15,

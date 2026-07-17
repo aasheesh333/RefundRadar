@@ -230,7 +230,8 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                                       BorderRadius.circular(AppRadii.pill),
                                 ),
                                 child: Text(
-                                  '⏰ Day $dayN of $windowDays',
+                                  l10n?.detailDayOfWindow(dayN, windowDays) ??
+                                      '⏰ Day $dayN of $windowDays',
                                   style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
@@ -1137,6 +1138,27 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
       await syncRemindersForDispute(ref, uid, updated);
       ref.invalidate(disputesProvider(uid));
       ref.invalidate(remindersProvider(uid));
+    } catch (e, st) {
+      // Previously try/finally with NO catch: a permission-denied / network
+      // failure propagated as an unhandled async error and the resolve/
+      // reopen silently failed — the user got no feedback. Surface a
+      // friendly SnackBar so the user knows to retry, and record the
+      // underlying cause to Crashlytics for release observability.
+      final msg = e.toString().toLowerCase();
+      final friendly = msg.contains('permission') || msg.contains('unauthenticated')
+          ? (l10n?.detailSaveAuthFailed ??
+              'Could not save — sign-in expired. Go Home and tap Retry.')
+          : msg.contains('unavailable') || msg.contains('network') || msg.contains('socket')
+              ? (l10n?.detailSaveOffline ??
+                  'You appear to be offline. Reconnect and try again.')
+              : (l10n?.detailSaveFailed ??
+                  'Could not save. Check your connection and try again.');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(friendly)),
+        );
+      }
+      debugPrint('_toggleResolved save failed: $e\n$st');
     } finally {
       if (mounted) setState(() => _toggling = false);
     }

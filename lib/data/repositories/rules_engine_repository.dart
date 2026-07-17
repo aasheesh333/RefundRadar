@@ -12,6 +12,7 @@ class RulesEngine {
   final List<Map<String, dynamic>> fastagIssuers;
   final Map<String, dynamic> officialLinks;
   final List<String> freeTemplateIds;
+  final List<String> holidayStrings;
 
   const RulesEngine({
     required this.version,
@@ -20,6 +21,7 @@ class RulesEngine {
     required this.fastagIssuers,
     required this.officialLinks,
     required this.freeTemplateIds,
+    required this.holidayStrings,
   });
 
   factory RulesEngine.fromJson(Map<String, dynamic> json) => RulesEngine(
@@ -31,7 +33,18 @@ class RulesEngine {
             .toList(),
         officialLinks: Map<String, dynamic>.from(json['officialLinks'] ?? {}),
         freeTemplateIds: List<String>.from(json['freeTemplateIds'] ?? []),
+        holidayStrings: List<String>.from(json['holidays'] ?? []),
       );
+
+  /// Parsed holiday dates (midnight-normalised) for the working-day
+  /// calendar. Empty when no holidays are declared. Parse failures on
+  /// individual entries are skipped (a single bad date string must not
+  /// break TAT computation for every dispute).
+  Set<DateTime> get holidayDates => holidayStrings
+      .map((s) => DateTime.tryParse(s))
+      .whereType<DateTime>()
+      .map((d) => DateTime(d.year, d.month, d.day))
+      .toSet();
 
   Map<String, dynamic> ruleFor(String disputeType) =>
       disputeTypes[disputeType] as Map<String, dynamic>? ?? {};
@@ -62,9 +75,21 @@ class RulesEngineRepository {
     if (_cached != null) return _cached!;
 
     // ---- Step 1: bundled baseline ----
-    final raw = await rootBundle.loadString('assets/rules_engine.json');
-    var json = jsonDecode(raw) as Map<String, dynamic>;
-    var engine = RulesEngine.fromJson(json);
+    var json = <String, dynamic>{};
+    RulesEngine engine = RulesEngine.fromJson(json);
+    try {
+      final raw = await rootBundle.loadString('assets/rules_engine.json');
+      json = jsonDecode(raw) as Map<String, dynamic>;
+      engine = RulesEngine.fromJson(json);
+    } catch (e, st) {
+      // Bundled baseline missing/corrupt (build corruption, accidental
+      // asset deletion). Fall back to an empty engine so rules-driven
+      // screens degrade to "no rules" empty states rather than crashing
+      // the whole app. The Remote Config overlay below can still replace
+      // this with a real engine if one is published.
+      debugPrint('RulesEngineRepository: bundled baseline parse failed '
+          '(using empty fallback): $e\n$st');
+    }
 
     // ---- Step 2: Remote Config overlay ----
     try {
@@ -139,8 +164,13 @@ class RulesEngineRepository {
   }
 }
 
+// Use the shared `rulesEngineRepoProvider` instance (not a freshly-built
+// `RulesEngineRepository()`) so `invalidate()` clears the SAME cache that
+// `load()` populates. Previously each provider constructed its own repo
+// with its own `_cached`, so a Settings "Refresh rules" invalidate was a
+// no-op against the provider the UI reads from.
 final rulesEngineProvider = FutureProvider<RulesEngine>((ref) async {
-  return RulesEngineRepository().load();
+  return ref.watch(rulesEngineRepoProvider).load();
 });
 
 final rulesEngineRepoProvider = Provider<RulesEngineRepository>((ref) => RulesEngineRepository());

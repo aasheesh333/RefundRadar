@@ -64,13 +64,17 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
     try {
       final svc = ref.read(revenueCatServiceProvider);
       final offerings = await svc.fetchOfferings();
+      if (!mounted) return;
       setState(() {
         _offerings = offerings;
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
+      final msg = AppLocalizations.of(context)?.paywallCouldNotLoadPlans ??
+          'Could not load plans. Tap retry.';
       setState(() {
-        _error = AppLocalizations.of(context)?.paywallCouldNotLoadPlans ?? 'Could not load plans. Tap retry.';
+        _error = msg;
         _loading = false;
       });
     }

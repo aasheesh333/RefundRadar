@@ -1,4 +1,5 @@
 import 'activity_log_entry.dart';
+import 'package:refund_radar/shared/utils/date_codec.dart';
 
 enum DisputeType {
   upiP2p('upi_p2p', 1, 100, 'T+1'),
@@ -160,16 +161,17 @@ class Dispute {
         'type': type.id,
         'status': status.value,
         'amount': amount,
-        'txnDate': txnDate.toIso8601String(),
+        'txnDate': toUtcIso(txnDate),
         'txnId': txnId,
         'entityName': entityName,
         'entityId': entityId,
-        'filedDates': filedDates.map((k, v) => MapEntry(k, v?.toIso8601String())),
+        'filedDates':
+            filedDates.map((k, v) => MapEntry(k, v == null ? null : toUtcIso(v))),
         'ticketNumbers': ticketNumbers,
         'resolvedAmount': resolvedAmount,
-        'resolvedAt': resolvedAt?.toIso8601String(),
+        'resolvedAt': resolvedAt == null ? null : toUtcIso(resolvedAt!),
         'evidence': evidence,
-        'createdAt': createdAt.toIso8601String(),
+        'createdAt': toUtcIso(createdAt),
         'description': description,
         'activityLog': activityLog.map((e) => e.toJson()).toList(),
       };
@@ -179,23 +181,30 @@ class Dispute {
         uid: json['uid'] ?? '',
         type: DisputeType.fromId(json['type'] ?? 'upi_p2p'),
         status: DisputeStatus.fromValue(json['status'] ?? 'draft'),
-        amount: (json['amount'] ?? 0).toDouble(),
-        txnDate: DateTime.tryParse(json['txnDate'] ?? '') ?? DateTime.now(),
+        amount: (json['amount'] as num? ?? 0).toDouble(),
+        // parseDate handles both UTC (Z) and legacy offset-less local
+        // strings. Fallback to now() only on truly unparseable input so
+        // the model stays non-nullable; the UTC write path prevents future
+        // corruption, and a corrupt legacy txnDate no longer silently
+        // zeros compensation (it falls back to "today" which yields ₹0 —
+        // surfaced as a ₹0 estimate the user will notice and re-enter).
+        txnDate: parseDate(json['txnDate'] as String?) ?? DateTime.now(),
         txnId: json['txnId'] ?? '',
         entityName: json['entityName'],
         entityId: json['entityId'],
-        filedDates: (json['filedDates'] as Map<String, dynamic>?)?.map(
-                (k, v) => MapEntry(k, v == null ? null : DateTime.tryParse(v))) ??
-            <String, DateTime?>{},
+        filedDates:
+            (json['filedDates'] as Map<String, dynamic>?)?.map((k, v) =>
+                    MapEntry(k, v == null ? null : parseDate(v as String?))) ??
+                <String, DateTime?>{},
         ticketNumbers: (json['ticketNumbers'] as Map<String, dynamic>?)?.map(
                 (k, v) => MapEntry(k, v as String?)) ??
             <String, String?>{},
         resolvedAmount: json['resolvedAmount'] == null
             ? null
             : (json['resolvedAmount'] as num).toDouble(),
-        resolvedAt: DateTime.tryParse(json['resolvedAt'] ?? ''),
+        resolvedAt: parseDate(json['resolvedAt'] as String?),
         evidence: List<String>.from(json['evidence'] ?? []),
-        createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+        createdAt: parseDate(json['createdAt'] as String?) ?? DateTime.now(),
         description: json['description'] as String?,
         activityLog: (json['activityLog'] as List?)
                 ?.map((e) => ActivityLogEntry.fromJson(e as Map<String, dynamic>))

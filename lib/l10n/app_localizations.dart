@@ -409,6 +409,23 @@ class AppLocalizations {
     'commonError': {'en': 'Something went wrong', 'hi': 'कुछ गलत हुआ'},
     'commonRetry': {'en': 'Retry', 'hi': 'पुनः प्रयास'},
     'commonCancel': {'en': 'Cancel', 'hi': 'रद्द करें'},
+    'commonBack': {'en': 'Back', 'hi': 'वापस'},
+    'remindersDismiss': {
+      'en': 'Dismiss reminder',
+      'hi': 'रिमाइंडर खारिज करें',
+    },
+    'remindersDismissAction': {
+      'en': 'Dismiss',
+      'hi': 'खारिज करें',
+    },
+    'remindersOpen': {
+      'en': 'Open dispute',
+      'hi': 'विवाद खोलें',
+    },
+    'remindersOpenAction': {
+      'en': 'Open',
+      'hi': 'खोलें',
+    },
     'commonOk': {'en': 'OK', 'hi': 'ओके'},
     'commonOffline': {
       'en': 'You are offline — changes will sync later.',
@@ -538,7 +555,7 @@ class AppLocalizations {
     'settingsSmsDetection': {'en': 'SMS detection', 'hi': 'SMS पहचान'},
     'settingsAutoDetectUtr': {'en': 'Auto-detect UTR', 'hi': 'UTR ऑटो-पहचान'},
     'settingsSmsPermissionHint': {
-      'en': 'SMS permission manages under Android settings.',
+      'en': 'SMS permission is managed under Android settings.',
       'hi': 'SMS अनुमति Android सेटिंग्स में मिलती है।',
     },
     'settingsOnDeviceLabel': {'en': 'On-device. ', 'hi': 'ऑन-डिवाइस। '},
@@ -760,6 +777,18 @@ class AppLocalizations {
     'disputeDetailConfirm': {
       'en': 'Confirm',
       'hi': 'पुष्टि करें',
+    },
+    'detailSaveAuthFailed': {
+      'en': 'Could not save — sign-in expired. Go Home and tap Retry.',
+      'hi': 'सेव नहीं हुआ — साइन-इन समाप्त हो गया। होम पर जाएं और रीट्र्री करें।',
+    },
+    'detailSaveOffline': {
+      'en': 'You appear to be offline. Reconnect and try again.',
+      'hi': 'आप ऑफ़लाइन प्रतीत होते हैं। कनेक्ट हों और पुनः प्रयास करें।',
+    },
+    'detailSaveFailed': {
+      'en': 'Could not save. Check your connection and try again.',
+      'hi': 'सेव नहीं हुआ। अपना कनेक्शन जांचें और पुनः प्रयास करें।',
     },
     'formEnterAmount': {
       'en': 'Enter the debited amount',
@@ -1041,6 +1070,84 @@ class AppLocalizations {
       'en': 'Search results',
       'hi': 'खोज परिणाम',
     },
+    'homeRemindersTooltip': {'en': 'Reminders', 'hi': 'रिमाइंडर'},
+    'homeTemplatesTooltip': {'en': 'Templates', 'hi': 'टेम्पलेट'},
+    'homeActiveDisputesTitle': {
+      'en': 'Active disputes',
+      'hi': 'सक्रिय विवाद',
+    },
+    'historyBadgePartial': {'en': 'PARTIAL', 'hi': 'आंशिक'},
+    'historyBadgeWon': {'en': 'WON', 'hi': 'जीता'},
+    'historyBadgeLost': {'en': 'LOST', 'hi': 'हारा'},
+    'historyBadgeFiled': {'en': 'FILED', 'hi': 'दर्ज'},
+    'escalateTotalClaimable': {
+      'en': 'TOTAL CLAIMABLE',
+      'hi': 'कुल दावा योग्य',
+    },
+    'escalatePostSendTitle': {
+      'en': 'Escalation sent!',
+      'hi': 'शिकायत बढ़ाई गई!',
+    },
+    'escalatePostSendWhatsNext': {
+      'en': "What's next?",
+      'hi': 'आगे क्या?',
+    },
+    'escalatePostSendBody': {
+      'en':
+          "If the bank doesn't resolve within 30 days, escalate to the Banking Ombudsman.",
+      'hi':
+          'यदि बैंक 30 दिनों में समाधान नहीं करता, तो बैंकिंग लोकपाल के पास शिकायत बढ़ाएँ।',
+    },
+    'escalatePostSendLevel3': {
+      'en': 'Level 3: Ombudsman notice',
+      'hi': 'स्तर 3: लोकपाल सूचना',
+    },
+    'escalatePostSendLater': {'en': 'Later', 'hi': 'बाद में'},
+    'escalatePostSendOpenCta': {
+      'en': 'Open Ombudsman letter →',
+      'hi': 'लोकपाल पत्र खोलें →',
+    },
+    'escalatePostSendUnlockCta': {
+      'en': 'Unlock Ombudsman templates →',
+      'hi': 'लोकपाल टेम्पलेट अनलॉक करें →',
+    },
+    'detailDayOfWindow': {
+      'en': '⏰ Day {dayN} of {windowDays}',
+      'hi': '⏰ {windowDays} में से दिन {dayN}',
+    },
+    'addBanksStep': {'en': 'Setup', 'hi': 'सेटअप'},
+    'addBanksSkip': {'en': 'Skip', 'hi': 'छोड़ें'},
+    'addBanksSubtitle': {
+      'en': 'Pick accounts where refunds could land.',
+      'hi': 'उन खातों को चुनें जहाँ रिफ़ंड आ सकते हैं।',
+    },
+    'addBanksSelectAtLeast': {
+      'en': 'Select at least one bank to continue.',
+      'hi': 'जारी रखने के लिए कम से कम एक बैंक चुनें।',
+    },
+    'addBanksContinueN': {
+      'en': 'Continue ({n} selected)',
+      'hi': 'जारी रखें ({n} चुने गए)',
+    },
+    'smsPermissionBack': {'en': 'Back', 'hi': 'वापस'},
+    'smsPermissionHowItWorks': {
+      'en': 'HOW IT WORKS',
+      'hi': 'यह कैसे काम करता है',
+    },
+    'smsPermissionSampleTitle': {
+      'en': 'Sample auto-detected event',
+      'hi': 'उदाहरण स्वचालित पहचान',
+    },
+    'smsPermissionSampleDetected': {
+      'en': 'SMS detected',
+      'hi': 'SMS पहचाना गया',
+    },
+    'smsPermissionSampleBody': {
+      'en':
+          ' · 08 Jul 2026\nBody: ₹400 debited from A/c ✱✱✱✱1234 for UPI txn. UTR ',
+      'hi':
+          ' · 08 जुलाई 2026\nबॉडी: ₹400 खाते से कटे ✱✱✱✱1234 UPI लेन-देन के लिए। UTR ',
+    },
   };
 
   String _t(String key, {Map<String, String>? args}) {
@@ -1139,6 +1246,11 @@ class AppLocalizations {
   String get commonError => _t('commonError');
   String get commonRetry => _t('commonRetry');
   String get commonCancel => _t('commonCancel');
+  String get commonBack => _t('commonBack');
+  String get remindersDismiss => _t('remindersDismiss');
+  String get remindersDismissAction => _t('remindersDismissAction');
+  String get remindersOpen => _t('remindersOpen');
+  String get remindersOpenAction => _t('remindersOpenAction');
   String get commonOk => _t('commonOk');
   String get commonOffline => _t('commonOffline');
   String get commonCopied => _t('commonCopied');
@@ -1299,6 +1411,9 @@ class AppLocalizations {
       _t('disputeDetailMarkResolvedBody');
   String get disputeDetailReopenBody => _t('disputeDetailReopenBody');
   String get disputeDetailConfirm => _t('disputeDetailConfirm');
+  String get detailSaveAuthFailed => _t('detailSaveAuthFailed');
+  String get detailSaveOffline => _t('detailSaveOffline');
+  String get detailSaveFailed => _t('detailSaveFailed');
 
   // Dispute form validation + labels.
   String get formEnterAmount => _t('formEnterAmount');
@@ -1514,6 +1629,34 @@ class AppLocalizations {
   String get formBankYourBanks => _t('formBankYourBanks');
   String get formBankAllBanks => _t('formBankAllBanks');
   String get formBankSearchResults => _t('formBankSearchResults');
+  String get homeRemindersTooltip => _t('homeRemindersTooltip');
+  String get homeTemplatesTooltip => _t('homeTemplatesTooltip');
+  String get homeActiveDisputesTitle => _t('homeActiveDisputesTitle');
+  String get historyBadgePartial => _t('historyBadgePartial');
+  String get historyBadgeWon => _t('historyBadgeWon');
+  String get historyBadgeLost => _t('historyBadgeLost');
+  String get historyBadgeFiled => _t('historyBadgeFiled');
+  String get escalateTotalClaimable => _t('escalateTotalClaimable');
+  String get escalatePostSendTitle => _t('escalatePostSendTitle');
+  String get escalatePostSendWhatsNext => _t('escalatePostSendWhatsNext');
+  String get escalatePostSendBody => _t('escalatePostSendBody');
+  String get escalatePostSendLevel3 => _t('escalatePostSendLevel3');
+  String get escalatePostSendLater => _t('escalatePostSendLater');
+  String get escalatePostSendOpenCta => _t('escalatePostSendOpenCta');
+  String get escalatePostSendUnlockCta => _t('escalatePostSendUnlockCta');
+  String detailDayOfWindow(int dayN, int windowDays) =>
+      _t('detailDayOfWindow', args: {'dayN': '$dayN', 'windowDays': '$windowDays'});
+  String get addBanksStep => _t('addBanksStep');
+  String get addBanksSkip => _t('addBanksSkip');
+  String get addBanksSubtitle => _t('addBanksSubtitle');
+  String get addBanksSelectAtLeast => _t('addBanksSelectAtLeast');
+  String addBanksContinueN(int n) =>
+      _t('addBanksContinueN', args: {'n': '$n'});
+  String get smsPermissionBack => _t('smsPermissionBack');
+  String get smsPermissionHowItWorks => _t('smsPermissionHowItWorks');
+  String get smsPermissionSampleTitle => _t('smsPermissionSampleTitle');
+  String get smsPermissionSampleDetected => _t('smsPermissionSampleDetected');
+  String get smsPermissionSampleBody => _t('smsPermissionSampleBody');
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

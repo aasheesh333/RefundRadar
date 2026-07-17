@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
-import 'package:refund_radar/core/providers/app_state_provider.dart';
+import 'package:refund_radar/core/providers/premium_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
@@ -86,7 +86,20 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
 
   @override
   Widget build(BuildContext context) {
-    final isPremium = ref.watch(isPremiumProvider);
+    // Gate on the authoritative AsyncValue<bool> rather than the derived
+    // `isPremiumProvider` bool. The derived bool collapses loading→false
+    // (fail-safe for paywall gates), but on THIS page that fail-safe
+    // bounces a genuine premium user to the paywall during the brief
+    // hydration window (and the sticky `_paywallRedirectScheduled` guard
+    // then blocks recovery). Skip the redirect while premium status is
+    // still loading; only redirect once it has resolved to non-premium.
+    final premiumStatus = ref.watch(premiumStatusProvider);
+    final isPremium = premiumStatus.valueOrNull ?? false;
+    if (premiumStatus.isLoading) {
+      // Still resolving entitlement — render a neutral loading surface
+      // rather than the gated (SizedBox.shrink) or full letter UI.
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     if (shouldGateOmbudsmanLetter(isPremium)) {
       _redirectFreeUserToPaywall();
       return const Scaffold(body: SizedBox.shrink());

@@ -70,7 +70,10 @@ class BankCatalog {
     BankEntry(id: 'dbs', name: 'DBS Bank', short: 'DBS'),
     BankEntry(id: 'hsbc', name: 'HSBC', short: 'HSBC'),
     BankEntry(id: 'stanchart', name: 'Standard Chartered Bank', short: 'StanChart'),
-    BankEntry(id: 'citi', name: 'Citibank', short: 'Citi'),
+    // Citibank India consumer business was acquired by Axis Bank (2024) and
+    // is no longer a consumer-banking option — removed to avoid surfacing a
+    // dead contact path in the dispute flow. (Citi customers are routed to
+    // Axis Bank or 'Other bank' for new complaints.)
     BankEntry(id: 'barclays', name: 'Barclays Bank', short: 'Barclays'),
     BankEntry(id: 'other', name: 'Other bank', short: 'Other'),
   ];
@@ -107,7 +110,7 @@ class BankCatalog {
     'sib': 'nodal.officer@sib.co.in',
     'kvb': 'nodal.officer@kvb.co.in',
     'cub': 'nodal.officer@cityunionbank.com',
-    'tmb': 'customercare@tmb.in',
+    'tmb': 'nodal.officer@tmb.in',
     'jk': 'nodal.officer@jkbmail.jkbank.com',
     'au': 'nodal.officer@aubank.in',
     'airtel': 'nodalofficer@airtelpaymentsbank.com',

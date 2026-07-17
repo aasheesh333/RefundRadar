@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App background (matches AppColors.bgLight = #F5F5F5) so the
+         pre-Flutter launch frame + NormalTheme window background never
+         flash white/system-default before the Flutter UI draws. -->
+    <color name="app_bg">#F5F5F5</color>
+</resources>

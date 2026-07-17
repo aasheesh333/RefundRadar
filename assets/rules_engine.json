@@ -50,5 +50,10 @@
     "consumer_court": "https://e-jagriti.gov.in"
   },
   "freeTemplateIds": ["upi_p2p_bank_complaint", "fastag_ihmcl_double_deduction", "bank_charge_reversal_basic", "wrong_transfer_bank_request", "fastag_1033_call_script"],
+  "holidays": [
+    "2025-01-26", "2025-08-15", "2025-10-02", "2025-12-25",
+    "2026-01-26", "2026-08-15", "2026-10-02", "2026-12-25",
+    "2027-01-26", "2027-08-15", "2027-10-02", "2027-12-25"
+  ],
   "disclaimer": "Refund Radar is an independent informational tool. It is not affiliated with RBI, NPCI, NHAI, IHMCL, or any bank. We never ask for banking passwords, OTPs, or PINs. Complaints are filed by you on official portals. Compensation estimates are based on published RBI/NPCI rules and actual outcomes depend on your bank/regulator."
 }

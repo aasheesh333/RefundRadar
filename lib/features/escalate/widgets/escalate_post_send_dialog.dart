@@ -32,7 +32,7 @@ class EscalatePostSendDialog {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Escalation sent!',
+                l10n?.escalatePostSendTitle ?? 'Escalation sent!',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -47,7 +47,7 @@ class EscalatePostSendDialog {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "What's next?",
+              l10n?.escalatePostSendWhatsNext ?? "What's next?",
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -56,7 +56,8 @@ class EscalatePostSendDialog {
             ),
             const SizedBox(height: 8),
             Text(
-              "If the bank doesn't resolve within 30 days, escalate to the Banking Ombudsman.",
+              l10n?.escalatePostSendBody ??
+                  "If the bank doesn't resolve within 30 days, escalate to the Banking Ombudsman.",
               style: TextStyle(fontSize: 13, color: tc.textSecondary),
             ),
             const SizedBox(height: 12),
@@ -73,7 +74,8 @@ class EscalatePostSendDialog {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Level 3: Ombudsman notice',
+                      l10n?.escalatePostSendLevel3 ??
+                          'Level 3: Ombudsman notice',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -97,7 +99,7 @@ class EscalatePostSendDialog {
           TextButton(
             onPressed: () => Navigator.pop(c),
             child: Text(
-              'Later',
+              l10n?.escalatePostSendLater ?? 'Later',
               style: TextStyle(color: tc.textSecondary),
             ),
           ),
@@ -117,8 +119,10 @@ class EscalatePostSendDialog {
             },
             child: Text(
               isPremiumUser
-                  ? 'Open Ombudsman letter →'
-                  : 'Unlock Ombudsman templates →',
+                  ? (l10n?.escalatePostSendOpenCta ??
+                      'Open Ombudsman letter →')
+                  : (l10n?.escalatePostSendUnlockCta ??
+                      'Unlock Ombudsman templates →'),
             ),
           ),
         ],

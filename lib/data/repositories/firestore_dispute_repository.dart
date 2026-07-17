@@ -218,32 +218,49 @@ class FirestoreDisputeRepository implements DisputeRepository {
 
   @override
   Future<void> deleteDispute(String uid, String id) async {
-    await _ensureAuthToken(uid);
     // Cascade FIRST: wipe reminders + cancel local notifications BEFORE
     // deleting the parent dispute. If the cascade fails, the parent is
     // still alive — the user can retry. Deleting the parent first would
     // orphan reminders that can't be tracked back to a deleted dispute.
+    // The cascade runs ONCE, outside the retry loop, so a retry of the
+    // Firestore delete never re-invokes it (idempotency of the cascade is
+    // the caller's concern, not ours).
     if (onDeleteDispute != null) {
-      await onDeleteDispute!(uid, id);
+      try {
+        await onDeleteDispute!(uid, id);
+      } catch (e, st) {
+        // Log + continue: the parent delete still needs to happen so the
+        // dispute goes away; orphaned reminders are harmless (next sync
+        // re-validates them, and deleteAllUserData wipes them wholesale).
+        debugPrint('deleteDispute cascade failed (non-fatal): $e\n$st');
+      }
     }
-    await _col(uid).doc(id).delete();
+    await _withAuthRetry<void>(uid, () async {
+      await _col(uid).doc(id).delete();
+    });
   }
 
   @override
   Future<void> deleteAllUserData(String uid) async {
-    await _ensureAuthToken(uid);
     // Cascade FIRST: delete the reminders subcollection + cancel all
     // scheduled notifications while the user doc still exists (rules
     // require `isOwner(uid)`, so the token must still be valid here).
+    // Runs ONCE outside the retry loop.
     if (onDeleteAllUserData != null) {
-      await onDeleteAllUserData!(uid);
+      try {
+        await onDeleteAllUserData!(uid);
+      } catch (e, st) {
+        debugPrint('deleteAllUserData cascade failed (non-fatal): $e\n$st');
+      }
     }
-    final snap = await _col(uid).get();
-    final batch = _db.batch();
-    for (final d in snap.docs) {
-      batch.delete(d.reference);
-    }
-    await batch.commit();
-    await _db.collection('users').doc(uid).delete();
+    await _withAuthRetry<void>(uid, () async {
+      final snap = await _col(uid).get();
+      final batch = _db.batch();
+      for (final d in snap.docs) {
+        batch.delete(d.reference);
+      }
+      await batch.commit();
+      await _db.collection('users').doc(uid).delete();
+    });
   }
 }

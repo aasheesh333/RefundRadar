@@ -31,6 +31,7 @@ void main() {
       'rbi_cms': 'https://cms.rbi.org.in',
     },
     'freeTemplateIds': ['tpl_upi_l1', 'tpl_chargeback'],
+    'holidays': ['2025-01-26', '2025-08-15', 'not-a-date'],
   };
 
   RulesEngine mkEngine(Map<String, dynamic> json) =>
@@ -85,6 +86,15 @@ void main() {
       final e = mkEngine(sampleJson);
       expect(e.officialLinks['rbi_cms'], 'https://cms.rbi.org.in');
       expect(e.freeTemplateIds, ['tpl_upi_l1', 'tpl_chargeback']);
+    });
+
+    test('holidayDates parses valid ISO dates and skips bad entries', () {
+      final e = mkEngine(sampleJson);
+      // Two valid dates parsed + normalised to midnight; the bad
+      // 'not-a-date' entry is skipped without throwing.
+      expect(e.holidayDates, hasLength(2));
+      expect(e.holidayDates, contains(DateTime(2025, 1, 26)));
+      expect(e.holidayDates, contains(DateTime(2025, 8, 15)));
     });
 
     test('escalationTargets keyed by id', () {

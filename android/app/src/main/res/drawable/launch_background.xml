@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Modify this file to customize your launch splash screen -->
+<!-- Launch splash background. Uses @color/app_bg which resolves per
+     configuration (light #F5F5F5 / dark #121212) so the splash matches
+     the app surface in both themes — no white→app or black→app flash. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@android:color/white" />
+    <item android:drawable="@color/app_bg" />
 
     <!-- You can insert your own image assets here -->
     <!-- <item>

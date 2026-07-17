@@ -78,7 +78,23 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
       body: SafeArea(
         child: uidAsync.when(
           data: (uid) {
-            if (uid == null) return const _Loading();
+            if (uid == null) {
+              // Auth failed (not "loading"): show a retry banner, not a
+              // permanent skeleton that masquerades as loading. Mirror
+              // Home's auth-error banner so the cause is visible.
+              final authErr = ref.watch(lastAuthErrorProvider);
+              return BrandedErrorBanner(
+                message: authErr != null &&
+                        authErr.toLowerCase().contains('operation-not-allowed')
+                    ? 'Anonymous sign-in is disabled. Enable it in Firebase Console → Authentication → Sign-in method → Anonymous.'
+                    : 'Could not sign in. Check your connection and try again.',
+                detail: authErr,
+                onRetry: () async {
+                  await ref.read(reauthProvider)();
+                  ref.invalidate(userIdProvider);
+                },
+              );
+            }
             final disputesAsync = ref.watch(disputesProvider(uid));
             return disputesAsync.when(
               data: (disputes) => _Body(
@@ -261,6 +277,7 @@ class _HistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     // ME-4: use the shared outcome helpers instead of inlining the
     // (status, resolvedAmount) predicates; keeps the filter pills and the
     // card in lockstep.
@@ -279,28 +296,28 @@ class _HistoryCard extends StatelessWidget {
           tc.alertSoft,
           AppColors.alert,
           AppColors.alert,
-          'PARTIAL'
+          l10n?.historyBadgePartial ?? 'PARTIAL'
         ),
       (true, _, _) => (
           tc.divider,
           tc.accentSoft,
           AppColors.accent,
           AppColors.accent,
-          'WON'
+          l10n?.historyBadgeWon ?? 'WON'
         ),
       (_, true, _) => (
           tc.errorSoft,
           tc.errorSoft,
           AppColors.error,
           AppColors.error,
-          'LOST'
+          l10n?.historyBadgeLost ?? 'LOST'
         ),
       _ => (
           tc.divider,
           tc.premiumGoldSoft,
           tc.textPrimary,
           AppColors.premiumGold,
-          'FILED'
+          l10n?.historyBadgeFiled ?? 'FILED'
         ),
     };
 

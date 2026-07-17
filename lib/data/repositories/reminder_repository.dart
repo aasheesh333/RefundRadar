@@ -155,15 +155,70 @@ final reminderRepositoryProvider = Provider<ReminderRepository>((ref) {
 });
 
 /// Live stream of the signed-in user's reminders, sorted by [fireAt].
+///
+/// Wraps the raw `.snapshots()` in an auth-token retry so the cold-boot
+/// race (uid known on the client, `request.auth` still null on the server
+/// for ~1.5s) doesn't surface a permanent `permission-denied` error state
+/// on the Reminders page. On a retriable FirebaseException the stream
+/// backs off, forces a fresh ID token, and re-subscribes — mirroring the
+/// Future-based `_withAuthRetry` used by the dispute repo. Non-retriable
+/// errors propagate immediately.
 final remindersProvider = StreamProvider.autoDispose.family<List<Reminder>, String>((ref, uid) {
-  return FirebaseFirestore.instance
-      .collection('users')
-      .doc(uid)
-      .collection('reminders')
-      .orderBy('fireAt')
-      .snapshots()
-      .map((qs) => qs.docs.map((d) => Reminder.fromJson(d.data()..['id'] = d.id)).toList());
+  return _retryRemindersStream(uid);
 });
+
+Stream<List<Reminder>> _retryRemindersStream(String uid,
+    {int maxAttempts = 4,
+    List<Duration> delays = const [
+      Duration(milliseconds: 500),
+      Duration(milliseconds: 1200),
+      Duration(seconds: 3),
+    ]}) async* {
+  var attempt = 0;
+  while (true) {
+    try {
+      await _ensureAuthTokenStatic(uid);
+      await for (final qs in FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('reminders')
+          .orderBy('fireAt')
+          .snapshots()) {
+        yield qs.docs
+            .map((d) => Reminder.fromJson(d.data()..['id'] = d.id))
+            .toList();
+      }
+      return; // stream closed normally
+    } on FirebaseException catch (e) {
+      final retriable = e.code == 'permission-denied' ||
+          e.code == 'unauthenticated';
+      if (!retriable || attempt >= maxAttempts - 1) rethrow;
+      attempt++;
+      debugPrint('reminders stream attempt $attempt failed: ${e.code}; retrying');
+      try {
+        await FirebaseAuth.instance.currentUser?.getIdToken(true);
+      } catch (_) {/* ignore */}
+      await Future.delayed(delays[attempt - 1]);
+    }
+  }
+}
+
+/// Static auth-token precondition used by the stream retry path (the
+/// instance method `_ensureAuthToken` requires a receiver). Mirrors its
+/// logic exactly so the cold-boot gate is consistent across Future + Stream
+/// code paths.
+Future<void> _ensureAuthTokenStatic(String uid) async {
+  final auth = FirebaseAuth.instance;
+  final user = auth.currentUser;
+  if (user == null || user.uid != uid) {
+    throw FirebaseException(
+      plugin: 'cloud_firestore',
+      code: 'permission-denied',
+      message: 'Not signed in as $uid (current=${user?.uid}). Re-authenticate.',
+    );
+  }
+  await user.getIdToken();
+}
 
 /// Pure helper used by `syncRemindersForDispute` + `deleteRemindersForDispute`
 /// to compute the full set of reminder IDs that could ever exist for a

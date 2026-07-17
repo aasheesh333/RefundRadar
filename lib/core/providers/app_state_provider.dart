@@ -4,6 +4,7 @@ import 'package:refund_radar/core/providers/premium_provider.dart';
 export 'package:refund_radar/core/providers/premium_provider.dart'
     show isPremiumProvider;
 import 'package:refund_radar/core/providers/sms_detection_provider.dart';
+import 'package:refund_radar/core/providers/theme_provider.dart';
 import 'package:refund_radar/services/notification_service.dart';
 
 /// App-level global state: premium-flag + install timestamp + free-dispute counter.
@@ -171,6 +172,10 @@ Future<void> hydratePersistedAppState(dynamic ref) async {
   ref.read(smsDetectionEnabledProvider.notifier).state =
       await loadSmsDetectionEnabled();
   await ref.read(freeDisputesUsedProvider.notifier).hydrate();
+  // Theme mode + locale are persisted in their own SharedPreferences keys
+  // (theme_provider.dart). Hydrate them last so the first frame renders
+  // with the user's chosen language + appearance rather than the defaults.
+  await hydrateThemeAndLocale(ref);
 }
 
 /// Persist premium flag. Called by B3 RevenueCat purchase flow.

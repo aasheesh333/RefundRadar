@@ -167,4 +167,55 @@ void main() {
       expect(r.vpa, 'fastag@axisbank');
     });
   });
+
+  group('SmsParser hardening (Wave 5)', () {
+    test('spaced 4+4+4 UTR is collapsed when a UTR keyword is present', () {
+      const sms = 'UTR 1234 5678 9012 debited from a/c.';
+      final r = SmsParser.parse(sms);
+      expect(r.utr, '123456789012');
+    });
+
+    test('spaced 4+4+4 with no keyword is treated as Aadhaar (rejected)', () {
+      const sms = 'Your number 1234 5678 9012 is verified.';
+      final r = SmsParser.parse(sms);
+      expect(r.utr, isNull);
+    });
+
+    test('INR prefix amount parses', () {
+      const sms = 'INR 1500 debited UTR 123456789012.';
+      final r = SmsParser.parse(sms);
+      expect(r.amount, 1500);
+    });
+
+    test('Amt: label prefix amount parses', () {
+      const sms = 'Amt: 2500 UTR 123456789012 on 10-Jan-25.';
+      final r = SmsParser.parse(sms);
+      expect(r.amount, 2500);
+    });
+
+    test('dd-MMM-yy with 4-digit year (10-Jan-2026) parses', () {
+      const sms = 'UTR 123456789012 on 10-Jan-2026.';
+      final r = SmsParser.parse(sms);
+      expect(r.date, DateTime(2026, 1, 10));
+    });
+
+    test('dd-MMM-yy with single-digit day (1-Jan-25) parses', () {
+      const sms = 'UTR 123456789012 on 1-Jan-25.';
+      final r = SmsParser.parse(sms);
+      expect(r.date, DateTime(2025, 1, 1));
+    });
+
+    test('email address is NOT captured as a VPA', () {
+      const sms = 'Sent Rs.100 to user@gmail.com UTR 123456789012.';
+      final r = SmsParser.parse(sms);
+      expect(r.vpa, isNull);
+      expect(r.utr, '123456789012');
+    });
+
+    test('dotted-domain VPA is NOT captured (user@bank.co.in)', () {
+      const sms = 'Contact user@bank.co.in for UTR 123456789012.';
+      final r = SmsParser.parse(sms);
+      expect(r.vpa, isNull);
+    });
+  });
 }

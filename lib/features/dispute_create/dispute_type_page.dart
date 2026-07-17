@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/theme/app_theme_colors.dart';
 import '../../data/extensions/dispute_type_display.dart';
@@ -48,7 +49,7 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: OnboardingStepHeader(
-                      step: l10n?.disputeTypeStep1Of4 ?? 'Step 1 of 4',
+                      step: l10n?.disputeTypeStep1Of4 ?? 'Step 1 of 2',
                       title: l10n?.disputeTypeWhatHappened ?? 'What happened?',
                     ),
                   ),
@@ -122,7 +123,9 @@ class _DisputeTypePageState extends State<DisputeTypePage> {
                       onPressed: _selected == null
                           ? null
                           : () => context.push(
-                              '/disputes/form?type=${_selected!.id}',
+                              AppRoutes.disputesFormWithParams(
+                                type: _selected!.id,
+                              ),
                             ),
                       style: FilledButton.styleFrom(
                         backgroundColor: tc.ctaBackground,

@@ -9,6 +9,10 @@
 /// `claimed` is flipped true on the in-memory copy once the user starts a
 /// dispute from this detection (or dismisses it). Persisting the model is
 /// out of scope for Track C — only the live session list is kept.
+library;
+
+import 'package:refund_radar/shared/utils/date_codec.dart';
+
 class UtrDetection {
   final String utr;
   final double? amount;
@@ -31,25 +35,22 @@ class UtrDetection {
   Map<String, dynamic> toJson() => {
         'utr': utr,
         'amount': amount,
-        'date': date?.toIso8601String(),
+        'date': date == null ? null : toUtcIso(date!),
         'sender': sender,
         'smsBody': smsBody,
         'claimed': claimed,
-        'detectedAt': detectedAt.toIso8601String(),
+        'detectedAt': toUtcIso(detectedAt),
       };
 
   factory UtrDetection.fromJson(Map<String, dynamic> json) => UtrDetection(
         utr: json['utr'] as String? ?? '',
         amount: (json['amount'] as num?)?.toDouble(),
-        date: json['date'] != null
-            ? DateTime.tryParse(json['date'] as String)
-            : null,
+        date: parseDate(json['date'] as String?),
         sender: json['sender'] as String? ?? '',
         smsBody: json['smsBody'] as String? ?? '',
         claimed: json['claimed'] as bool? ?? false,
         detectedAt:
-            DateTime.tryParse(json['detectedAt'] as String? ?? '') ??
-                DateTime.now(),
+            parseDate(json['detectedAt'] as String?) ?? DateTime.now(),
       );
 
   UtrDetection copyWith({

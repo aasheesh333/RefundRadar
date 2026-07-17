@@ -11,15 +11,39 @@ class SmsParser {
   /// The 22-digit ceiling keeps us off clearly non-UTR long numerics (e.g.
   /// 24-digit ISO timestamps or 30+ character tracking numbers).
   static final _utrRegex = RegExp(r'\b(\d{12,22})\b');
-  static final _amountRegex = RegExp(r'Rs\.?\s*([\d,]+\.?\d*)|₹\s*([\d,]+\.?\d*)');
+  /// Spaced 12-digit run (`1234 5678 9012`) — some banks write UTRs this
+  /// way. Stripped to a contiguous candidate before the Aadhaar filter.
+  static final _spacedUtrRegex = RegExp(r'\b(\d{4}\s\d{4}\s\d{4})\b');
+  /// Currency amount. Covers Rs/INR/₹ prefixes and `Amt:`/`Amount:` label
+  /// prefixes; the `/-` suffix some banks append (Rs.500/-) is left after
+  /// the captured digit run and so ignored.
+  static final _amountRegex = RegExp(
+      r'(?:Rs\.?|INR|₹)\s*([\d,]+(?:\.\d+)?)'
+      r'|(?:Amt|Amount)\s*:?\s*([\d,]+(?:\.\d+)?)');
+  /// Transaction date. Supports dd/mm/yyyy, dd-mm-yyyy (2- or 4-digit
+  /// year), yyyy-mm-dd, and dd-MMM-yy (1-2 digit day, 2-4 digit year).
   static final _dateRegex = RegExp(
-      r'(\d{1,2}[-/](?:0?[1-9]|1[012])[-/]\d{2,4})|(\d{4}-\d{2}-\d{2})|(\d{2}[-][A-Za-z]{3}[-]\d{2})');
-  static final _vpaRegex = RegExp(r'\b([\w.]+@[\w]+)\b');
+      r'(\d{1,2}[-/](?:0?[1-9]|1[012])[-/]\d{2,4})'
+      r'|(\d{4}-\d{2}-\d{2})'
+      r'|(\d{1,2}[-][A-Za-z]{3}[-]\d{2,4})');
+  /// VPA (Virtual Payment Address) — `name@psp`. Emails match the same
+  /// shape, so candidates are filtered by [_isLikelyVpa] (excludes dotted
+  /// domains + known email providers).
+  static final _vpaRegex = RegExp(r'\b([\w.]+@[\w.]+)\b');
 
   static SmsParseResult parse(String sms) {
     final effective = sms.replaceAll('\u00A0', ' '); // nbsp → space (some banks)
     String? utr;
-    final utrMatch = _utrRegex.firstMatch(effective);
+    var utrMatch = _utrRegex.firstMatch(effective);
+    if (utrMatch == null) {
+      // Fall back to the spaced 4+4+4 form and strip spaces to form a
+      // contiguous 12-digit candidate.
+      final spaced = _spacedUtrRegex.firstMatch(effective);
+      if (spaced != null) {
+        utrMatch = RegExp(r'(\d{12})')
+            .firstMatch(spaced.group(1)!.replaceAll(' ', ''));
+      }
+    }
     if (utrMatch != null) {
       final candidate = utrMatch.group(1)!;
       // Verify the match isn't an Aadhaar number or other non-transaction
@@ -46,10 +70,33 @@ class SmsParser {
     }
 
     String? vpa;
-    final vpaMatch = _vpaRegex.firstMatch(effective);
-    if (vpaMatch != null) vpa = vpaMatch.group(1);
+    for (final m in _vpaRegex.allMatches(effective)) {
+      final candidate = m.group(1)!;
+      if (_isLikelyVpa(candidate)) {
+        vpa = candidate;
+        break;
+      }
+    }
 
     return SmsParseResult(utr: utr, amount: amount, date: date, vpa: vpa);
+  }
+
+  /// Email-vs-VPA disambiguation. A VPA's domain (after @) is a PSP
+  /// handle like `okhdfcbank`, `paytm`, `upi`, `ybl` — never dotted and
+  /// never a known mail provider. Reject dotted domains (gmail.com etc.)
+  /// and an explicit provider allowlist so `user@gmail.com` isn't
+  /// captured as a VPA.
+  static bool _isLikelyVpa(String candidate) {
+    final at = candidate.lastIndexOf('@');
+    if (at < 0) return false;
+    final domain = candidate.substring(at + 1).toLowerCase();
+    if (domain.contains('.')) return false;
+    const emailProviders = {
+      'gmail', 'yahoo', 'outlook', 'hotmail', 'rediffmail',
+      'live', 'msn', 'aol', 'icloud', 'zoho', 'protonmail',
+    };
+    if (emailProviders.contains(domain)) return false;
+    return true;
   }
 
   /// Aadhaar / non-transaction false-positive filter (Task C3).
@@ -119,7 +166,10 @@ class SmsParser {
         final day = int.parse(parts[0]);
         final monthStr = parts[1].toLowerCase();
         final month = monthByName[monthStr];
-        if (month != null && parts[0].length == 2 && parts[2].length == 2) {
+        // Accept 1-2 digit day and 2-4 digit year (e.g. `1-Jan-25` and
+        // `10-Jan-2026`), not just the old strict `2 && 2`.
+        if (month != null && parts[0].isNotEmpty && parts[0].length <= 2 &&
+            (parts[2].length == 2 || parts[2].length == 4)) {
           final yr = _pivotTwoDigitYear(int.parse(parts[2]));
           return DateTime(yr, month, day);
         }

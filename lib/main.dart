@@ -14,10 +14,12 @@ import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/theme/app_theme.dart';
 import 'package:refund_radar/core/providers/theme_provider.dart';
 import 'package:refund_radar/data/models/utr_detection.dart';
+import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/notification_service.dart';
 import 'package:refund_radar/services/revenue_cat_service.dart';
 import 'package:refund_radar/services/onesignal_service.dart';
+import 'package:refund_radar/shared/utils/working_day_calendar.dart';
 import 'package:refund_radar/firebase_options.dart';
 
 /// Crashbus configuration flag. If Firebase fails to initialise (e.g. test/dev
@@ -25,52 +27,155 @@ import 'package:refund_radar/firebase_options.dart';
 /// app crash on startup. Set to `true` by `_initFirebase` on success.
 bool _crashlyticsEnabled = false;
 
+/// Per-service boot timeout. Any single hang (RevenueCat, OneSignal,
+/// timezone) must not delay the first frame beyond this. Network SDKs
+/// run *after* runApp; this bounds their cold-start so a stuck SDK can't
+/// wedge the app's background boot.
+const _bootServiceTimeout = Duration(seconds: 8);
+
 Future<void> _initFirebase() async {
   try {
     await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
+        options: DefaultFirebaseOptions.currentPlatform)
+        .timeout(const Duration(seconds: 8));
     _crashlyticsEnabled = true;
   } catch (e, st) {
     // Firebase placeholder config - real values set via GitHub secrets later.
     // Crashlytics not initialised; the error zone below becomes a no-op.
     debugPrint('Firebase init skipped: $e');
     debugPrint(st.toString());
+    return;
   }
 
-  if (_crashlyticsEnabled) {
-    // 1. Catch Flutter framework errors (rendering, async widget errors) and
-    //    forward them to Crashlytics in addition to the default console.
-    FlutterError.onError = (FlutterErrorDetails details) {
-      // Always surface in debug (console + red screen). In release the
-      // Crashlytics report is the user-facing signal — presentError is a
-      // no-op there so this is safe on both paths.
-      FlutterError.presentError(details);
+  // 1. Catch Flutter framework errors (rendering, async widget errors) and
+  //    forward them to Crashlytics in addition to the default console.
+  FlutterError.onError = (FlutterErrorDetails details) {
+    // Always surface in debug (console + red screen). In release the
+    // Crashlytics report is the user-facing signal — presentError is a
+    // no-op there so this is safe on both paths.
+    FlutterError.presentError(details);
+    if (_crashlyticsEnabled) {
       FirebaseCrashlytics.instance.recordFlutterFatalError(details);
-    };
-
-    // 2. Catch any uncaught errors from the platform (outside the Flutter
-    //    framework) — e.g. isolate crashes.
-    PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
-      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true; // handled — don't re-throw to the platform
-    };
-
-    // B8: enable Firestore offline persistence. Cache 50 MB so dispute /
-    //     reminder reads + writes survive transient network loss — the
-    //     app is info-only so even a multi-day outage keeps the user's
-    //     drafts + status queries working. Done inside the
-    //     `_crashlyticsEnabled` branch because it only works for real
-    //     Firebase projects. Failures here are non-fatal: a re-activated
-    //     cache from a previous run is preserved by the SDK automatically.
-    try {
-      FirebaseFirestore.instance.settings = const Settings(
-        persistenceEnabled: true,
-        cacheSizeBytes: 50 * 1024 * 1024, // 50 MB
-      );
-    } catch (e) {
-      debugPrint('Firestore persistence not enabled: $e');
     }
+  };
+
+  // 2. Catch any uncaught errors from the platform (outside the Flutter
+  //    framework) — e.g. isolate crashes.
+  PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+    if (_crashlyticsEnabled) {
+      FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    } else {
+      debugPrint('Platform error: $error\n$stack');
+    }
+    return true; // handled — don't re-throw to the platform
+  };
+
+  // B8: enable Firestore offline persistence. Cache 50 MB so dispute /
+  //     reminder reads + writes survive transient network loss — the
+  //     app is info-only so even a multi-day outage keeps the user's
+  //     drafts + status queries working. Done inside the
+  //     `_crashlyticsEnabled` branch because it only works for real
+  //     Firebase projects. Failures here are non-fatal: a re-activated
+  //     cache from a previous run is preserved by the SDK automatically.
+  try {
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: true,
+      cacheSizeBytes: 50 * 1024 * 1024, // 50 MB
+    );
+  } catch (e) {
+    debugPrint('Firestore persistence not enabled: $e');
   }
+}
+
+/// Run the network-dependent service boots concurrently AFTER runApp has
+/// been called. Each service is bounded by [_bootServiceTimeout] and
+/// isolated in its own try/catch so a hang or throw in one SDK never blocks
+/// or crashes the others. All of these are best-effort — the app is fully
+/// usable if every one of them fails (placeholder-config builds).
+Future<void> _bootBackgroundServices(ProviderContainer container) async {
+  // ME-8: notification deep-links can arrive before the widget tree /
+  // router exist (cold-launch tap on a UTR notification). Wire the tap
+  // handler through a queue that buffers taps until the router is ready.
+  final tapRouter = _NotificationTapRouter(container);
+  NotificationService.onNotificationTap = tapRouter.handle;
+
+  // Seed the working-day holiday calendar from the rules engine so the
+  // RBI working-day TAT (T+1/T+5) excludes Sundays, 2nd/4th Saturdays,
+  // and declared holidays. Best-effort + bounded: a failure leaves the
+  // calendar empty (Sunday/2nd-4th-Saturday exclusion still applies), so
+  // TAT computation degrades rather than crashes.
+  try {
+    final rules = await container
+        .read(rulesEngineProvider.future)
+        .timeout(_bootServiceTimeout);
+    WorkingDayCalendar.setHolidays(rules.holidayDates);
+  } catch (e, st) {
+    debugPrint('Working-day holiday calendar load skipped (non-fatal): '
+        '$e\n$st');
+  }
+
+  // Local notification init + timezone. flutter_timezone reads a system
+  // service; bound so a stuck platform channel can't wedge boot.
+  try {
+    await container
+        .read(notificationServiceProvider)
+        .init()
+        .timeout(_bootServiceTimeout);
+  } catch (e, st) {
+    debugPrint('NotificationService.init failed (non-fatal): $e\n$st');
+  }
+
+  // RevenueCat configure (network). Mirrors premium flag into isPremium.
+  try {
+    await container
+        .read(revenueCatServiceProvider)
+        .configure()
+        .timeout(_bootServiceTimeout);
+  } catch (e, st) {
+    debugPrint('RevenueCat.configure failed (non-fatal): $e\n$st');
+  }
+
+  // OneSignal (network). Coexists with FCM (OneSignal = segmentation layer;
+  // FCM stays primary for push delivery per spec §3 + §6.6). No-op when
+  // `--dart-define=ONESIGNAL_APP_ID` is absent (debug builds).
+  try {
+    await container
+        .read(oneSignalServiceProvider)
+        .configure(
+          appId: const String.fromEnvironment('ONESIGNAL_APP_ID'),
+          apiKey: const String.fromEnvironment('ONESIGNAL_API_KEY'),
+        )
+        .timeout(_bootServiceTimeout);
+  } catch (e, st) {
+    debugPrint('OneSignal.configure failed (non-fatal): $e\n$st');
+  }
+
+  // FCM foreground message handler (Task C6). Foreground pushes don't
+  // reach the Android shade on their own — render them via
+  // [NotificationService.showSimpleNotification]. Failures are non-fatal.
+  try {
+    final notifService = container.read(notificationServiceProvider);
+    FirebaseMessaging.onMessage.listen((message) {
+      final notification = message.notification;
+      if (notification == null) return;
+      try {
+        notifService.showSimpleNotification(
+          title: notification.title ?? '',
+          body: notification.body ?? '',
+        );
+      } catch (e) {
+        debugPrint('FCM foreground notification show failed: $e');
+      }
+    });
+  } catch (e, st) {
+    debugPrint('FCM onMessage listener setup failed (non-fatal): $e\n$st');
+  }
+
+  // ME-8: the router is built lazily inside the handler; mark it ready
+  // on the first post-frame callback so a queued cold-launch tap drains
+  // only after the navigator is attached (otherwise `goRouter.go` is a
+  // no-op).
+  WidgetsBinding.instance.addPostFrameCallback((_) => tapRouter.markReady());
 }
 
 void main() {
@@ -78,85 +183,38 @@ void main() {
   //    not handled by Future.catchError goes here first.
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
+    // Firebase init first — it's a local config-parse (no network on the
+    // initialise call itself) and the Crashlytics wiring here must be in
+    // place before any later error. Bounded by a safety timeout.
     await _initFirebase();
-    // 4. Hydrate persisted app state (premium flag, free-dispute counter).
-    //    Done before runApp so the first frame renders with the right
-    //    entitlement. RevenueCat's own customer-info updates will overwrite
-    //    this once it succeeds.
+    // 4. Hydrate persisted app state (premium flag, free-dispute counter,
+    //    onboarding flag, locale, theme, notif toggles). This is local
+    //    SharedPreferences — fast — but bounded so even a stuck prefs
+    //    read never blocks the first frame. Hydration runs BEFORE runApp
+    //    so the first frame renders with the right entitlement + onboarding
+    //    route (the router redirect reads hasSeenOnboardingProvider).
     final container = ProviderContainer();
-    // CRITICAL: if hydration throws, we still need to call runApp so the
-    // user sees SOMETHING (not a black screen). The zone error handler
-    // catches uncaught exceptions but does NOT call runApp — so any throw
-    // before runApp = black screen.
+    // CRITICAL: if hydration throws, we still call runApp so the user sees
+    // SOMETHING (not a black screen). The zone error handler catches uncaught
+    // exceptions but does NOT call runApp — so any throw before runApp =
+    // black screen.
     try {
-      await hydratePersistedAppState(container);
+      await hydratePersistedAppState(container)
+          .timeout(const Duration(seconds: 3));
     } catch (e, st) {
       debugPrint('hydratePersistedAppState failed (non-fatal): $e\n$st');
     }
-    // ME-8: notification deep-links can arrive before the widget tree /
-    // router exist (cold-launch tap on a UTR notification). Wire the tap
-    // handler through a queue that buffers taps until the router is ready.
-    final tapRouter = _NotificationTapRouter(container);
-    NotificationService.onNotificationTap = tapRouter.handle;
-    try {
-      await container.read(notificationServiceProvider).init();
-    } catch (e, st) {
-      debugPrint('NotificationService.init failed (non-fatal): $e\n$st');
-    }
-    // 5. Configure RevenueCat in the same container so it can write into
-    // `isPremiumProvider` (and persist it) on purchase / restore.
-    try {
-      await container.read(revenueCatServiceProvider).configure();
-    } catch (e, st) {
-      debugPrint('RevenueCat.configure failed (non-fatal): $e\n$st');
-    }
-    // 5b. Configure OneSignal. Coexists with FCM (OneSignal is used only
-    //     as a segmentation / analytics layer; FCM stays primary for push
-    //     delivery per spec §3 + §6.6). Reads OneSignal app id + api key
-    //     from `--dart-define` flags injected by the GitHub Actions
-    //     release job. In debug builds without dart-define, OneSignal.configure
-    //     is a no-op (service.isInitialized stays false).
-    try {
-      await container.read(oneSignalServiceProvider).configure(
-            appId: const String.fromEnvironment('ONESIGNAL_APP_ID'),
-            apiKey: const String.fromEnvironment('ONESIGNAL_API_KEY'),
-          );
-    } catch (e, st) {
-      debugPrint('OneSignal.configure failed (non-fatal): $e\n$st');
-    }
-    // 5c. FCM foreground message handler (Task C6). Foreground pushes
-    //     don't reach the Android shade on their own — render them via
-    //     [NotificationService.showSimpleNotification]. Failures are
-    //     non-fatal: the platform still banners the message in background.
-    //     Use the container-managed singleton rather than a bare
-    //     NotificationService() so any future per-instance state stays
-    //     consistent.
-    try {
-      final notifService = container.read(notificationServiceProvider);
-      FirebaseMessaging.onMessage.listen((message) {
-        final notification = message.notification;
-        if (notification == null) return;
-        try {
-          notifService.showSimpleNotification(
-            title: notification.title ?? '',
-            body: notification.body ?? '',
-          );
-        } catch (e) {
-          debugPrint('FCM foreground notification show failed: $e');
-        }
-      });
-    } catch (e, st) {
-      debugPrint('FCM onMessage listener setup failed (non-fatal): $e\n$st');
-    }
+    // runApp IMMEDIATELY. The network SDK boots (RevenueCat, OneSignal,
+    // notifications, FCM) run concurrently post-frame via
+    // _bootBackgroundServices so a hung SDK never delays the first frame.
     runApp(UncontrolledProviderScope(
       container: container,
       child: const RefundRadarApp(),
     ));
-    // ME-8: the router is built lazily inside the handler; mark it ready
-    // on the first post-frame callback so a queued cold-launch tap drains
-    // only after the navigator is attached (otherwise `goRouter.go` is a
-    // no-op).
-    WidgetsBinding.instance.addPostFrameCallback((_) => tapRouter.markReady());
+    // Fire-and-forget the background service boots. Each is bounded +
+    // isolated; failures degrade gracefully (the app was already usable
+    // before the fix that put them here).
+    unawaited(_bootBackgroundServices(container));
   }, (Object error, StackTrace stack) {
     if (_crashlyticsEnabled) {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: false);

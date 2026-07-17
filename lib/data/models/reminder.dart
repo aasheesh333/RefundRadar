@@ -1,4 +1,5 @@
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/shared/utils/date_codec.dart';
 
 /// A scheduled reminder derived from a dispute's RBI-mandated timeline.
 ///
@@ -84,9 +85,9 @@ class Reminder {
         'disputeType': disputeType.id,
         'title': title,
         'body': body,
-        'fireAt': fireAt.toIso8601String(),
+        'fireAt': toUtcIso(fireAt),
         'dismissed': dismissed,
-        'createdAt': createdAt.toIso8601String(),
+        'createdAt': toUtcIso(createdAt),
       };
 
   factory Reminder.fromJson(Map<String, dynamic> json) => Reminder(
@@ -97,9 +98,9 @@ class Reminder {
         disputeType: DisputeType.fromId(json['disputeType'] ?? 'upi_p2p'),
         title: json['title'] ?? '',
         body: json['body'] ?? '',
-        fireAt: DateTime.tryParse(json['fireAt'] ?? '') ?? DateTime.now(),
+        fireAt: parseDate(json['fireAt'] as String?) ?? DateTime.now(),
         dismissed: json['dismissed'] ?? false,
-        createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
+        createdAt: parseDate(json['createdAt'] as String?) ?? DateTime.now(),
       );
 }
 

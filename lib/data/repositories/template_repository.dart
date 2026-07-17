@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/dispute.dart';
@@ -15,15 +16,32 @@ class TemplateRepository {
 
   Future<List<Template>> loadAll() async {
     if (_cached != null) return _cached!;
-    final manifestRaw = await rootBundle.loadString(
-      'assets/templates/index.json',
-    );
-    final manifest = jsonDecode(manifestRaw) as List<dynamic>;
     final templates = <Template>[];
-    for (final path in manifest) {
-      final raw = await rootBundle.loadString('assets/templates/$path');
-      final json = jsonDecode(raw) as Map<String, dynamic>;
-      templates.add(Template.fromJson(json));
+    try {
+      final manifestRaw = await rootBundle.loadString(
+        'assets/templates/index.json',
+      );
+      final manifest = jsonDecode(manifestRaw) as List<dynamic>;
+      // Per-file fault tolerance: one malformed/missing template asset
+      // (build merge conflict, bad Remote Config path override, encoding
+      // glitch) must NOT render the entire template library unusable.
+      // Skip the bad file, log, and keep the rest — callers degrade to
+      // "no template for this category" rather than a full-screen error.
+      for (final path in manifest) {
+        try {
+          final raw = await rootBundle.loadString('assets/templates/$path');
+          final json = jsonDecode(raw) as Map<String, dynamic>;
+          templates.add(Template.fromJson(json));
+        } catch (e, st) {
+          debugPrint('TemplateRepository: skipping malformed asset '
+              'assets/templates/$path: $e\n$st');
+        }
+      }
+    } catch (e, st) {
+      // Manifest itself missing/corrupt — return the empty list so callers
+      // show their empty state rather than crashing. Logged for release
+      // observability via Crashlytics breadcrumb upstream.
+      debugPrint('TemplateRepository: could not load template index: $e\n$st');
     }
     _cached = templates;
     return _cached!;

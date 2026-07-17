@@ -138,7 +138,10 @@ class SettingsPage extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   InkWell(
-                    onTap: () => context.push('${AppRoutes.paywall}?trigger=settings'),
+                    onTap: () => context.push(AppRoutes.paywallWithParams(
+                      trigger: 'settings',
+                      returnPath: AppRoutes.settings,
+                    )),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
@@ -206,7 +209,7 @@ class SettingsPage extends ConsumerWidget {
                                       SnackBar(
                                         content: Text(
                                           l10n?.settingsSmsPermissionHint ??
-                                              'SMS permission manages under Android settings.',
+                                              'SMS permission is managed under Android settings.',
                                         ),
                                       ),
                                     );
@@ -277,20 +280,24 @@ class SettingsPage extends ConsumerWidget {
                     label: l10n?.settingsLanguage ?? 'Language',
                     child: Column(
                       children: [
-                        RadioRow(
+RadioRow(
                           label: l10n?.settingsEnglish ?? 'English',
                           selected: locale.languageCode != 'hi',
-                          onTap: () =>
-                              ref.read(localeProvider.notifier).state =
-                                  const Locale('en'),
+                          onTap: () {
+                            ref.read(localeProvider.notifier).state =
+                                const Locale('en');
+                            persistLocaleCode('en');
+                          },
                         ),
                         const SizedBox(height: 6),
                         RadioRow(
                           label: l10n?.settingsHindi ?? 'हिन्दी',
                           selected: locale.languageCode == 'hi',
-                          onTap: () => ref
-                              .read(localeProvider.notifier).state =
-                              const Locale('hi'),
+                          onTap: () {
+                            ref.read(localeProvider.notifier).state =
+                                const Locale('hi');
+                            persistLocaleCode('hi');
+                          },
                         ),
                       ],
                     ),
@@ -303,25 +310,31 @@ class SettingsPage extends ConsumerWidget {
                         RadioRow(
                           label: l10n?.settingsLight ?? 'Light',
                           selected: themeMode == ThemeMode.light,
-                          onTap: () => ref
-                              .read(themeModeProvider.notifier).state =
-                              ThemeMode.light,
+                          onTap: () {
+                            ref.read(themeModeProvider.notifier).state =
+                                ThemeMode.light;
+                            persistThemeMode(ThemeMode.light);
+                          },
                         ),
                         const SizedBox(height: 6),
                         RadioRow(
                           label: l10n?.settingsDark ?? 'Dark',
                           selected: themeMode == ThemeMode.dark,
-                          onTap: () =>
-                              ref.read(themeModeProvider.notifier).state =
-                                  ThemeMode.dark,
+                          onTap: () {
+                            ref.read(themeModeProvider.notifier).state =
+                                ThemeMode.dark;
+                            persistThemeMode(ThemeMode.dark);
+                          },
                         ),
                         const SizedBox(height: 6),
                         RadioRow(
                           label: l10n?.settingsSystemDefault ?? 'System default',
                           selected: themeMode == ThemeMode.system,
-                          onTap: () => ref
-                              .read(themeModeProvider.notifier).state =
-                              ThemeMode.system,
+                          onTap: () {
+                            ref.read(themeModeProvider.notifier).state =
+                                ThemeMode.system;
+                            persistThemeMode(ThemeMode.system);
+                          },
                         ),
                       ],
                     ),

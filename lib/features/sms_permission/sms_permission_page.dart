@@ -33,10 +33,10 @@ class SmsPermissionPage extends StatelessWidget {
                       side: BorderSide(color: tc.divider, width: 1),
                     ),
                     child: Tooltip(
-                      message: 'Back',
+                      message: l10n?.smsPermissionBack ?? 'Back',
                       child: Semantics(
                         button: true,
-                        label: 'Back',
+                        label: l10n?.smsPermissionBack ?? 'Back',
                         child: InkWell(
                           customBorder: const CircleBorder(),
                           onTap: () => context.go(AppRoutes.onboard),
@@ -165,7 +165,7 @@ class _HowItWorksCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'HOW IT WORKS',
+            l10n?.smsPermissionHowItWorks ?? 'HOW IT WORKS',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -264,6 +264,7 @@ class _SampleSmsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     final labelColor = tc.isDark ? AppColors.accent : AppColors.primary;
     return Container(
       padding: const EdgeInsets.all(10),
@@ -279,7 +280,8 @@ class _SampleSmsCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Sample auto-detected event',
+                l10n?.smsPermissionSampleTitle ??
+                    'Sample auto-detected event',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -287,7 +289,7 @@ class _SampleSmsCard extends StatelessWidget {
                 ),
               ),
               Text(
-                'SMS detected',
+                l10n?.smsPermissionSampleDetected ?? 'SMS detected',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -321,8 +323,8 @@ class _SampleSmsCard extends StatelessWidget {
                       color: labelColor,
                     ),
                   ),
-                  const TextSpan(
-                    text:
+                  TextSpan(
+                    text: l10n?.smsPermissionSampleBody ??
                         ' · 08 Jul 2026\nBody: ₹400 debited from A/c ✱✱✱✱1234 for UPI txn. UTR ',
                   ),
                   TextSpan(
@@ -366,8 +368,12 @@ class _SmsFooter extends StatelessWidget {
               child: FilledButton(
                 onPressed: () async {
                   // Runtime SMS permission (declared in AndroidManifest).
-                  // On non-Android or denial we still continue — user can
-                  // paste SMS later on the dispute form.
+                  // On grant → continue onboarding. On denial → show the
+                  // SnackBar and STAY on this page (the previous flow
+                  // navigated past the SnackBar so the user never saw it;
+                  // the "Continue without SMS" button below handles the
+                  // manual-paste path). On plugin-missing (desktop) →
+                  // continue onboarding since SMS isn't available at all.
                   try {
                     final status = await Permission.sms.request();
                     if (!context.mounted) return;
@@ -383,6 +389,8 @@ class _SmsFooter extends StatelessWidget {
                         ),
                       ),
                     );
+                    // Stay on page so the denial message is visible.
+                    return;
                   } catch (_) {
                     // Plugin missing / desktop — continue onboarding.
                   }

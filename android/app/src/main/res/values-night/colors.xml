@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App background (matches AppColors.bgDark = #121212) for night mode.
+         Prevents the black-screen-on-open symptom where the system default
+         `?android:colorBackground` (pure black) was shown while Flutter
+         initialised. -->
+    <color name="app_bg">#121212</color>
+</resources>

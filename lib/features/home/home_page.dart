@@ -195,10 +195,10 @@ class _Body extends ConsumerWidget {
             ),
           ),
           Tooltip(
-            message: 'Reminders',
+            message: l10n?.homeRemindersTooltip ?? 'Reminders',
             child: Semantics(
               button: true,
-              label: 'Reminders',
+              label: l10n?.homeRemindersTooltip ?? 'Reminders',
               child: InkWell(
                 onTap: () => context.push(AppRoutes.reminders),
                 borderRadius: BorderRadius.circular(24),
@@ -212,10 +212,10 @@ class _Body extends ConsumerWidget {
             ),
           ),
           Tooltip(
-            message: 'Templates',
+            message: l10n?.homeTemplatesTooltip ?? 'Templates',
             child: Semantics(
               button: true,
-              label: 'Templates',
+              label: l10n?.homeTemplatesTooltip ?? 'Templates',
               child: InkWell(
                 onTap: () => context.push(AppRoutes.templates),
                 borderRadius: BorderRadius.circular(24),
@@ -299,7 +299,7 @@ class _Body extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Active disputes',
+              l10n?.homeActiveDisputesTitle ?? 'Active disputes',
               style: TextStyle(
                 fontFamily: AppTypography.family,
                 fontSize: 14,
