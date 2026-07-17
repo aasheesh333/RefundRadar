@@ -14,10 +14,20 @@ import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/utils/date_time_ext.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
-import 'package:refund_radar/shared/widgets/filter_pills.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 
-/// True when dispute is open at L2/ombudsman, or past with L2/ombudsman/l3 filing.
+/// Wave 3 redesign — clean-minimal Material 3 ledger of past disputes.
+///
+/// Same data flow as the previous History screen (filter pills,
+/// win-rate stats, card list) but with a fully new visual treatment:
+///   - Compact sticky page header with back arrow, big title and an
+///     unobtrusive "Add dispute" CTA.
+///   - Single-line stat strip below the header (replaces the two
+///     stat boxes + side caption).
+///   - Pill tabs segment the data (All / Won / Lost / Escalated) with
+///     a sliding selection background.
+///   - Bottom border on cards (no double border / shadow).
+///   - Empty state with a single CTA.
 bool isEscalatedDispute(Dispute d) {
   if (d.status == DisputeStatus.filedL2 ||
       d.status == DisputeStatus.ombudsman) {
@@ -31,7 +41,6 @@ bool isEscalatedDispute(Dispute d) {
       d.filedDates['l3'] != null;
 }
 
-/// History filter over disputes. Escalated uses the full list; others use past only.
 List<Dispute> filterHistoryDisputes(List<Dispute> disputes, String filter) {
   final past = disputes
       .where((d) =>
@@ -50,9 +59,6 @@ List<Dispute> filterHistoryDisputes(List<Dispute> disputes, String filter) {
   }
 }
 
-/// History (Ledger) page matching mockup Screen 9.
-/// Filter pills + win-rate stats header + card list of past/resolved disputes
-/// + "Load older" footer.
 class HistoryPage extends ConsumerStatefulWidget {
   const HistoryPage({super.key});
   @override
@@ -65,23 +71,22 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final uidAsync = ref.watch(userIdProvider);
-    final filters = [
-      (id: 'All', label: l10n?.historyFilterAll ?? 'All'),
-      (id: 'Won', label: l10n?.historyFilterWon ?? 'Won'),
-      (id: 'Lost', label: l10n?.historyFilterLost ?? 'Lost'),
-      (id: 'Escalated', label: l10n?.historyFilterEscalated ?? 'Escalated'),
-    ];
     final tc = AppThemeColors.of(context);
+    final uidAsync = ref.watch(userIdProvider);
+    final filters = <_FilterChip>[
+      _FilterChip(id: 'All', label: l10n?.historyFilterAll ?? 'All'),
+      _FilterChip(id: 'Won', label: l10n?.historyFilterWon ?? 'Won'),
+      _FilterChip(id: 'Lost', label: l10n?.historyFilterLost ?? 'Lost'),
+      _FilterChip(
+          id: 'Escalated',
+          label: l10n?.historyFilterEscalated ?? 'Escalated'),
+    ];
     return Scaffold(
       backgroundColor: tc.bg,
       body: SafeArea(
         child: uidAsync.when(
           data: (uid) {
             if (uid == null) {
-              // Auth failed (not "loading"): show a retry banner, not a
-              // permanent skeleton that masquerades as loading. Mirror
-              // Home's auth-error banner so the cause is visible.
               final authErr = ref.watch(lastAuthErrorProvider);
               return BrandedErrorBanner(
                 message: authErr != null &&
@@ -123,11 +128,17 @@ class _HistoryPageState extends ConsumerState<HistoryPage> {
   }
 }
 
+class _FilterChip {
+  final String id;
+  final String label;
+  const _FilterChip({required this.id, required this.label});
+}
+
 class _Body extends StatelessWidget {
   final List<Dispute> disputes;
   final String filter;
   final ValueChanged<String> onFilter;
-  final List<({String id, String label})> filters;
+  final List<_FilterChip> filters;
   const _Body({
     required this.disputes,
     required this.filter,
@@ -149,123 +160,260 @@ class _Body extends StatelessWidget {
     final wonAmount = past
         .where((d) => d.status == DisputeStatus.resolved)
         .fold<double>(0, (s, d) => s + (d.resolvedAmount ?? 0));
-    final totalResolved = past.where((d) => d.status == DisputeStatus.resolved).length;
-    final totalDecided = past.length;
-    final winRate =
-        totalDecided == 0 ? 0 : ((totalResolved / totalDecided) * 100).round();
+    final wonCount =
+        past.where((d) => d.status == DisputeStatus.resolved).length;
+    final lostCount = past
+        .where((d) =>
+            d.status == DisputeStatus.expired ||
+            (d.status == DisputeStatus.resolved && d.resolvedAmount == 0))
+        .length;
+    final escalatedCount = disputes.where(isEscalatedDispute).length;
+    final winRate = past.isEmpty
+        ? 0
+        : ((wonCount / past.length) * 100).round();
 
-    return Column(
-      children: [
-        // header
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n?.historyTitle ?? 'History',
-                style: TextStyle(
-                  fontFamily: AppTypography.family,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: tc.textPrimary,
-                ),
-              ),
-            ],
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: _PageHeader(tc: tc, l10n: l10n)),
+        SliverToBoxAdapter(
+          child: _StatStrip(
+            wonCount: wonCount,
+            lostCount: lostCount,
+            escalatedCount: escalatedCount,
+            wonAmount: wonAmount,
+            winRate: winRate,
+            tc: tc,
+            l10n: l10n,
           ),
         ),
-        // filter pills
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-          child: FilterPills(
-            pills: filters
-                .map((f) => (
-                      label: f.label,
-                      selected: filter == f.id,
-                      onTap: () => onFilter(f.id),
-                    ))
-                .toList(),
+        SliverToBoxAdapter(
+          child: _FilterTabs(
+            filters: filters,
+            selected: filter,
+            onTap: onFilter,
+            tc: tc,
           ),
         ),
-        // stats row
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  _StatBox(
-                    label: l10n?.historyTotalWon ?? 'TOTAL WON',
-                    value: CompensationCalculator.formatIndian(wonAmount),
-                    valueColor: AppColors.accent,
-                  ),
-                  const SizedBox(width: 24),
-                  _StatBox(
-                    label: l10n?.historyWinRate ?? 'WIN RATE',
-                    value: '$winRate%',
-                    valueColor: tc.textPrimary,
-                  ),
-                ],
-              ),
-              Text(
-                l10n?.historyThisYear ?? 'This year',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: tc.textSecondary,
-                ),
-              ),
-            ],
+        const SliverToBoxAdapter(child: SizedBox(height: 12)),
+        if (filtered.isEmpty)
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: _EmptyHistory(),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+            sliver: SliverList.separated(
+              itemCount: filtered.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              itemBuilder: (_, i) => _HistoryCard(dispute: filtered[i]),
+            ),
           ),
-        ),
-        Expanded(
-          child: filtered.isEmpty
-              ? const _EmptyHistory()
-              : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                  itemCount: filtered.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 10),
-                  itemBuilder: (_, i) => _HistoryCard(dispute: filtered[i]),
-                ),
-        ),
       ],
     );
   }
 }
 
-class _StatBox extends StatelessWidget {
-  final String label;
-  final String value;
-  final Color valueColor;
-  const _StatBox({required this.label, required this.value, required this.valueColor});
+class _PageHeader extends StatelessWidget {
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _PageHeader({required this.tc, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
-    final tc = AppThemeColors.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.6,
-            color: tc.textSecondary,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 16, 4),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.arrow_back, color: tc.textPrimary),
+            onPressed: () => context.pop(),
+          ),
+          Expanded(
+            child: Text(
+              l10n?.historyTitle ?? 'History',
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: tc.textPrimary,
+                letterSpacing: -0.3,
+              ),
+            ),
+          ),
+          TextButton.icon(
+            onPressed: () => context.push(AppRoutes.disputesCreate),
+            icon: Icon(Icons.add, size: 18, color: tc.ctaBackground),
+            label: Text(
+              l10n?.homeAddDispute ?? 'Add dispute',
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: tc.ctaBackground,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatStrip extends StatelessWidget {
+  final int wonCount;
+  final int lostCount;
+  final int escalatedCount;
+  final double wonAmount;
+  final int winRate;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _StatStrip({
+    required this.wonCount,
+    required this.lostCount,
+    required this.escalatedCount,
+    required this.wonAmount,
+    required this.winRate,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: tc.surface,
+          borderRadius: BorderRadius.circular(AppRadii.lg),
+          border: Border.all(color: tc.divider),
+        ),
+        child: Row(
+          children: [
+            _stat('TOTAL', wonAmount > 0
+                ? CompensationCalculator.formatIndian(wonAmount)
+                : '₹0', AppColors.accent),
+            _verticalDivider(tc.divider),
+            _stat('WON', '$wonCount', tc.textPrimary),
+            _verticalDivider(tc.divider),
+            _stat('LOST', '$lostCount', tc.textSecondary),
+            _verticalDivider(tc.divider),
+            _stat('RATE', '$winRate%', tc.textPrimary),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _stat(String label, String value, Color color) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1,
+              color: tc.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: color,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _verticalDivider(Color c) =>
+      Container(width: 1, height: 28, color: c);
+}
+
+class _FilterTabs extends StatelessWidget {
+  final List<_FilterChip> filters;
+  final String selected;
+  final ValueChanged<String> onTap;
+  final AppThemeColors tc;
+  const _FilterTabs({
+    required this.filters,
+    required this.selected,
+    required this.onTap,
+    required this.tc,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+      child: Container(
+        height: 42,
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: tc.surfaceAlt,
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+        ),
+        child: Row(
+          children: [
+            for (final f in filters)
+              Expanded(
+                child: _PillTab(
+                  label: f.label,
+                  selected: selected == f.id,
+                  onTap: () => onTap(f.id),
+                  tc: tc,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PillTab extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final AppThemeColors tc;
+  const _PillTab({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    required this.tc,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? tc.surface : Colors.transparent,
+      borderRadius: BorderRadius.circular(AppRadii.pill),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.pill),
+        onTap: onTap,
+        child: Center(
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 180),
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: selected ? tc.textPrimary : tc.textSecondary,
+            ),
+            child: Text(label),
           ),
         ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: valueColor,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -278,84 +426,71 @@ class _HistoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
     final l10n = AppLocalizations.of(context);
-    // ME-4: use the shared outcome helpers instead of inlining the
-    // (status, resolvedAmount) predicates; keeps the filter pills and the
-    // card in lockstep.
     final won = dispute.isWon;
     final lost = dispute.isLost;
     final partial = dispute.isPartial;
 
     final amount = dispute.resolvedAmount ?? 0;
-    final (cardBorderColor, emojiBg, amountColor, badge, statusLabel) = switch ((
-      won,
-      lost,
-      partial
-    )) {
+    final (amountColor, badge, statusLabel) = switch ((won, lost, partial)) {
       (true, _, true) => (
-          tc.alertSoft,
-          tc.alertSoft,
           AppColors.alert,
           AppColors.alert,
           l10n?.historyBadgePartial ?? 'PARTIAL'
         ),
       (true, _, _) => (
-          tc.divider,
-          tc.accentSoft,
           AppColors.accent,
           AppColors.accent,
           l10n?.historyBadgeWon ?? 'WON'
         ),
       (_, true, _) => (
-          tc.errorSoft,
-          tc.errorSoft,
           AppColors.error,
           AppColors.error,
           l10n?.historyBadgeLost ?? 'LOST'
         ),
       _ => (
-          tc.divider,
-          tc.premiumGoldSoft,
           tc.textPrimary,
-          AppColors.premiumGold,
+          tc.textSecondary,
           l10n?.historyBadgeFiled ?? 'FILED'
         ),
     };
 
     return InkWell(
+      borderRadius: BorderRadius.circular(AppRadii.md),
       onTap: () => context.push(AppRoutes.disputeDetail(dispute.id)),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
         decoration: BoxDecoration(
           color: tc.surface,
-          border: Border.all(color: cardBorderColor, width: 1),
-          borderRadius: BorderRadius.circular(AppRadii.lg),
-          boxShadow: AppShadows.card,
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          border: Border.all(color: tc.divider),
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 32,
+                  height: 32,
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: emojiBg,
+                    color: tc.surfaceAlt,
                     borderRadius: BorderRadius.circular(AppRadii.sm),
                   ),
-                  child: Center(
-                    child: Text(dispute.type.emoji,
-                        style: const TextStyle(fontSize: 16)),
-                  ),
+                  child: Text(dispute.type.emoji,
+                      style: const TextStyle(fontSize: 14)),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        dispute.type.localizedName(AppLocalizations.of(context)),
+                        dispute.type.localizedName(
+                            AppLocalizations.of(context)),
                         style: TextStyle(
+                          fontFamily: AppTypography.family,
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: tc.textPrimary,
@@ -366,7 +501,6 @@ class _HistoryCard extends StatelessWidget {
                         '${dispute.entityName ?? "—"} · ${_fmtDate(dispute.resolvedAt ?? dispute.txnDate)}',
                         style: TextStyle(
                           fontSize: 11,
-                          fontWeight: FontWeight.w500,
                           color: tc.textSecondary,
                         ),
                       ),
@@ -379,83 +513,67 @@ class _HistoryCard extends StatelessWidget {
                     Text(
                       CompensationCalculator.formatIndian(amount),
                       style: TextStyle(
+                        fontFamily: AppTypography.family,
                         fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: amountColor,
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
-                    Text(
-                      statusLabel,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                        color: badge,
+                    const SizedBox(height: 2),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: tc.surfaceAlt,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        statusLabel,
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.6,
+                          color: badge,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.only(top: 8),
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: tc.divider,
-                    width: 1,
-                    style: BorderStyle.solid,
-                  ),
-                ),
-              ),
-              child: _footerText(context, tc),
-            ),
+            const SizedBox(height: 10),
+            _summaryLine(context, tc),
           ],
         ),
       ),
     );
   }
 
-  Widget _footerText(BuildContext context, AppThemeColors tc) {
+  Widget _summaryLine(BuildContext context, AppThemeColors tc) {
     final l1 = dispute.filedDates['l1'];
     final resolved = dispute.resolvedAt;
     if (dispute.status == DisputeStatus.resolved && resolved != null && l1 != null) {
-      // ME-2: calendar-day math so a resolution that lands the morning
-      // after an evening L1 filing isn't truncated to 0 days.
       final days = resolved.differenceInDays(l1);
-      // LO-3: only show the comp suffix when the type actually carries
-      // daily compensation (TAT types) AND the resolved amount exceeds the
-      // debited principal — i.e. the user actually got comp. For
-      // fastag / bank_charge / wrong_transfer (compensationPerDay == null)
-      // and for plain refund-only outcomes, hide the label.
       final perDay = dispute.type.compensationPerDay;
       final recovered = dispute.resolvedAmount ?? 0;
-      final compLabel = (perDay == null || recovered <= dispute.amount)
-          ? ''
-          : (recovered > dispute.amount
-              ? ' · ₹100 comp included'
-              : ' · ₹$perDay comp');
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Filed ${_fmtDate(l1)} · resolved in $days days',
-            style: TextStyle(fontSize: 11, color: tc.textSecondary),
-          ),
-          if (compLabel.isNotEmpty)
-            Text(
-              compLabel,
-              style: const TextStyle(
-                  fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.accent),
-            ),
-        ],
+      String compSuffix = '';
+      if (perDay != null && recovered > dispute.amount) {
+        compSuffix = ' · ₹100 comp included';
+      }
+      return Text(
+        'Filed ${_fmtDate(l1)} · resolved in $days days$compSuffix',
+        style: TextStyle(fontSize: 11, color: tc.textSecondary),
+      );
+    }
+    if (dispute.status == DisputeStatus.expired) {
+      return Text(
+        'Dispute window expired without resolution',
+        style: TextStyle(fontSize: 11, color: tc.textSecondary),
       );
     }
     return Text(
-      dispute.status == DisputeStatus.expired
-          ? 'Dispute window expired without resolution'
-          : '${dispute.type.localizedCompensation(AppLocalizations.of(context)) ?? "Guidance mode"} · ${_fmtDate(dispute.txnDate)}',
+      '${dispute.type.localizedCompensation(AppLocalizations.of(context)) ?? "Guidance mode"} · ${_fmtDate(dispute.txnDate)}',
       style: TextStyle(fontSize: 11, color: tc.textSecondary),
     );
   }
@@ -472,33 +590,48 @@ class _EmptyHistory extends StatelessWidget {
     final tc = AppThemeColors.of(context);
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('📜', style: TextStyle(fontSize: 40)),
-            const SizedBox(height: 12),
+            Container(
+              width: 80,
+              height: 80,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: tc.surfaceAlt,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text('📜', style: const TextStyle(fontSize: 36)),
+            ),
+            const SizedBox(height: 20),
             Text(
               l10n?.historyEmptyTitle ?? 'No history yet',
               style: TextStyle(
                 fontFamily: AppTypography.family,
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: FontWeight.w700,
                 color: tc.textPrimary,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               l10n?.historyEmptySubtitle ??
                   'Resolved and expired disputes will appear here.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 13,
                 color: tc.textSecondary,
+                height: 1.4,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: tc.ctaBackground,
+                foregroundColor: tc.ctaForeground,
+              ),
               onPressed: () => context.push(AppRoutes.disputesCreate),
               child: Text(l10n?.homeAddDispute ?? 'Add dispute'),
             ),

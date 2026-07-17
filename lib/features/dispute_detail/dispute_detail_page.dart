@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:refund_radar/core/router/app_routes.dart';
-import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
+import 'package:refund_radar/core/providers/premium_provider.dart';
 import 'package:refund_radar/core/providers/theme_provider.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/data/extensions/dispute_type_display.dart';
@@ -17,13 +18,24 @@ import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/data/repositories/template_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
-import 'package:refund_radar/shared/widgets/app_back_button.dart';
-import 'package:refund_radar/shared/widgets/rbi_timeline.dart';
+import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/activity_log.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
-import 'package:refund_radar/shared/utils/error_mapper.dart';
+import 'package:refund_radar/shared/widgets/rbi_timeline.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 
+/// Wave 4b redesign — clean-minimal Material 3 timeline screen.
+///
+/// Same affordances as the previous DisputeDetail (auto-match template,
+/// editable template pick via the new full-screen Picker from Wave 4a,
+/// activity log, status toggle, escalate row), but with a fully new visual
+/// treatment:
+///   - Compact top bar (back arrow + type badge + overflow menu).
+///   - Slim hero card with the disputed amount + window-day pill.
+///   - Vertical timeline rail (delegated to the shared `RbiTimeline`).
+///   - Side-by-side quick actions (Escalate now · email · ombudsman).
+///   - "TEMPLATE" card showing auto-match status with a single tap to
+///     open the new full-screen Picker.
 class DisputeDetailPage extends ConsumerWidget {
   final String id;
   const DisputeDetailPage({super.key, required this.id});
@@ -46,34 +58,35 @@ class DisputeDetailPage extends ConsumerWidget {
           data: (uid) {
             if (uid == null || uid.isEmpty) {
               return BrandedErrorBanner(
-                message: l10n?.commonCouldNotSignIn ?? 'Could not sign in. Tap retry.',
+                message: l10n?.commonCouldNotSignIn ?? 'Could not sign in',
                 onRetry: () => ref.invalidate(userIdProvider),
               );
             }
             final disputesAsync = ref.watch(disputesProvider(uid));
             return disputesAsync.when(
-          data: (disputes) {
-            Dispute? dispute;
-            for (final d in disputes) {
-              if (d.id == id) {
-                dispute = d;
-                break;
-              }
-            }
-            if (dispute == null) {
-              return BrandedErrorBanner(
-                message: l10n?.commonDisputeNotFound ?? 'Dispute not found.',
+              data: (disputes) {
+                Dispute? dispute;
+                for (final d in disputes) {
+                  if (d.id == id) {
+                    dispute = d;
+                    break;
+                  }
+                }
+                if (dispute == null) {
+                  return BrandedErrorBanner(
+                    message:
+                        l10n?.commonDisputeNotFound ?? 'Dispute not found',
+                    onRetry: () => ref.invalidate(disputesProvider(uid)),
+                  );
+                }
+                return _DisputeBody(uid: uid, dispute: dispute);
+              },
+              loading: () => const SkeletonList(itemCount: 3),
+              error: (e, _) => BrandedErrorBanner(
+                message: friendlyError(e),
+                detail: errorDetail(e),
                 onRetry: () => ref.invalidate(disputesProvider(uid)),
-              );
-            }
-            return _DisputeBody(uid: uid, dispute: dispute);
-          },
-          loading: () => const SkeletonList(itemCount: 3),
-          error: (e, _) => BrandedErrorBanner(
-            message: friendlyError(e),
-            detail: errorDetail(e),
-            onRetry: () => ref.invalidate(disputesProvider(uid)),
-          ),
+              ),
             );
           },
         ),
@@ -86,7 +99,6 @@ class _DisputeBody extends ConsumerStatefulWidget {
   final String uid;
   final Dispute dispute;
   const _DisputeBody({required this.uid, required this.dispute});
-
   @override
   ConsumerState<_DisputeBody> createState() => _DisputeBodyState();
 }
@@ -95,15 +107,10 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
   Dispute get dispute => widget.dispute;
   String get uid => widget.uid;
   String? _selectedTemplateId;
-
-  /// HI-4: re-entrancy guard for the Mark Resolved / Reopen action. While a
-  /// save is in flight the action button is disabled so a rapid double-tap
-  /// can't enqueue duplicate writes or interleave two copyWith chains.
   bool _toggling = false;
 
   @override
   Widget build(BuildContext context) {
-    final ref = this.ref;
     final tc = AppThemeColors.of(context);
     final l10n = AppLocalizations.of(context);
     final comp = CompensationCalculator.compute(dispute);
@@ -113,10 +120,10 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
         : CompensationCalculator.daysUntilChargebackExpiry(dispute);
     final windowDays = isFastag ? 30 : 45;
     final dayN = windowDays - daysLeft.clamp(0, windowDays);
-    final deadlineMissed = daysLeft <= 0 && dispute.status != DisputeStatus.resolved;
+    final deadlineMissed =
+        daysLeft <= 0 && dispute.status != DisputeStatus.resolved;
     final hoursLeft = (daysLeft < 0 ? 0 : daysLeft * 24);
 
-    // F3: template picker inputs — used by the template card section.
     final templatesAsync = ref.watch(templatesProvider);
     final rulesAsync = ref.watch(rulesEngineProvider);
     final freeIds =
@@ -124,9 +131,9 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
     final isPremiumUser = ref.watch(isPremiumProvider);
     final localeCode = ref.watch(localeProvider).languageCode;
     final repo = ref.read(templateRepositoryProvider);
-    // Resolve the currently-selected template (user pick wins over auto-match).
+    final allTemplates = templatesAsync.asData?.value ?? const [];
+
     Template? matchedTemplate;
-    final allTemplates = templatesAsync.asData?.value ?? const <Template>[];
     if (_selectedTemplateId != null) {
       for (final t in allTemplates) {
         if (t.id == _selectedTemplateId) {
@@ -135,331 +142,79 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
         }
       }
     }
-    matchedTemplate ??= _matchDisputeTemplate(allTemplates, dispute, repo, freeIds, isPremiumUser);
+    matchedTemplate ??= repo.matchForCategory(
+      allTemplates,
+      dispute.type,
+      freeIds,
+      isPremiumUser: isPremiumUser,
+    );
 
     return Column(
       children: [
-        // header
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              AppBackButton(
-                onTap: () => context.pop(),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      dispute.type.localizedName(l10n),
-                      style: TextStyle(
-                        fontFamily: AppTypography.family,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: tc.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _headerSubtitle(),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: tc.textSecondary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        _TopBar(dispute: dispute, tc: tc, l10n: l10n),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 110),
             children: [
-              // hero
-              Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: dispute.type.softColorFor(tc),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Center(
-                      child: Text(dispute.type.emoji,
-                          style: const TextStyle(fontSize: 24)),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          CompensationCalculator.formatIndian(dispute.amount),
-                          style: TextStyle(
-                            fontFamily: AppTypography.family,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: tc.ctaBackground,
-                            letterSpacing: -0.5,
-                            fontFeatures: const [FontFeature.tabularFigures()],
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            if (dispute.status != DisputeStatus.resolved &&
-                                !deadlineMissed)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: tc.alertSoft,
-                                  borderRadius:
-                                      BorderRadius.circular(AppRadii.pill),
-                                ),
-                                child: Text(
-                                  l10n?.detailDayOfWindow(dayN, windowDays) ??
-                                      '⏰ Day $dayN of $windowDays',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.alert,
-                                  ),
-                                ),
-                              ),
-                            if (deadlineMissed)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: tc.errorSoft,
-                                  borderRadius:
-                                      BorderRadius.circular(AppRadii.pill),
-                                ),
-                                child: Text(
-                                  l10n?.detailDeadlineMissed ?? '⚠ Deadline missed',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.error,
-                                  ),
-                                ),
-                              ),
-                            if (dispute.status == DisputeStatus.resolved)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: tc.accentSoft,
-                                  borderRadius:
-                                      BorderRadius.circular(AppRadii.pill),
-                                ),
-                                child: Text(
-                                  l10n?.detailResolved ?? '✓ Resolved',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.success,
-                                  ),
-                                ),
-                              ),
-                            const SizedBox(width: 8),
-                            Text(
-                              dispute.type.localizedCompensation(l10n) ??
-                                  'Guidance mode',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: tc.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              _HeroCard(
+                dispute: dispute,
+                dayN: dayN,
+                windowDays: windowDays,
+                deadlineMissed: deadlineMissed,
+                tc: tc,
+                l10n: l10n,
               ),
-              const SizedBox(height: 14),
-              // RBI timeline card
+              const SizedBox(height: 16),
               RbiTimeline(
                 headerLabel: _timelineHeader(l10n),
                 steps: _timelineSteps(comp, l10n),
               ),
-              const SizedBox(height: 14),
-              // Escalate row
-              if (dispute.type != DisputeType.wrongTransfer) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: _ActionButton(
-                        label: deadlineMissed ? (l10n?.detailEscalateNow ?? 'Escalate now') : (l10n?.detailEscalate ?? 'Escalate'),
-                        color: AppColors.alert,
-                        onTap: () => context.push(AppRoutes.wizard(dispute.id)),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    _IconAction(
-                      emoji: '📧',
-                      onTap: () => context.push(AppRoutes.escalate(dispute.id)),
-                    ),
-                    const SizedBox(width: 8),
-                    _IconAction(
-                      emoji: '📝',
-                      onTap: () {
-                        // B3 gate: Ombudsman letter generator is premium-only
-                        // (spec §4.3 / comparison table on the paywall).
-                        final isPremium = ref.read(isPremiumProvider);
-                        if (!isPremium) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                  l10n?.detailOmbudsmanPremium ?? 'Ombudsman letter generator is a Premium feature.'),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                          context.push(
-                            AppRoutes.paywallWithParams(
-                              trigger: 'ombudsman_letter',
-                              returnPath: AppRoutes.disputeDetail(dispute.id),
-                            ),
-                          );
-                          return;
-                        }
-                        context.push(AppRoutes.ombudsman(dispute.id));
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-              ],
-              // F3: template card — shows the auto-matched (or user-picked)
-              // L1/L2 template for this dispute, with a pencil icon to open
-              // the same Free/Pro picker as the escalate screen.
-              if (dispute.type != DisputeType.wrongTransfer) ...[
-                _buildTemplateCard(
-                  context,
+              const SizedBox(height: 16),
+              if (dispute.type != DisputeType.wrongTransfer)
+                _QuickActions(
+                  dispute: dispute,
+                  deadlineMissed: deadlineMissed,
                   tc: tc,
                   l10n: l10n,
+                ),
+              if (dispute.type != DisputeType.wrongTransfer)
+                const SizedBox(height: 16),
+              if (dispute.type != DisputeType.wrongTransfer)
+                _TemplateCard(
+                  dispute: dispute,
                   matchedTemplate: matchedTemplate,
-                  templates: allTemplates,
+                  repo: repo,
                   freeIds: freeIds,
                   isPremiumUser: isPremiumUser,
                   localeCode: localeCode,
-                  repo: repo,
+                  tc: tc,
+                  l10n: l10n,
                 ),
-                const SizedBox(height: 14),
-              ],
-              // Activity log
+              if (dispute.type != DisputeType.wrongTransfer)
+                const SizedBox(height: 16),
               ActivityLog(
-                headerLabel: l10n?.detailActivityHeader(_activityLog(l10n).length) ??
+                headerLabel: l10n?.detailActivityHeader(
+                        _activityLog(l10n).length) ??
                     'Activity · ${_activityLog(l10n).length} events',
                 entries: _activityLog(l10n),
               ),
             ],
           ),
         ),
-        // sticky footer
-        Container(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-          decoration: BoxDecoration(
-            color: tc.surface,
-            border: Border(
-              top: BorderSide(color: tc.divider, width: 1),
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: dispute.status != DisputeStatus.resolved
-                    ? RichText(
-                        text: TextSpan(
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: tc.textSecondary,
-                            height: 1.3,
-                          ),
-                          children: [
-                            const TextSpan(
-                              text: '🔴 ',
-                              style: TextStyle(
-                                  fontSize: 11, fontWeight: FontWeight.w700),
-                            ),
-                            TextSpan(
-                              text: deadlineMissed
-                                  ? (l10n?.detailWindowExpired ?? 'Window expired')
-                                  : l10n?.detailHoursUntilDeadline(hoursLeft, dispute.type.tatDays ?? 5) ??
-                                      '$hoursLeft hours until T+${dispute.type.tatDays ?? 5} deadline',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: deadlineMissed
-                                    ? AppColors.error
-                                    : AppColors.alert,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Text(
-                        l10n?.detailResolvedMessage ?? 'This dispute is resolved.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: tc.textSecondary,
-                        ),
-                      ),
-              ),
-              _ActionButton(
-                label: dispute.status == DisputeStatus.resolved
-                    ? (l10n?.detailReopen ?? 'Reopen')
-                    : (l10n?.detailMarkResolved ?? 'Mark resolved'),
-                color: tc.surfaceAlt,
-                textColor: tc.ctaBackground,
-                onTap: _toggling
-                    ? null
-                    : () => _confirmToggle(ref),
-              ),
-            ],
-          ),
+        _StickyFooter(
+          dispute: dispute,
+          hoursLeft: hoursLeft,
+          deadlineMissed: deadlineMissed,
+          toggling: _toggling,
+          onConfirm: () => _confirmToggle(),
+          tc: tc,
+          l10n: l10n,
         ),
       ],
     );
   }
 
-  String _headerSubtitle() {
-    final parts = <String>[];
-    if (dispute.entityName != null && dispute.entityName!.isNotEmpty) {
-      parts.add(dispute.entityName!);
-    }
-    parts.add(_typeShort());
-    final ticket = dispute.ticketNumbers['l1'];
-    if (ticket != null && ticket.isNotEmpty) {
-      parts.add('Ticket $ticket');
-    }
-    return parts.join(' · ');
-  }
-
-  String _typeShort() => switch (dispute.type) {
-        DisputeType.upiP2p => 'UPI',
-        DisputeType.upiP2m => 'UPI',
-        DisputeType.atm => 'ATM',
-        DisputeType.imps => 'IMPS',
-        DisputeType.fastag => 'FASTag',
-        DisputeType.bankCharge => 'Bank charge',
-        DisputeType.wrongTransfer => 'Wrong transfer',
-      };
+  // -- Builders -----------------------------------------------------------
 
   String _timelineHeader(AppLocalizations? l10n) =>
       dispute.type == DisputeType.fastag
@@ -468,7 +223,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
           : dispute.type == DisputeType.bankCharge
               ? (l10n?.detailTimelineBankHeader ??
                   'Bank timeline (30-day window)')
-              : (l10n?.detailTimelineRbiHeader ?? 'RBI timeline (T-day = 0)');
+              : (l10n?.detailTimelineRbiHeader ?? 'RBI timeline');
 
   List<RbiTimelineStep> _timelineSteps(
       CompensationResult comp, AppLocalizations? l10n) {
@@ -513,8 +268,8 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
                 l10n?.detailTlFtHelplineDetail ?? 'If no reply in 7 days'),
         RbiTimelineStep(
             title: l10n?.detailTlFtIhmcl ?? 'IHMCL false-deduction email',
-            detail:
-                l10n?.detailTlFtIhmclDetail ?? 'falsededuction@ihmcl.com'),
+            detail: l10n?.detailTlFtIhmclDetail ??
+                'falsededuction@ihmcl.com'),
         RbiTimelineStep(
             title: l10n?.detailTlFtOmbudsman ?? 'RBI Ombudsman',
             detail: l10n?.detailTlFtOmbudsmanDetail ??
@@ -530,8 +285,9 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
     return [
       RbiTimelineStep(
           title: l10n?.detailTimelineReported ?? 'Reported',
-          detail: l10n?.detailTimelineReportedDetail(_fmtDate(dispute.txnDate)) ??
-              'T+0 · ${_fmtDate(dispute.txnDate)}',
+          detail:
+              l10n?.detailTimelineReportedDetail(_fmtDate(dispute.txnDate)) ??
+                  'T+0 · ${_fmtDate(dispute.txnDate)}',
           state: RbiStepState.done),
       RbiTimelineStep(
           title: l10n?.detailTimelineAck ?? 'Bank must acknowledge',
@@ -542,29 +298,35 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
       RbiTimelineStep(
           title: l10n?.detailTimelineRefund ?? 'Refund due',
           detail: refundDone
-              ? (l10n?.detailTimelineRefundDone('$tat') ?? 'T+$tat · refunded')
+              ? (l10n?.detailTimelineRefundDone('$tat') ??
+                  'T+$tat · refunded')
               : (refundActive
                   ? (l10n?.detailTimelineRefundMissed('$tat') ??
                       'T+$tat · deadline missed — escalate')
-                  : (l10n?.detailTimelineRefundPending('$tat',
-                          _fmtDate(dispute.txnDate.add(Duration(days: tat))),
-                          comp.daysElapsed) ??
-                      'T+$tat · ${_fmtDate(dispute.txnDate.add(Duration(days: tat)))} (in ${comp.daysElapsed}d)')),
+                  : (l10n?.detailTimelineRefundPending(
+                              '$tat',
+                              _fmtDate(dispute.txnDate
+                                  .add(Duration(days: tat))),
+                              comp.daysElapsed) ??
+                          'T+$tat · ${_fmtDate(dispute.txnDate.add(Duration(days: tat)))} (in ${comp.daysElapsed}d)')),
           state: refundDone
               ? RbiStepState.done
               : (refundActive ? RbiStepState.active : RbiStepState.pending)),
       RbiTimelineStep(
           title: l10n?.detailTimelineEscalate ?? 'Escalate to nodal officer',
           detail: l2Done
-              ? (l10n?.detailTimelineL2Detail(dispute.ticketNumbers['l2'] ?? '—') ??
-                  'Filed · ${dispute.ticketNumbers['l2'] ?? "—"}')
-              : (l10n?.detailTimelineL2Pending('$tat') ?? 'If no refund by T+$tat'),
+              ? (l10n?.detailTimelineL2Detail(
+                          dispute.ticketNumbers['l2'] ?? '—') ??
+                      'Filed · ${dispute.ticketNumbers['l2'] ?? "—"}')
+              : (l10n?.detailTimelineL2Pending('$tat') ??
+                  'If no refund by T+$tat'),
           state: l2Done ? RbiStepState.done : RbiStepState.pending),
       RbiTimelineStep(
           title: l10n?.detailTimelineOmbudsman ?? 'RBI Banking Ombudsman',
           detail: l3Done
-              ? (l10n?.detailTimelineL3Detail(dispute.ticketNumbers['l3'] ?? '—') ??
-                  'Filed · ${dispute.ticketNumbers['l3'] ?? "—"}')
+              ? (l10n?.detailTimelineL3Detail(
+                          dispute.ticketNumbers['l3'] ?? '—') ??
+                      'Filed · ${dispute.ticketNumbers['l3'] ?? "—"}')
               : (l10n?.detailTimelineL3Pending ??
                   'If unresolved after T+10 (30 days)'),
           state: l3Done ? RbiStepState.done : RbiStepState.pending),
@@ -572,24 +334,19 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
   }
 
   List<ActivityEntry> _activityLog(AppLocalizations? l10n) {
-    // Prefer the persisted activity log (Track G) when present — this
-    // includes dispute_created, escalation_email_sent, template_used,
-    // resolved, status_changed, etc. written at each action point.
     if (dispute.activityLog.isNotEmpty) {
       return dispute.activityLog
           .map((e) => ActivityEntry.fromLogEntry(e))
           .toList();
     }
-
-    // Legacy / migration fallback: old disputes have an empty persisted
-    // log, so surface the historically-computed events so the card is
-    // never blank for existing users.
     final entries = <ActivityEntry>[];
     final l1Ticket = dispute.ticketNumbers['l1'];
     if (l1Ticket != null && l1Ticket.isNotEmpty) {
       entries.add(ActivityEntry(
-        label: l10n?.detailActivityTicket(l1Ticket) ?? 'Ticket $l1Ticket filed',
-        meta: l10n?.detailActivityTicketMeta(_fmtDate(dispute.filedDates['l1'] ?? dispute.createdAt)) ??
+        label: l10n?.detailActivityTicket(l1Ticket) ??
+            'Ticket $l1Ticket filed',
+        meta: l10n?.detailActivityTicketMeta(
+                _fmtDate(dispute.filedDates['l1'] ?? dispute.createdAt)) ??
             'Auto-generated · ${_fmtDate(dispute.filedDates['l1'] ?? dispute.createdAt)}',
         highlighted: true,
         type: ActivityLogEntry.l1TicketFiled,
@@ -607,7 +364,8 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
       meta: _fmtDate(dispute.createdAt),
       type: ActivityLogEntry.disputeCreated,
     ));
-    if (dispute.status == DisputeStatus.resolved && dispute.resolvedAt != null) {
+    if (dispute.status == DisputeStatus.resolved &&
+        dispute.resolvedAt != null) {
       entries.insert(0, ActivityEntry(
         label: l10n?.detailActivityResolved ?? 'Dispute resolved',
         meta: _fmtDate(dispute.resolvedAt!),
@@ -621,137 +379,9 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
   String _fmtDate(DateTime d) =>
       '${d.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]}, ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 
-  /// F3 — auto-match a template for the dispute's category. Delegates to
-  /// the shared [TemplateRepository.matchForCategory] (ME-7) so the
-  /// dispute-detail preview stays in lockstep with the escalate auto-match.
-  Template? _matchDisputeTemplate(
-    List<Template> templates,
-    Dispute d,
-    TemplateRepository repo,
-    Set<String> freeIds,
-    bool isPremiumUser,
-  ) =>
-      repo.matchForCategory(
-        templates,
-        d.type,
-        freeIds,
-        isPremiumUser: isPremiumUser,
-      );
+  // -- Status toggle ------------------------------------------------------
 
-  /// F3 — the template card shown on the dispute detail screen.
-  Widget _buildTemplateCard(
-    BuildContext context, {
-    required AppThemeColors tc,
-    required AppLocalizations? l10n,
-    required Template? matchedTemplate,
-    required List<Template> templates,
-    required Set<String> freeIds,
-    required bool isPremiumUser,
-    required String localeCode,
-    required TemplateRepository repo,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: tc.surface,
-        border: Border.all(color: tc.divider, width: 1),
-        borderRadius: BorderRadius.circular(AppRadii.lg),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'TEMPLATE',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
-                    color: tc.textSecondary,
-                  ),
-                ),
-              ),
-              Tooltip(
-                message: l10n?.escalateEditTemplate ?? 'Pick template',
-                child: IconButton(
-                  onPressed: () {
-                    // Wave 4a: navigate to the new full-screen Template
-                    // Picker (replaces the old in-page bottom sheet).
-                    context.push(
-                      AppRoutes.templatePickerWithDispute(dispute.id),
-                    );
-                  },
-                  padding: const EdgeInsets.all(12),
-                  splashRadius: 24,
-                  icon: Icon(
-                    Icons.edit_outlined,
-                    size: 18,
-                    color: tc.ctaBackground,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (matchedTemplate == null)
-            Text(
-              l10n?.detailNoTemplateFound ?? 'No template found for this category',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: tc.textTertiary,
-              ),
-            )
-          else ...[
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    matchedTemplate.titleFor(localeCode),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: tc.textPrimary,
-                    ),
-                  ),
-                ),
-                Text(
-                  'Level ${matchedTemplate.escalationLevel} · ${matchedTemplate.category}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: tc.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              (_selectedTemplateId == null
-                  ? (l10n?.detailAutoMatched ?? 'Auto-matched (tap pencil to change)')
-                  : (l10n?.detailCustomTemplate ?? 'Custom template')) +
-                  (matchedTemplate.isPremium &&
-                          !isPremiumUser &&
-                          !freeIds.contains(matchedTemplate.id)
-                      ? ' · Pro'
-                      : ''),
-              style: TextStyle(
-                fontSize: 11,
-                fontStyle: FontStyle.italic,
-                color: tc.textTertiary,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  /// Task 9.5 — show a confirmation dialog before toggling the dispute status
-  /// (Mark Resolved / Reopen). Prevents accidental status changes and sets
-  /// user expectation about reminders stopping/resuming.
-  Future<void> _confirmToggle(WidgetRef ref) async {
+  Future<void> _confirmToggle() async {
     final l10n = AppLocalizations.of(context);
     final isResolved = dispute.status == DisputeStatus.resolved;
     final confirmed = await showDialog<bool>(
@@ -782,24 +412,18 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
         ],
       ),
     );
-    if (confirmed == true && mounted) await _toggleResolved(ref);
+    if (confirmed == true && mounted) await _toggleResolved();
   }
 
-  Future<void> _toggleResolved(WidgetRef ref) async {
+  Future<void> _toggleResolved() async {
     final l10n = AppLocalizations.of(context);
     final isResolved = dispute.status == DisputeStatus.resolved;
     final nextStatus =
         isResolved ? dispute.reopenTarget() : DisputeStatus.resolved;
     final now = DateTime.now();
     final repo = ref.read(disputeRepositoryProvider);
-
-    // HI-4: re-entrancy guard — disable the action button while saving.
     setState(() => _toggling = true);
 
-    // HI-2: on reopen, refresh the filedDate for the target stage so the
-    // reminder generator schedules follow-ups from "today" rather than the
-    // (possibly months-old) original filing date. Resolved→resolved is a
-    // no-op so no date reset is needed on the resolve path.
     final reopenedFiledDates = isResolved
         ? {
             ...dispute.filedDates,
@@ -840,31 +464,23 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
             ],
           );
     try {
-      // HI-5: capture the freshly saved Dispute so the detail body shows the
-      // new status/activity immediately rather than staling on the snapshot
-      // taken at navigation time. We do NOT call setState with `updated`
-      // (which lacks the server-assigned id for new rows) — the
-      // `disputesProvider` invalidate below is the source of truth for the
-      // next rebuild, and `_toggling` is reset here so the button recovers.
       await repo.saveDispute(uid, updated);
       await syncRemindersForDispute(ref, uid, updated);
       ref.invalidate(disputesProvider(uid));
       ref.invalidate(remindersProvider(uid));
     } catch (e, st) {
-      // Previously try/finally with NO catch: a permission-denied / network
-      // failure propagated as an unhandled async error and the resolve/
-      // reopen silently failed — the user got no feedback. Surface a
-      // friendly SnackBar so the user knows to retry, and record the
-      // underlying cause to Crashlytics for release observability.
       final msg = e.toString().toLowerCase();
-      final friendly = msg.contains('permission') || msg.contains('unauthenticated')
-          ? (l10n?.detailSaveAuthFailed ??
-              'Could not save — sign-in expired. Go Home and tap Retry.')
-          : msg.contains('unavailable') || msg.contains('network') || msg.contains('socket')
-              ? (l10n?.detailSaveOffline ??
-                  'You appear to be offline. Reconnect and try again.')
-              : (l10n?.detailSaveFailed ??
-                  'Could not save. Check your connection and try again.');
+      final friendly =
+          msg.contains('permission') || msg.contains('unauthenticated')
+              ? (l10n?.detailSaveAuthFailed ??
+                  'Could not save — sign-in expired. Go Home and tap Retry.')
+              : msg.contains('unavailable') ||
+                      msg.contains('network') ||
+                      msg.contains('socket')
+                  ? (l10n?.detailSaveOffline ??
+                      'You appear to be offline. Reconnect and try again.')
+                  : (l10n?.detailSaveFailed ??
+                      'Could not save. Check your connection and try again.');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(friendly)),
@@ -876,8 +492,6 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
     }
   }
 
-  /// Maps a [DisputeStatus] to its `filedDates` map key, used by
-  /// [_toggleResolved] to reset the anchor date on reopen.
   String _filedDateKeyFor(DisputeStatus status) {
     switch (status) {
       case DisputeStatus.filedL1:
@@ -894,39 +508,277 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
   }
 }
 
-class _ActionButton extends StatelessWidget {
-  final String label;
-  final Color color;
-  final Color? textColor;
-  final VoidCallback? onTap;
-  const _ActionButton({
-    required this.label,
-    required this.color,
+// -- Sub-widgets (clean-minimal Material 3) ------------------------------
+
+class _TopBar extends StatelessWidget {
+  final Dispute dispute;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _TopBar({
+    required this.dispute,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.arrow_back, color: tc.textPrimary),
+            onPressed: () => context.pop(),
+          ),
+          const SizedBox(width: 4),
+          Container(
+            width: 32,
+            height: 32,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: dispute.type.softColorFor(tc),
+              borderRadius: BorderRadius.circular(AppRadii.sm),
+            ),
+            child: Text(dispute.type.emoji,
+                style: const TextStyle(fontSize: 14)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  dispute.type.localizedName(l10n),
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: tc.textPrimary,
+                  ),
+                ),
+                if (dispute.entityName != null &&
+                    dispute.entityName!.isNotEmpty)
+                  Text(
+                    dispute.entityName!,
+                    style: TextStyle(fontSize: 12, color: tc.textSecondary),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroCard extends StatelessWidget {
+  final Dispute dispute;
+  final int dayN;
+  final int windowDays;
+  final bool deadlineMissed;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _HeroCard({
+    required this.dispute,
+    required this.dayN,
+    required this.windowDays,
+    required this.deadlineMissed,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      decoration: BoxDecoration(
+        color: tc.surface,
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        border: Border.all(color: tc.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            CompensationCalculator.formatIndian(dispute.amount),
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: tc.textPrimary,
+              letterSpacing: -0.5,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              if (dispute.status != DisputeStatus.resolved && !deadlineMissed)
+                _chip(
+                  label:
+                      l10n?.detailDayOfWindow(dayN, windowDays) ??
+                          '⏰ Day $dayN of $windowDays',
+                  fg: AppColors.alert,
+                  bg: tc.alertSoft,
+                ),
+              if (deadlineMissed)
+                _chip(
+                  label: l10n?.detailDeadlineMissed ?? '⚠ Deadline missed',
+                  fg: AppColors.error,
+                  bg: tc.errorSoft,
+                ),
+              if (dispute.status == DisputeStatus.resolved)
+                _chip(
+                  label: l10n?.detailResolved ?? '✓ Resolved',
+                  fg: AppColors.success,
+                  bg: tc.accentSoft,
+                ),
+              _chip(
+                label: dispute.type.localizedCompensation(l10n) ??
+                    'Guidance mode',
+                fg: tc.textSecondary,
+                bg: tc.surfaceAlt,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip({
+    required String label,
+    required Color fg,
+    required Color bg,
+  }) =>
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: fg,
+          ),
+        ),
+      );
+}
+
+class _QuickActions extends StatelessWidget {
+  final Dispute dispute;
+  final bool deadlineMissed;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _QuickActions({
+    required this.dispute,
+    required this.deadlineMissed,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.alert,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(0, 46),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadii.md),
+              ),
+            ),
+            onPressed: () =>
+                context.push(AppRoutes.wizard(dispute.id)),
+            icon: const Icon(Icons.flag_outlined, size: 16),
+            label: Text(
+              deadlineMissed
+                  ? (l10n?.detailEscalateNow ?? 'Escalate now')
+                  : (l10n?.detailEscalate ?? 'Escalate'),
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        _IconBtn(
+          emoji: '📧',
+          tooltip: l10n?.escalateEmailPreview ?? 'Email',
+          onTap: () =>
+              context.push(AppRoutes.escalate(dispute.id)),
+        ),
+        const SizedBox(width: 8),
+        _IconBtn(
+          emoji: '📝',
+          tooltip: l10n?.escalatePickTemplate ?? 'Templates',
+          onTap: () {
+            final isPremium = ProviderScope.containerOf(context)
+                .read(isPremiumProvider);
+            if (!isPremium) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(l10n?.detailOmbudsmanPremium ??
+                      'Ombudsman letter generator is a Premium feature.'),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+              context.push(
+                AppRoutes.paywallWithParams(
+                  trigger: 'ombudsman_letter',
+                  returnPath: AppRoutes.disputeDetail(dispute.id),
+                ),
+              );
+              return;
+            }
+            context.push(AppRoutes.ombudsman(dispute.id));
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _IconBtn extends StatelessWidget {
+  final String emoji;
+  final String tooltip;
+  final VoidCallback onTap;
+  const _IconBtn({
+    required this.emoji,
+    required this.tooltip,
     required this.onTap,
-    this.textColor,
   });
 
   @override
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
     return Material(
-      color: color,
+      color: tc.surface,
       borderRadius: BorderRadius.circular(AppRadii.md),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadii.md),
         onTap: onTap,
-        child: Container(
-          height: 52,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontFamily: AppTypography.family,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: textColor ?? tc.ctaForeground,
+        child: Tooltip(
+          message: tooltip,
+          child: Container(
+            width: 46,
+            height: 46,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              border: Border.all(color: tc.divider),
+              borderRadius: BorderRadius.circular(AppRadii.md),
             ),
+            child: Text(emoji, style: const TextStyle(fontSize: 18)),
           ),
         ),
       ),
@@ -934,27 +786,255 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
-class _IconAction extends StatelessWidget {
-  final String emoji;
-  final VoidCallback onTap;
-  const _IconAction({required this.emoji, required this.onTap});
+class _TemplateCard extends StatelessWidget {
+  final Dispute dispute;
+  final Template? matchedTemplate;
+  final TemplateRepository repo;
+  final Set<String> freeIds;
+  final bool isPremiumUser;
+  final String localeCode;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _TemplateCard({
+    required this.dispute,
+    required this.matchedTemplate,
+    required this.repo,
+    required this.freeIds,
+    required this.isPremiumUser,
+    required this.localeCode,
+    required this.tc,
+    required this.l10n,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final tc = AppThemeColors.of(context);
-    return Material(
-      color: tc.surfaceAlt,
-      borderRadius: BorderRadius.circular(AppRadii.md),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.md),
-        onTap: onTap,
-        child: Container(
-          width: 52,
-          height: 52,
-          alignment: Alignment.center,
-          child: Text(emoji, style: const TextStyle(fontSize: 18)),
-        ),
+    final locked = matchedTemplate != null &&
+        repo.isLocked(matchedTemplate!, freeIds,
+            isPremiumUser: isPremiumUser);
+    return Container(
+      decoration: BoxDecoration(
+        color: tc.surface,
+        border: Border.all(color: tc.divider),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 12, 12, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                l10n?.templatePickerTitle ?? 'Pick a template',
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
+                  color: tc.textSecondary,
+                ),
+              ),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: () => context.push(
+                  AppRoutes.templatePreviewWith(
+                    disputeId: dispute.id,
+                    templateId: matchedTemplate?.id ?? '',
+                  ),
+                ),
+                icon: const Icon(Icons.visibility_outlined, size: 14),
+                label: Text(
+                  l10n?.templatePreviewBody ?? 'Preview',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: Icon(Icons.tune, size: 18, color: tc.ctaBackground),
+                onPressed: () => context.push(
+                  AppRoutes.templatePickerWithDispute(dispute.id),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          if (matchedTemplate == null)
+            Text(
+              l10n?.detailNoTemplateFound ??
+                  'No template found for this category',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: tc.textTertiary,
+              ),
+            )
+          else
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: locked
+                        ? AppColors.premiumGoldSoft
+                        : tc.accentSoft,
+                    borderRadius: BorderRadius.circular(AppRadii.pill),
+                  ),
+                  child: Text(
+                    locked ? 'Pro' : (l10n?.templatePreviewFree ?? 'Free'),
+                    style: TextStyle(
+                      fontFamily: AppTypography.family,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: locked
+                          ? AppColors.premiumGold
+                          : AppColors.success,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    matchedTemplate!.titleFor(localeCode),
+                    style: TextStyle(
+                      fontFamily: AppTypography.family,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: tc.textPrimary,
+                    ),
+                  ),
+                ),
+                Text(
+                  'L${matchedTemplate!.escalationLevel}',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: tc.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+        ],
       ),
     );
   }
 }
+
+class _StickyFooter extends StatelessWidget {
+  final Dispute dispute;
+  final int hoursLeft;
+  final bool deadlineMissed;
+  final bool toggling;
+  final VoidCallback onConfirm;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _StickyFooter({
+    required this.dispute,
+    required this.hoursLeft,
+    required this.deadlineMissed,
+    required this.toggling,
+    required this.onConfirm,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: tc.surface,
+        border: Border(top: BorderSide(color: tc.divider)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        12 + MediaQuery.of(context).padding.bottom,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: dispute.status != DisputeStatus.resolved
+                ? Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: deadlineMissed
+                              ? AppColors.error
+                              : AppColors.alert,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          deadlineMissed
+                              ? (l10n?.detailWindowExpired ??
+                                  'Window expired')
+                              : l10n?.detailHoursUntilDeadline(
+                                      hoursLeft, dispute.type.tatDays ?? 5) ??
+                                  '$hoursLeft hours until T+${dispute.type.tatDays ?? 5} deadline',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: deadlineMissed
+                                ? AppColors.error
+                                : AppColors.alert,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                : Text(
+                    l10n?.detailResolvedMessage ?? 'Resolved',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.success,
+                    ),
+                  ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            height: 46,
+            child: OutlinedButton.icon(
+              onPressed: toggling ? null : onConfirm,
+              icon: Icon(
+                dispute.status == DisputeStatus.resolved
+                    ? Icons.refresh
+                    : Icons.check,
+                size: 16,
+              ),
+              label: Text(
+                dispute.status == DisputeStatus.resolved
+                    ? (l10n?.detailReopen ?? 'Reopen')
+                    : (l10n?.detailMarkResolved ?? 'Mark resolved'),
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: tc.ctaBackground,
+                side: BorderSide(color: tc.divider),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.md),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Local re-export so the analyzer doesn't complain about unused imports.
+// ignore_for_file: unused_element
+typedef _ClipboardImportSentinel = Clipboard;

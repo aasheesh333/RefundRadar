@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
-import 'package:refund_radar/core/router/app_routes.dart';
+import 'package:refund_radar/core/providers/premium_provider.dart';
 import 'package:refund_radar/core/providers/theme_provider.dart';
+import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
@@ -17,82 +17,31 @@ import 'package:refund_radar/data/models/template.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/data/repositories/template_repository.dart';
 import 'package:refund_radar/features/escalate/widgets/escalate_post_send_dialog.dart';
-import 'package:refund_radar/features/escalate/widgets/escalate_template_picker.dart';
-import 'package:refund_radar/features/escalate/widgets/footer_button.dart';
-import 'package:refund_radar/features/escalate/widgets/recipient_row.dart';
 import 'package:refund_radar/features/templates/template_library_page.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
-import 'package:refund_radar/shared/widgets/app_back_button.dart';
-import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
+import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/widgets/toggle_switch.dart';
 
-/// Escalate page — mockup Screen 8. Dark green hero with "Maximum penalty
-/// you can claim" → ₹{refund+comp}, send-to list with selected Nodal Officer
-/// + toggleable "CC RBI Ombudsman", auto-drafted email preview, sticky
-/// footer with Edit + "Send escalation →".
-class EscalatePage extends ConsumerStatefulWidget {
+/// Wave 5 redesign — clean-minimal Material 3 escalation composer.
+///
+/// Same auto-match + send flow as before, but the visual treatment is
+/// fully new:
+///   - Hero card with a single big number + label (no dark-green block).
+///   - Recipient rows presented as a clean two-row list with a switch.
+///   - Email preview card pre-filled with all merge tokens (Wave 2
+///     captures them at dispute-create time).
+///   - Sticky bottom with a primary Send + secondary Copy.
+///   - Lock handling unchanged but visualised via the new locked banner
+///     that links to the new full-screen Template Preview (Wave 4a).
+class EscalatePage extends ConsumerWidget {
   final String disputeId;
   const EscalatePage({super.key, required this.disputeId});
 
   @override
-  ConsumerState<EscalatePage> createState() => _EscalatePageState();
-}
-
-class _EscalatePageState extends ConsumerState<EscalatePage>
-    with TickerProviderStateMixin {
-  bool _ccOmbudsman = true;
-  String? _selectedTemplateId;
-  late final AnimationController _animController;
-
-  @override
-  void initState() {
-    super.initState();
-    _animController = AnimationController(
-      duration: const Duration(milliseconds: 900),
-      vsync: this,
-    )..forward();
-  }
-
-  @override
-  void dispose() {
-    _animController.dispose();
-    super.dispose();
-  }
-
-  void _selectTemplate(String? id) => setState(() => _selectedTemplateId = id);
-
-  /// Staggered entrance wrapper — 80ms stagger between cards, fade + slight
-  /// upward slide while constraining the overall interval to ~300ms each.
-  Widget _staggeredBox(int index, Widget child) {
-    final start = (index * 0.08).clamp(0.0, 0.8);
-    final end = start + 0.3;
-    return FadeTransition(
-      opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
-        CurvedAnimation(
-          parent: _animController,
-          curve: Interval(start, end, curve: Curves.easeOutCubic),
-        ),
-      ),
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.05),
-          end: Offset.zero,
-        ).animate(
-          CurvedAnimation(
-            parent: _animController,
-            curve: Interval(start, end, curve: Curves.easeOutCubic),
-          ),
-        ),
-        child: child,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final tc = AppThemeColors.of(context);
     final l10n = AppLocalizations.of(context);
     final uidAsync = ref.watch(userIdProvider);
@@ -109,7 +58,7 @@ class _EscalatePageState extends ConsumerState<EscalatePage>
           data: (uid) {
             if (uid == null || uid.isEmpty) {
               return BrandedErrorBanner(
-                message: l10n?.commonCouldNotSignIn ?? 'Could not sign in. Tap retry.',
+                message: l10n?.commonCouldNotSignIn ?? 'Could not sign in',
                 onRetry: () => ref.invalidate(userIdProvider),
               );
             }
@@ -118,25 +67,18 @@ class _EscalatePageState extends ConsumerState<EscalatePage>
               data: (disputes) {
                 Dispute? dispute;
                 for (final d in disputes) {
-                  if (d.id == widget.disputeId) {
+                  if (d.id == disputeId) {
                     dispute = d;
                     break;
                   }
                 }
                 if (dispute == null) {
                   return BrandedErrorBanner(
-                    message: l10n?.commonDisputeNotFound ?? 'Dispute not found.',
+                    message: l10n?.commonDisputeNotFound ?? 'Dispute not found',
                     onRetry: () => ref.invalidate(disputesProvider(uid)),
                   );
                 }
-                return _Body(
-                  dispute: dispute,
-                  ccOmbudsman: _ccOmbudsman,
-                  onToggleCc: (v) => setState(() => _ccOmbudsman = v),
-                  selectedTemplateId: _selectedTemplateId,
-                  onSelectTemplate: _selectTemplate,
-                  staggeredBox: _staggeredBox,
-                );
+                return _EscalateBody(dispute: dispute, uid: uid);
               },
               loading: () => const SkeletonList(itemCount: 4),
               error: (e, _) => BrandedErrorBanner(
@@ -152,36 +94,37 @@ class _EscalatePageState extends ConsumerState<EscalatePage>
   }
 }
 
-class _Body extends ConsumerWidget {
+class _EscalateBody extends ConsumerStatefulWidget {
   final Dispute dispute;
-  final bool ccOmbudsman;
-  final ValueChanged<bool> onToggleCc;
-  final String? selectedTemplateId;
-  final void Function(String?) onSelectTemplate;
-  final Widget Function(int index, Widget child) staggeredBox;
-  const _Body({
-    required this.dispute,
-    required this.ccOmbudsman,
-    required this.onToggleCc,
-    required this.selectedTemplateId,
-    required this.onSelectTemplate,
-    required this.staggeredBox,
-  });
+  final String uid;
+  const _EscalateBody({required this.dispute, required this.uid});
+  @override
+  ConsumerState<_EscalateBody> createState() => _EscalateBodyState();
+}
+
+class _EscalateBodyState extends ConsumerState<_EscalateBody> {
+  bool _ccOmbudsman = true;
+  String? _selectedTemplateId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
+    final dispute = widget.dispute;
     final comp = CompensationCalculator.compute(dispute);
     final refund = dispute.amount;
     final maxClaim = refund + comp.compensationDue;
     final deadlineMissed = comp.isExpired;
+    final deadlineDays = deadlineMissed
+        ? 0
+        : comp.deadlineDate.difference(DateTime.now()).inDays;
     final templatesAsync = ref.watch(templatesProvider);
+    final rulesAsync = ref.watch(rulesEngineProvider);
+    final freeIds = rulesAsync.asData?.value.freeTemplateIds.toSet() ??
+        const <String>{};
+    final isPremiumUser = ref.watch(isPremiumProvider);
     final locale = ref.watch(localeProvider);
     final localeCode = locale.languageCode;
-    final rulesAsync = ref.watch(rulesEngineProvider);
-    final freeIds = rulesAsync.asData?.value.freeTemplateIds.map((s) => s).toSet() ?? const <String>{};
-    final isPremiumUser = ref.watch(isPremiumProvider);
 
     return templatesAsync.when(
       loading: () => const SkeletonList(itemCount: 4),
@@ -191,11 +134,10 @@ class _Body extends ConsumerWidget {
         onRetry: () => ref.invalidate(templatesProvider),
       ),
       data: (templates) {
-        // User-picked template wins; fall back to auto-matched level-2 template.
         Template? picked;
-        if (selectedTemplateId != null) {
+        if (_selectedTemplateId != null) {
           for (final t in templates) {
-            if (t.id == selectedTemplateId) {
+            if (t.id == _selectedTemplateId) {
               picked = t;
               break;
             }
@@ -203,116 +145,285 @@ class _Body extends ConsumerWidget {
         }
         final repo = ref.read(templateRepositoryProvider);
         final match = picked ??
-            _matchEscalationTemplate(
+            repo.matchForCategory(
               templates,
-              dispute,
-              repo,
+              dispute.type,
               freeIds,
-              isPremiumUser,
+              isPremiumUser: isPremiumUser,
             );
-        return _buildBody(
-          context,
-          ref,
-          l10n: l10n,
-          tc: tc,
-          comp: comp,
-          refund: refund,
-          maxClaim: maxClaim,
-          deadlineMissed: deadlineMissed,
-          localeCode: localeCode,
-          matchedTemplate: match,
-          templates: templates,
-          freeIds: freeIds,
-          isPremiumUser: isPremiumUser,
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: CustomScrollView(
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                    sliver: SliverList.list(
+                      children: [
+                        _PageHeader(dispute: dispute, tc: tc, l10n: l10n),
+                        const SizedBox(height: 16),
+                        _HeroCard(
+                          maxClaim: maxClaim,
+                          refund: refund,
+                          comp: comp,
+                          deadlineMissed: deadlineMissed,
+                          deadlineDays: deadlineDays,
+                          tatBasis: dispute.type.tatBasis,
+                          tc: tc,
+                          l10n: l10n,
+                        ),
+                        const SizedBox(height: 16),
+                        _RecipientCard(
+                          dispute: dispute,
+                          ccOmbudsman: _ccOmbudsman,
+                          onToggleCc: (v) =>
+                              setState(() => _ccOmbudsman = v),
+                          tc: tc,
+                          l10n: l10n,
+                        ),
+                        const SizedBox(height: 16),
+                        _EmailPreviewCard(
+                          dispute: dispute,
+                          matchedTemplate: match,
+                          repo: repo,
+                          freeIds: freeIds,
+                          isPremiumUser: isPremiumUser,
+                          localeCode: localeCode,
+                          ccOmbudsman: _ccOmbudsman,
+                          onChangeTemplate: () => _openTemplatePicker(
+                                context,
+                                dispute,
+                                templates,
+                                repo,
+                                freeIds,
+                                isPremiumUser,
+                                localeCode,
+                              ),
+                          tc: tc,
+                          l10n: l10n,
+                        ),
+                        if (deadlineMissed) ...[
+                          const SizedBox(height: 16),
+                          _DeadlineCallout(comp: comp, tc: tc, l10n: l10n),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _StickyFooter(
+                dispute: dispute,
+                match: match,
+                repo: repo,
+                freeIds: freeIds,
+                isPremiumUser: isPremiumUser,
+                localeCode: localeCode,
+                ccOmbudsman: _ccOmbudsman,
+                tc: tc,
+                l10n: l10n,
+              ),
+            ),
+          ],
         );
       },
     );
   }
 
-  Widget _buildBody(
+  void _openTemplatePicker(
     BuildContext context,
-    WidgetRef ref, {
-    required AppLocalizations? l10n,
-    required AppThemeColors tc,
-    required CompensationResult comp,
-    required double refund,
-    required double maxClaim,
-    required bool deadlineMissed,
-    required String localeCode,
-    required Template? matchedTemplate,
-    required List<Template> templates,
-    required Set<String> freeIds,
-    required bool isPremiumUser,
-  }) {
-    final deadlineDays = deadlineMissed
-        ? 0
-        : comp.deadlineDate.difference(DateTime.now()).inDays;
-    return Column(
-      children: [
-        Expanded(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(child: _buildHeader(context, tc, l10n, deadlineMissed)),
-              SliverList(
-                delegate: SliverChildListDelegate([
-                  staggeredBox(0, _buildHero(tc, l10n, comp, refund, maxClaim, deadlineMissed, deadlineDays)),
-                  const SizedBox(height: 16),
-                  staggeredBox(1, _buildSendToCard(context, tc, l10n, dispute, ccOmbudsman, onToggleCc)),
-                  const SizedBox(height: 16),
-                  staggeredBox(
-                    2,
-                    _buildEmailPreviewCard(
-                      context,
-                      ref,
-                      tc: tc,
-                      l10n: l10n,
-                      dispute: dispute,
-                      ccOmbudsman: ccOmbudsman,
-                      matchedTemplate: matchedTemplate,
-                      localeCode: localeCode,
-                      templates: templates,
-                      freeIds: freeIds,
-                      isPremiumUser: isPremiumUser,
-                      repo: ref.read(templateRepositoryProvider),
+    Dispute dispute,
+    List<Template> templates,
+    TemplateRepository repo,
+    Set<String> freeIds,
+    bool isPremiumUser,
+    String localeCode,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      builder: (sheetCtx) {
+        final sheetTc = AppThemeColors.of(sheetCtx);
+        final sheetL10n = AppLocalizations.of(sheetCtx);
+        final buckets = repo.splitForCategory(
+          templates,
+          dispute.type,
+          freeIds,
+          isPremiumUser: isPremiumUser,
+        );
+        return SafeArea(
+          child: SizedBox(
+            height: MediaQuery.of(sheetCtx).size.height * 0.7,
+            child: DefaultTabController(
+              length: 2,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        sheetL10n?.escalatePickTemplate ??
+                            'Pick template',
+                        style: TextStyle(
+                          fontFamily: AppTypography.family,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: sheetTc.textPrimary,
+                        ),
+                      ),
                     ),
                   ),
-                  if (deadlineMissed) ...[
-                    const SizedBox(height: 16),
-                    staggeredBox(3, _buildAmberCallout(tc, l10n, comp)),
-                  ],
-                  const SizedBox(height: 20),
-                ]),
+                  TabBar(
+                    tabs: [
+                      Tab(
+                          text:
+                              '${sheetL10n?.templatePreviewFree ?? 'Free'} (${buckets.free.length})'),
+                      Tab(
+                          text:
+                              '${sheetL10n?.templateProBadge ?? 'Pro'} (${buckets.pro.length})'),
+                    ],
+                    labelColor: AppColors.accent,
+                    unselectedLabelColor: sheetTc.textTertiary,
+                    indicatorColor: AppColors.accent,
+                    indicatorSize: TabBarIndicatorSize.label,
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        for (final bucket in [buckets.free, buckets.pro])
+                          ListView.separated(
+                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                            itemCount: bucket.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 8),
+                            itemBuilder: (_, i) {
+                              final t = bucket[i];
+                              final isLocked =
+                                  repo.isLocked(t, freeIds,
+                                      isPremiumUser: isPremiumUser);
+                              return _sheetTile(
+                                context: sheetCtx,
+                                tc: sheetTc,
+                                l10n: sheetL10n,
+                                template: t,
+                                locked: isLocked,
+                                onTap: () {
+                                  if (isLocked) {
+                                    Navigator.pop(sheetCtx);
+                                    context.push(
+                                      AppRoutes.paywallWithParams(
+                                        trigger: 'template_locked',
+                                        returnPath: AppRoutes
+                                            .escalate(dispute.id),
+                                        templateId: t.id,
+                                        templateTitle:
+                                            t.titleFor(localeCode),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  setState(() =>
+                                      _selectedTemplateId = t.id);
+                                  Navigator.pop(sheetCtx);
+                                },
+                              );
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _sheetTile({
+    required BuildContext context,
+    required AppThemeColors tc,
+    required AppLocalizations? l10n,
+    required Template template,
+    required bool locked,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: tc.surface,
+      borderRadius: BorderRadius.circular(AppRadii.md),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: tc.divider),
+            borderRadius: BorderRadius.circular(AppRadii.md),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      template.titleEn,
+                      style: TextStyle(
+                        fontFamily: AppTypography.family,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: tc.textPrimary,
+                      ),
+                    ),
+                  ),
+                  if (locked)
+                    const Text('🔒 Pro',
+                        style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.premiumGold)),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'L${template.escalationLevel} · ${template.category}',
+                style: TextStyle(fontSize: 11, color: tc.textSecondary),
               ),
             ],
           ),
         ),
-        _buildFooter(
-          tc,
-          context,
-          ref,
-          l10n,
-          matchedTemplate,
-          localeCode,
-          repo: ref.read(templateRepositoryProvider),
-          freeIds: freeIds,
-          isPremiumUser: isPremiumUser,
-        ),
-      ],
+      ),
     );
   }
+}
 
-  Widget _buildHeader(
-    BuildContext context,
-    AppThemeColors tc,
-    AppLocalizations? l10n,
-    bool deadlineMissed,
-  ) {
+class _PageHeader extends StatelessWidget {
+  final Dispute dispute;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _PageHeader({
+    required this.dispute,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
+      padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
       child: Row(
         children: [
-          AppBackButton(onTap: () => context.pop()),
-          const SizedBox(width: 12),
+          IconButton(
+            icon: Icon(Icons.arrow_back, color: tc.textPrimary),
+            onPressed: () => context.pop(),
+          ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,470 +432,471 @@ class _Body extends ConsumerWidget {
                   l10n?.escalateAppBarTitle ?? 'Escalate',
                   style: TextStyle(
                     fontFamily: AppTypography.family,
-                    fontSize: 17,
+                    fontSize: 20,
                     fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
                     color: tc.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  '${l10n?.escalateNodalOfficer ?? 'Nodal Officer'} · ${dispute.entityName ?? "your bank"}',
+                  l10n?.escalateNodalOfficer ?? 'Nodal Officer',
                   style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 12,
                     color: tc.textSecondary,
                   ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () => context.push(
+              AppRoutes.templatePickerWithDispute(dispute.id),
+            ),
+            child: Text(
+              l10n?.templatePickerTitle ?? 'Templates',
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: tc.ctaBackground,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroCard extends StatelessWidget {
+  final double maxClaim;
+  final double refund;
+  final CompensationResult comp;
+  final bool deadlineMissed;
+  final int deadlineDays;
+  final String tatBasis;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _HeroCard({
+    required this.maxClaim,
+    required this.refund,
+    required this.comp,
+    required this.deadlineMissed,
+    required this.deadlineDays,
+    required this.tatBasis,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+      decoration: BoxDecoration(
+        color: tc.surface,
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        border: Border.all(color: tc.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n?.escalateTotalClaimable ?? 'Total claimable',
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+              color: tc.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            CompensationCalculator.formatIndian(maxClaim),
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+              height: 1,
+              color: tc.textPrimary,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: deadlineMissed
+                      ? AppColors.alert
+                      : AppColors.success,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                deadlineMissed
+                    ? (l10n?.escalateDeadlineMissed(tatBasis) ??
+                        '$tatBasis missed')
+                    : (l10n?.escalateDeadlineIn(tatBasis, deadlineDays) ??
+                        '$tatBasis deadline in $deadlineDays days'),
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: deadlineMissed
+                      ? AppColors.alert
+                      : AppColors.success,
+                ),
+              ),
+            ],
+          ),
+          if (refund > 0) ...[
+            const SizedBox(height: 4),
+            Text(
+              '${CompensationCalculator.formatIndian(refund)} refund + ${CompensationCalculator.formatIndian(comp.compensationDue)} comp (${comp.daysElapsed}d × ₹100/d)',
+              style: TextStyle(
+                fontSize: 11,
+                color: tc.textTertiary,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _RecipientCard extends StatelessWidget {
+  final Dispute dispute;
+  final bool ccOmbudsman;
+  final ValueChanged<bool> onToggleCc;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _RecipientCard({
+    required this.dispute,
+    required this.ccOmbudsman,
+    required this.onToggleCc,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: tc.surface,
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        border: Border.all(color: tc.divider),
+      ),
+      child: Column(
+        children: [
+          _recipient(
+            emoji: '🎯',
+            emojiBg: tc.alertSoft,
+            title: l10n?.escalateNodalOfficer ?? 'Nodal Officer',
+            detail: _nodalEmail(dispute),
+            selected: true,
+            tc: tc,
+          ),
+          Divider(height: 1, color: tc.divider),
+          _recipient(
+            emoji: '✉',
+            emojiBg: tc.surfaceAlt,
+            title: l10n?.escalateCcOmbudsman ?? 'CC RBI Ombudsman',
+            detail: 'crpc@rbi.org.in',
+            selected: ccOmbudsman,
+            tc: tc,
+            trailing: ToggleSwitch(value: ccOmbudsman, onChanged: onToggleCc),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _recipient({
+    required String emoji,
+    required Color emojiBg,
+    required String title,
+    required String detail,
+    required bool selected,
+    required AppThemeColors tc,
+    Widget? trailing,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: emojiBg,
+              borderRadius: BorderRadius.circular(AppRadii.sm),
+            ),
+            child: Text(emoji, style: const TextStyle(fontSize: 14)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: tc.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  detail,
+                  style: TextStyle(
+                      fontSize: 11, color: tc.textSecondary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
-          if (deadlineMissed)
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
-              ),
-              decoration: BoxDecoration(
-                color: tc.alertSoft,
-                borderRadius: BorderRadius.circular(AppRadii.pill),
-              ),
-              child: Text(
-                l10n?.escalateDeadlineMissed(dispute.type.tatBasis) ??
-                    '⚠ ${dispute.type.tatBasis} missed',
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.alert,
-                ),
-              ),
-            ),
+          ?trailing,
+          if (trailing == null && selected)
+            Icon(Icons.check_circle, size: 18, color: tc.ctaBackground),
         ],
       ),
     );
   }
+}
 
-  Widget _buildHero(
-    AppThemeColors tc,
-    AppLocalizations? l10n,
-    CompensationResult comp,
-    double refund,
-    double maxClaim,
-    bool deadlineMissed,
-    int deadlineDays,
-  ) {
+class _EmailPreviewCard extends StatelessWidget {
+  final Dispute dispute;
+  final Template? matchedTemplate;
+  final TemplateRepository repo;
+  final Set<String> freeIds;
+  final bool isPremiumUser;
+  final String localeCode;
+  final bool ccOmbudsman;
+  final VoidCallback onChangeTemplate;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _EmailPreviewCard({
+    required this.dispute,
+    required this.matchedTemplate,
+    required this.repo,
+    required this.freeIds,
+    required this.isPremiumUser,
+    required this.localeCode,
+    required this.ccOmbudsman,
+    required this.onChangeTemplate,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = matchedTemplate;
+    final locked = t != null &&
+        repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser);
+    final subject = 'Escalation — UTR ${dispute.txnId}';
+    final body =
+        t != null ? filledTemplateBody(t, localeCode, dispute) : '';
+
     return Container(
-      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: tc.ctaBackground,
+        color: tc.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
-        boxShadow: AppShadows.card,
+        border: Border.all(color: tc.divider),
       ),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n?.escalateTotalClaimable ?? 'TOTAL CLAIMABLE',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1,
-              color: tc.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            CompensationCalculator.formatIndian(maxClaim),
-            style: TextStyle(
-              fontFamily: AppTypography.family,
-              fontSize: 30,
-              fontWeight: FontWeight.w800,
-              height: 1,
-              color: tc.ctaForeground,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-          ),
-          const SizedBox(height: 6),
           Row(
             children: [
-              Icon(
-                deadlineMissed ? Icons.warning_amber_rounded : Icons.access_time,
-                size: 14,
-                    color: deadlineMissed
-                        ? AppColors.alert
-                        : tc.ctaForeground.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 4),
               Text(
-                // ME-1: use the dispute type's TAT basis instead of a
-                // hardcoded "T+5" so FASTag / wrong-transfer disputes show
-                // their actual window label.
-                deadlineMissed
-                    ? (l10n?.escalateDeadlineMissedPenalty(
-                            dispute.type.tatBasis) ??
-                        '${dispute.type.tatBasis} deadline missed — claim full penalty')
-                    : (l10n?.escalateDeadlineIn(
-                            dispute.type.tatBasis, deadlineDays) ??
-                        '${dispute.type.tatBasis} deadline in $deadlineDays days'),
+                l10n?.escalateEmailPreview ?? 'Email preview',
                 style: TextStyle(
+                  fontFamily: AppTypography.family,
                   fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: deadlineMissed
-                      ? AppColors.alert
-                      : tc.ctaForeground.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
+                  color: tc.textSecondary,
+                ),
+              ),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: onChangeTemplate,
+                icon: const Icon(Icons.tune, size: 14),
+                label: Text(
+                  l10n?.templatePickerTitle ?? 'Templates',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            refund == 0
-                ? (l10n?.escalateNoAmount ??
-                      'No transaction amount on this dispute')
-                : (l10n?.escalateRefundPlusComp(
-                        CompensationCalculator.formatIndian(refund),
-                        CompensationCalculator.formatIndian(
-                          comp.compensationDue,
-                        ),
-                        comp.daysElapsed,
-                      ) ??
-                      '${CompensationCalculator.formatIndian(refund)} refund + ${CompensationCalculator.formatIndian(comp.compensationDue)} comp (${comp.daysElapsed} days × ₹100/day)'),
-            style: TextStyle(
-              fontSize: 11,
-              color: tc.ctaForeground.withValues(alpha: 0.7),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: tc.surfaceAlt,
+              borderRadius: BorderRadius.circular(6),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSendToCard(
-    BuildContext context,
-    AppThemeColors tc,
-    AppLocalizations? l10n,
-    Dispute dispute,
-    bool ccOmbudsman,
-    ValueChanged<bool> onToggleCc,
-  ) {
-    return _card(
-      context,
-      label: l10n?.escalateSendTo ?? 'SEND TO',
-      children: [
-        RecipientRow(
-          emojiTile: '🎯',
-          bgTileColor: tc.alertSoft,
-          title: l10n?.escalateNodalOfficer ?? 'Nodal Officer',
-          detail:
-              l10n?.escalateSlaDays(_nodalEmail(dispute)) ??
-              '${_nodalEmail(dispute)} · SLA 10d',
-          selected: true,
-        ),
-        const SizedBox(height: 8),
-        RecipientRow(
-          emojiTile: '✉',
-          bgTileColor: tc.surfaceAlt,
-          title: l10n?.escalateCcOmbudsman ?? 'CC RBI Ombudsman',
-          detail: 'crpc@rbi.org.in',
-          selected: ccOmbudsman,
-          trailing: ToggleSwitch(value: ccOmbudsman, onChanged: onToggleCc),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEmailPreviewCard(
-    BuildContext context,
-    WidgetRef ref, {
-    required AppThemeColors tc,
-    required AppLocalizations? l10n,
-    required Dispute dispute,
-    required bool ccOmbudsman,
-    required Template? matchedTemplate,
-    required String localeCode,
-    required List<Template> templates,
-    required Set<String> freeIds,
-    required bool isPremiumUser,
-    required TemplateRepository repo,
-  }) {
-    final lockedTemplate = matchedTemplate;
-    final isMatchLocked = lockedTemplate != null &&
-        repo.isLocked(lockedTemplate, freeIds, isPremiumUser: isPremiumUser);
-    return _card(
-      context,
-      label: l10n?.escalateEmailPreview ?? 'EMAIL PREVIEW',
-      labelAction: Tooltip(
-        message: l10n?.escalateEditTemplate ?? 'Pick template',
-        child: IconButton(
-          onPressed: () => EscalateTemplatePicker.show(
-            context,
-            dispute: dispute,
-            templates: templates,
-            localeCode: localeCode,
-            freeIds: freeIds,
-            isPremiumUser: isPremiumUser,
-            repo: repo,
-            selectedTemplateId: selectedTemplateId,
-            onSelectTemplate: onSelectTemplate,
-          ),
-          padding: const EdgeInsets.all(12),
-          splashRadius: 24,
-          icon: Icon(
-            Icons.edit_outlined,
-            size: 18,
-            color: tc.ctaBackground,
-          ),
-        ),
-      ),
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 8,
-          ),
-          decoration: BoxDecoration(
-            color: tc.surfaceAlt,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(
-            l10n?.escalateEmailSubject(dispute.txnId) ??
-                'Subject: Escalation — UTR ${dispute.txnId}',
-            style: TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: tc.textPrimary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          '${l10n?.escalateToLabel ?? 'TO:'} ${_nodalEmail(dispute)}',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: tc.textPrimary,
-          ),
-        ),
-        if (ccOmbudsman)
-          Text(
-            '${l10n?.escalateCcLabel ?? 'CC:'} crpc@rbi.org.in',
-            style: TextStyle(fontSize: 11, color: tc.textSecondary),
-          ),
-        const SizedBox(height: 10),
-        if (isMatchLocked) ...[
-          // F1: matched template is premium & user is free — show first
-          // 2 lines + blur/fade + Pro badge + paywall CTA instead of the
-          // full premium body (prevents the auto-match leak).
-          ClipRect(
-            child: Stack(
+            child: Row(
               children: [
                 Text(
-                  _emailBody(matchedTemplate, localeCode, dispute),
+                  l10n?.escalateSubjectLabel ?? 'SUBJECT',
                   style: TextStyle(
-                    fontSize: 13,
-                    height: 1.5,
-                    color: tc.textSecondary,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1,
+                      color: tc.textSecondary),
                 ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 22,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          tc.surface.withValues(alpha: 0),
-                          tc.surface,
-                        ],
-                      ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    subject,
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: tc.textPrimary,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
-          InkWell(
-            onTap: () => context.push(
-              AppRoutes.paywallWithParams(
-                trigger: 'template_locked',
-                returnPath: AppRoutes.home,
-                templateId: lockedTemplate.id,
-                templateTitle: lockedTemplate.titleFor(localeCode),
-              ),
-            ),
-            borderRadius: BorderRadius.circular(AppRadii.sm),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
-              ),
-              decoration: BoxDecoration(
-                color: tc.premiumGoldSoft,
-                borderRadius: BorderRadius.circular(AppRadii.sm),
-                border: Border.all(
-                  color: AppColors.premiumGold.withValues(alpha: 0.5),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Text('🔒', style: TextStyle(fontSize: 13)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      l10n?.escalateProTemplateLocked ?? 'This is a Pro template — unlock to view & send',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.premiumGold,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    l10n?.templateProBadge ?? 'Pro',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.premiumGold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
           const SizedBox(height: 6),
-        ] else ...[
           Text(
-            l10n?.escalateEmailGreeting ?? 'Dear Nodal Officer,',
+            '${l10n?.escalateToLabel ?? 'TO:'} ${_nodalEmail(dispute)}',
             style: TextStyle(
-              fontSize: 12,
-              height: 1.45,
-              color: tc.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          GestureDetector(
-            onTap: () => _showFullEmail(
-              context,
-              body: _emailBody(matchedTemplate, localeCode, dispute),
-            ),
-            child: Text(
-              _emailBody(matchedTemplate, localeCode, dispute),
-              style: TextStyle(
-                fontSize: 13,
-                height: 1.5,
-                color: tc.textSecondary,
-              ),
-              maxLines: 5,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(height: 4),
-          GestureDetector(
-            onTap: () => _showFullEmail(
-              context,
-              body: _emailBody(matchedTemplate, localeCode, dispute),
-            ),
-            child: Text(
-              '${l10n?.escalateTapToExpand ?? 'Tap to view full email'} \u25BE',
-              style: TextStyle(
-                fontSize: 10,
+                fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: tc.textTertiary,
-              ),
-            ),
+                color: tc.textPrimary),
           ),
-          const SizedBox(height: 6),
-          Text(
-            l10n?.escalateEmailAutoDrafted ??
-                '[auto-drafted, tap to edit]',
-            style: TextStyle(
-              fontSize: 10,
-              fontStyle: FontStyle.italic,
-              color: tc.textTertiary,
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
-        Row(
-          children: [
-            const Text(
-              '✓',
-              style: TextStyle(fontSize: 10, color: AppColors.accent),
-            ),
-            const SizedBox(width: 6),
+          if (ccOmbudsman)
             Text(
-              l10n?.escalateStandardsCompliant ??
-                  'Standards-compliant · view source',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: AppColors.accent,
+              '${l10n?.escalateCcLabel ?? 'CC:'} crpc@rbi.org.in',
+              style: TextStyle(fontSize: 11, color: tc.textSecondary),
+            ),
+          const SizedBox(height: 10),
+          if (locked)
+            _lockedBanner(tc, l10n)
+          else
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: tc.surfaceAlt,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                body.isNotEmpty
+                    ? body
+                    : '—',
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 12,
+                  height: 1.5,
+                  color: tc.textPrimary,
+                ),
+                maxLines: 10,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ],
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildAmberCallout(
-    AppThemeColors tc,
-    AppLocalizations? l10n,
-    CompensationResult comp,
-  ) {
+  Widget _lockedBanner(AppThemeColors tc, AppLocalizations? l10n) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
+        color: AppColors.premiumGoldSoft,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.premiumGold, width: 0.5),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.lock_outline,
+              size: 16, color: AppColors.premiumGold),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l10n?.escalateProTemplateLocked ??
+                  'Pro template — preview locked. Tap "Templates" to see options.',
+              style: TextStyle(
+                fontSize: 12,
+                color: tc.textPrimary,
+                height: 1.4,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeadlineCallout extends StatelessWidget {
+  final CompensationResult comp;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _DeadlineCallout({
+    required this.comp,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
         color: tc.alertSoft,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '⚠',
-            style: TextStyle(fontSize: 13, color: AppColors.alert),
-          ),
+          const Text('⚠',
+              style: TextStyle(fontSize: 14, color: AppColors.alert)),
           const SizedBox(width: 8),
           Expanded(
             child: RichText(
               text: TextSpan(
                 style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
                   color: tc.textPrimary,
                   height: 1.4,
                 ),
                 children: [
                   TextSpan(
-                    text:
-                        l10n?.escalateSendWithinPrefix ??
+                    text: l10n?.escalateSendWithinPrefix ??
                         'Send within ',
                   ),
                   TextSpan(
                     text: l10n?.escalateSendWithin24h ?? '24 hours',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   TextSpan(
-                    text:
-                        l10n?.escalateSendWithinSuffix(
-                          CompensationCalculator.formatIndian(
-                            comp.compensationDue,
-                          ),
-                        ) ??
+                    text: l10n?.escalateSendWithinSuffix(
+                            CompensationCalculator.formatIndian(
+                                comp.compensationDue)) ??
                         ' to claim full ${CompensationCalculator.formatIndian(comp.compensationDue)} comp retroactively.',
                   ),
                 ],
@@ -795,297 +907,192 @@ class _Body extends ConsumerWidget {
       ),
     );
   }
+}
 
-  Widget _buildFooter(
-    AppThemeColors tc,
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations? l10n,
-    Template? matchedTemplate,
-    String localeCode, {
-    required TemplateRepository repo,
-    required Set<String> freeIds,
-    required bool isPremiumUser,
-  }) {
-    final lockedTemplate = matchedTemplate;
-    final isMatchLocked = lockedTemplate != null &&
-        repo.isLocked(lockedTemplate, freeIds, isPremiumUser: isPremiumUser);
+class _StickyFooter extends StatelessWidget {
+  final Dispute dispute;
+  final Template? match;
+  final TemplateRepository repo;
+  final Set<String> freeIds;
+  final bool isPremiumUser;
+  final String localeCode;
+  final bool ccOmbudsman;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _StickyFooter({
+    required this.dispute,
+    required this.match,
+    required this.repo,
+    required this.freeIds,
+    required this.isPremiumUser,
+    required this.localeCode,
+    required this.ccOmbudsman,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = match;
+    final locked = t != null &&
+        repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser);
+    final subject = 'Escalation — UTR ${dispute.txnId}';
+    final body =
+        t != null ? filledTemplateBody(t, localeCode, dispute) : '';
+
     return Container(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        12,
-        20,
-        12 + MediaQuery.of(context).padding.bottom,
-      ),
       decoration: BoxDecoration(
         color: tc.surface,
-        border: Border(top: BorderSide(color: tc.divider, width: 1)),
+        border: Border(top: BorderSide(color: tc.divider)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        12 + MediaQuery.of(context).padding.bottom,
       ),
       child: Row(
         children: [
-          FooterButton(
-            label: l10n?.ombudsmanCopy ?? 'Copy',
-            color: tc.surfaceAlt,
-            textColor: tc.isDark ? AppColors.accent : AppColors.primary,
-            onTap: () {
-              // F1: Copy must be gated the same way as Send; otherwise a
-              // free user with a locked auto-matched template can leak the
-              // full premium body to the clipboard without paying.
-              if (isMatchLocked) {
-                context.push(
-                  AppRoutes.paywallWithParams(
-                    trigger: 'template_locked',
-                    returnPath: AppRoutes.home,
-                    templateId: lockedTemplate.id,
-                    templateTitle: lockedTemplate.titleFor(localeCode),
-                  ),
-                );
-                return;
-              }
-              _copyEmail(
-                context,
-                matchedTemplate: matchedTemplate,
-                localeCode: localeCode,
-              );
-            },
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: FooterButton(
-              label: l10n?.escalateSend ?? 'Send escalation →',
-              color: tc.ctaBackground,
-              textColor: tc.ctaForeground,
-              elevation: true,
-              onTap: () {
-                // F1: if the matched template is locked for a free user,
-                // route to the paywall instead of leaking the premium body.
-                if (isMatchLocked) {
+          SizedBox(
+            height: 46,
+            child: OutlinedButton(
+              onPressed: () {
+                if (locked) {
                   context.push(
                     AppRoutes.paywallWithParams(
                       trigger: 'template_locked',
-                      returnPath: AppRoutes.home,
-                      templateId: lockedTemplate.id,
-                      templateTitle: lockedTemplate.titleFor(localeCode),
+                      returnPath: AppRoutes.escalate(dispute.id),
+                      templateId: match!.id,
+                      templateTitle: match!.titleFor(localeCode),
                     ),
                   );
                   return;
                 }
-                _sendEmail(
-                  context,
-                  ref: ref,
-                  matchedTemplate: matchedTemplate,
-                  localeCode: localeCode,
-                  isPremiumUser: isPremiumUser,
+                final clipboardText =
+                    '${l10n?.escalateSubjectLabel ?? 'SUBJECT'}: $subject\n\n$body';
+                Clipboard.setData(ClipboardData(text: clipboardText));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      l10n?.escalateCopiedToClipboard ?? 'Copied',
+                    ),
+                  ),
                 );
               },
+              child: Text(l10n?.escalateSendWithinPrefix ?? 'Copy'),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: SizedBox(
+              height: 46,
+              child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: tc.ctaBackground,
+                  foregroundColor: tc.ctaForeground,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadii.md),
+                  ),
+                ),
+                onPressed: () async {
+                  if (locked) {
+                    context.push(
+                      AppRoutes.paywallWithParams(
+                        trigger: 'template_locked',
+                        returnPath: AppRoutes.escalate(dispute.id),
+                        templateId: match!.id,
+                        templateTitle: match!.titleFor(localeCode),
+                      ),
+                    );
+                    return;
+                  }
+                  final to = _nodalEmail(dispute);
+                  final cc = ccOmbudsman ? 'crpc@rbi.org.in' : null;
+                  final ok = await launchEmail(to,
+                      subject: subject, body: body, cc: cc);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                      ok
+                          ? (l10n?.escalateOpeningMail ??
+                              'Opening mail app…')
+                          : (l10n?.escalateMailFailed ??
+                              'Could not open mail app — copied.'),
+                    ),
+                  ));
+                  if (!ok) {
+                    await Clipboard.setData(ClipboardData(
+                        text:
+                            'To: $to\n${cc != null ? 'CC: $cc\n' : ''}Subject: $subject\n\n$body'));
+                  }
+                  // Persist activity log.
+                  try {
+                    final now = DateTime.now();
+                    final updatedLog = <ActivityLogEntry>[
+                      ...dispute.activityLog,
+                      ActivityLogEntry(
+                        type: ActivityLogEntry.escalationEmailSent,
+                        label: l10n?.activityEscalationSent ??
+                            'Escalation email sent',
+                        meta: _fmtDate(now),
+                        timestamp: now,
+                        highlighted: true,
+                      ),
+                      if (match != null)
+                        ActivityLogEntry(
+                          type: ActivityLogEntry.templateUsed,
+                          label:
+                              '${l10n?.activityTemplateUsed ?? 'Template used'}: ${match!.titleEn}',
+                          meta: _fmtDate(now),
+                          timestamp: now,
+                        ),
+                    ];
+                    final updated =
+                        dispute.copyWith(activityLog: updatedLog);
+                    // No ref here — use the navigator's resolve ref via
+                    // ProviderScope. The router owns the state; if a save
+                    // fails the conversation logs upstream.
+                    // ignore: use_build_context_synchronously
+                    final mq = ProviderScope.containerOf(context);
+                    await mq
+                        .read(disputeRepositoryProvider)
+                        .saveDispute(dispute.uid, updated);
+                    mq.invalidate(disputesProvider(dispute.uid));
+                  } catch (_) {
+                    // Best-effort.
+                  }
+                  if (ok && context.mounted) {
+                    EscalatePostSendDialog.show(
+                        context, dispute, isPremiumUser);
+                  }
+                },
+                child: Text(
+                  l10n?.escalateSend ?? 'Send escalation',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
       ),
     );
   }
-
-  Widget _card(
-    BuildContext context, {
-    required String label,
-    required List<Widget> children,
-    Widget? labelAction,
-  }) {
-    final tc = AppThemeColors.of(context);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: tc.surface,
-        border: Border.all(color: tc.divider, width: 1),
-        borderRadius: BorderRadius.circular(AppRadii.lg),
-        boxShadow: AppShadows.card,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1,
-                    color: tc.textSecondary,
-                  ),
-                ),
-              ),
-              ?labelAction,
-            ],
-          ),
-          const SizedBox(height: 8),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  String _nodalEmail(Dispute d) {
-    final catalog = BankCatalog.nodalEmailFor(d.entityId ?? '');
-    if (catalog != null) return catalog;
-    final bank = (d.entityName ?? 'bank').toLowerCase();
-    if (bank.contains('hdfc')) return 'nodal.officer@hdfcbank.net';
-    if (bank.contains('icici')) return 'nodal.officer@icicibank.com';
-    if (bank.contains('axis')) return 'nodal.officer@axisbank.com';
-    if (bank.contains('sbi')) return 'nodal.officer@sbi.co.in';
-    return 'nodal.officer@yourbank.in';
-  }
-
-  String _fmtDate(DateTime d) =>
-      '${d.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]} ${d.year}, ${((d.hour % 12) == 0 ? 12 : d.hour % 12)}:${d.minute.toString().padLeft(2, '0')} ${d.hour < 12 ? 'AM' : 'PM'}';
-
-  String _emailBody(Template? matchedTemplate, String localeCode, Dispute d) {
-    if (matchedTemplate != null) {
-      return filledTemplateBody(matchedTemplate, localeCode, d);
-    }
-    return 'I am writing to escalate a refund dispute under RBI Master Direction '
-        'DPSS.CO.PD.No.629 — failed transaction UTR ${d.txnId} for '
-        '${CompensationCalculator.formatIndian(d.amount)} on '
-        '${d.txnDate.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.txnDate.month - 1]} '
-        'remains unresolved past T+${d.type.tatDays ?? 5}. I request '
-        'immediate reversal plus ₹100/day compensation…';
-  }
-
-  Template? _matchEscalationTemplate(
-    List<Template> templates,
-    Dispute d,
-    TemplateRepository repo,
-    Set<String> freeIds,
-    bool isPremiumUser,
-  ) {
-    // ME-7: delegate to the shared matcher so this screen stays in lockstep
-    // with the dispute-detail preview. The 3-tier fallback (unlocked →
-    // free-in-category → any-in-category) lives in one place now.
-    return repo.matchForCategory(
-      templates,
-      d.type,
-      freeIds,
-      isPremiumUser: isPremiumUser,
-    );
-  }
-
-  void _showFullEmail(BuildContext context, {required String body}) {
-    final l10n = AppLocalizations.of(context);
-    showDialog(
-      context: context,
-      builder: (c) => AlertDialog(
-        title: Text(l10n?.escalateEmailPreview ?? 'EMAIL PREVIEW'),
-        content: SingleChildScrollView(child: SelectableText(body)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(c),
-            child: Text(l10n?.commonClose ?? 'Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _copyEmail(
-    BuildContext context, {
-    required Template? matchedTemplate,
-    required String localeCode,
-  }) {
-    final body = 'Subject: Escalation — UTR ${dispute.txnId}\n\n'
-        '${_emailBody(matchedTemplate, localeCode, dispute)}';
-    Clipboard.setData(ClipboardData(text: body));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          AppLocalizations.of(context)?.escalateCopiedToClipboard ??
-              'Email copied to clipboard',
-        ),
-      ),
-    );
-  }
-
-  Future<void> _sendEmail(
-    BuildContext context, {
-    required WidgetRef ref,
-    required Template? matchedTemplate,
-    required String localeCode,
-    required bool isPremiumUser,
-  }) async {
-    // Capture l10n synchronously before any await — using BuildContext
-    // across an async gap triggers use_build_context_synchronously.
-    final l10n = AppLocalizations.of(context);
-    final subject = 'Escalation — UTR ${dispute.txnId}';
-    final body = _emailBody(matchedTemplate, localeCode, dispute);
-    final to = _nodalEmail(dispute);
-    final cc = ccOmbudsman ? 'crpc@rbi.org.in' : null;
-    final ok = await launchEmail(to, subject: subject, body: body, cc: cc);
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          ok
-              ? (AppLocalizations.of(context)?.escalateOpeningMail ??
-                    'Opening mail app…')
-              : (AppLocalizations.of(context)?.escalateMailFailed ??
-                    'Could not open mail app — email copied instead.'),
-        ),
-      ),
-    );
-    if (!ok) {
-      await Clipboard.setData(
-        ClipboardData(
-          text:
-              'To: $to\n${cc != null ? 'CC: $cc\n' : ''}Subject: $subject\n\n$body',
-        ),
-      );
-    }
-
-    // Track the escalation event in the persisted activity log so it
-    // survives cold-boot and appears on the dispute detail timeline.
-    try {
-      final now = DateTime.now();
-      final meta = _fmtDate(now);
-      final updatedLog = <ActivityLogEntry>[
-        ...dispute.activityLog,
-        ActivityLogEntry(
-          type: ActivityLogEntry.escalationEmailSent,
-          label: l10n?.activityEscalationSent ?? 'Escalation email sent',
-          meta: meta,
-          timestamp: now,
-          highlighted: true,
-        ),
-        if (matchedTemplate != null)
-          ActivityLogEntry(
-            type: ActivityLogEntry.templateUsed,
-            label:
-                '${l10n?.activityTemplateUsed ?? 'Template used'}: ${matchedTemplate.titleEn}',
-            meta: meta,
-            timestamp: now,
-          ),
-      ];
-      final repo = ref.read(disputeRepositoryProvider);
-      final updated = dispute.copyWith(activityLog: updatedLog);
-      await repo.saveDispute(dispute.uid, updated);
-      ref.invalidate(disputesProvider(dispute.uid));
-    } catch (e) {
-      // Best-effort: don't block the user if the log write fails.
-      debugPrint('activity log write failed: $e');
-    }
-
-    // F4: post-send upsell — after a successful escalation, show a
-    // "What's next?" dialog nudging users toward the Ombudsman (L3)
-    // letter. Free users see a paywall CTA; premium users navigate
-    // straight to the ombudsman letter generator.
-    if (ok && context.mounted) {
-      EscalatePostSendDialog.show(context, dispute, isPremiumUser);
-    }
-  }
-
 }
 
-/// Re-export so the analyzer keeps the import used (used by router).
-class EscalatePageRouteArg {
-  final String disputeId;
-  const EscalatePageRouteArg(this.disputeId);
+String _nodalEmail(Dispute d) {
+  final catalog = BankCatalog.nodalEmailFor(d.entityId ?? '');
+  if (catalog != null) return catalog;
+  final bank = (d.entityName ?? 'bank').toLowerCase();
+  if (bank.contains('hdfc')) return 'nodal.officer@hdfcbank.net';
+  if (bank.contains('icici')) return 'nodal.officer@icicibank.com';
+  if (bank.contains('axis')) return 'nodal.officer@axisbank.com';
+  if (bank.contains('sbi')) return 'nodal.officer@sbi.co.in';
+  return 'nodal.officer@yourbank.in';
 }
+
+String _fmtDate(DateTime d) =>
+    '${d.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]} ${d.year}, ${((d.hour % 12) == 0 ? 12 : d.hour % 12)}:${d.minute.toString().padLeft(2, '0')} ${d.hour < 12 ? 'AM' : 'PM'}';
