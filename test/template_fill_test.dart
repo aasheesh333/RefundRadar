@@ -56,6 +56,77 @@ void main() {
       expect(out, isNot(contains('{BANK_NAME}')));
     });
 
+    test('fills Wave-2 category-specific tokens (UPI VPA)', () {
+      final d = Dispute(
+        id: 'd',
+        type: DisputeType.upiP2p,
+        amount: 500,
+        txnDate: DateTime(2026, 5, 1),
+        txnId: 'UPI1',
+        vpa: 'me@ybl',
+        entityName: 'HDFC',
+        createdAt: DateTime(2026, 5, 2),
+      );
+      final m = fillValuesForDispute(d);
+      expect(m['VPA'], 'me@ybl');
+      // Other category-specific still empty for UPI dispute
+      expect(m['VEHICLE_NO'], '');
+      expect(m['ATM_ID'], '');
+    });
+
+    test('fills Wave-2 category-specific tokens (FASTag vehicle + plaza)', () {
+      final d = Dispute(
+        id: 'd',
+        type: DisputeType.fastag,
+        amount: 500,
+        txnDate: DateTime(2026, 5, 1),
+        txnId: 'FT1',
+        vehicleNo: 'MH12AB1234',
+        plazaName: 'Khopoli',
+        entityName: 'ICICI',
+        entityId: 'icici',
+        createdAt: DateTime(2026, 5, 2),
+      );
+      final m = fillValuesForDispute(d);
+      expect(m['VEHICLE_NO'], 'MH12AB1234');
+      expect(m['PLAZA_NAME'], 'Khopoli');
+      expect(m['TAG_ID'], 'icici');
+    });
+
+    test('fills Wave-2 category-specific tokens (Wrong transfer beneficiary)', () {
+      final d = Dispute(
+        id: 'd',
+        type: DisputeType.wrongTransfer,
+        amount: 1500,
+        txnDate: DateTime(2026, 5, 1),
+        txnId: 'WT1',
+        vpaPayee: 'wrong@upi',
+        beneficiaryAccountNo: '1234567890',
+        beneficiaryIfsc: 'SBIN0001234',
+        createdAt: DateTime(2026, 5, 2),
+      );
+      final m = fillValuesForDispute(d);
+      expect(m['VPA_PAYEE'], 'wrong@upi');
+      expect(m['BENEFICIARY_ACCOUNT_NO'], '1234567890');
+      expect(m['BENEFICIARY_IFSC'], 'SBIN0001234');
+    });
+
+    test('fills Wave-2 category-specific tokens (ATM)', () {
+      final d = Dispute(
+        id: 'd',
+        type: DisputeType.atm,
+        amount: 10000,
+        txnDate: DateTime(2026, 5, 1),
+        txnId: 'ATM1',
+        atmId: 'SBI-MGM',
+        cardLast4: '1234',
+        createdAt: DateTime(2026, 5, 2),
+      );
+      final m = fillValuesForDispute(d);
+      expect(m['ATM_ID'], 'SBI-MGM');
+      expect(m['CARD_LAST4'], '1234');
+    });
+
     test('Template.fill leaves unknown tokens', () {
       expect(Template.fill('X {FOO} Y', {'UTR': '1'}), 'X {FOO} Y');
     });

@@ -810,6 +810,59 @@ class AppLocalizations {
       'en': 'DESCRIPTION (optional)',
       'hi': 'विवरण (वैकल्पिक)',
     },
+    // Wave 2 — category-specific fields captured so the escalation-email
+    // merge tokens (VPA, VEHICLE_NO, …) are pre-filled and the user only
+    // has to tap "Send Email".
+    'formLabelVpa': {'en': 'YOUR VPA', 'hi': 'आपका VPA'},
+    'formLabelVpaHint': {
+      'en': 'e.g. name@upi',
+      'hi': 'उदा. name@upi',
+    },
+    'formLabelVpaPayee': {
+      'en': 'PAYEE VPA / ACCOUNT',
+      'hi': 'प्राप्तकर्ता VPA / खाता',
+    },
+    'formLabelVpaPayeeHint': {
+      'en': 'VPA or account credited by mistake',
+      'hi': 'गलती से जिसे राशि मिली उसका VPA या खाता',
+    },
+    'formLabelAtmId': {
+      'en': 'ATM ID / LOCATION',
+      'hi': 'ATM पहचान / स्थान',
+    },
+    'formLabelAtmIdHint': {
+      'en': 'e.g. SBI ATM, MG Road',
+      'hi': 'उदा. SBI ATM, MG रोड',
+    },
+    'formLabelCardLast4': {
+      'en': 'CARD LAST 4 DIGITS',
+      'hi': 'कार्ड के अंतिम 4 अंक',
+    },
+    'formLabelVehicleNo': {
+      'en': 'VEHICLE NUMBER',
+      'hi': 'वाहन संख्या',
+    },
+    'formLabelVehicleNoHint': {
+      'en': 'e.g. MH12AB1234',
+      'hi': 'उदा. MH12AB1234',
+    },
+    'formLabelPlazaName': {'en': 'TOLL PLAZA', 'hi': 'टोल प्लाज़ा'},
+    'formLabelPlazaNameHint': {
+      'en': 'e.g. Khopoli Plaza, Mumbai-Pune',
+      'hi': 'उदा. खोपोली प्लाज़ा, मुंबई-पुणे',
+    },
+    'formLabelBeneficiaryAcct': {
+      'en': 'BENEFICIARY ACCOUNT',
+      'hi': 'लाभार्थी खाता',
+    },
+    'formLabelBeneficiaryIfsc': {
+      'en': 'BENEFICIARY IFSC',
+      'hi': 'लाभार्थी IFSC',
+    },
+    'formLabelBeneficiaryIfscHint': {
+      'en': '11 chars',
+      'hi': '11 अक्षर',
+    },
     'ombudsmanPremiumFeature': {
       'en': 'Premium feature',
       'hi': 'प्रीमियम सुविधा',
@@ -1427,6 +1480,22 @@ class AppLocalizations {
   String get formAuthRequired => _t('formAuthRequired');
   String get formSelectBank => _t('formSelectBank');
   String get formLabelDescription => _t('formLabelDescription');
+  // Wave 2 — category-specific field labels + hints.
+  String get formLabelVpa => _t('formLabelVpa');
+  String get formLabelVpaHint => _t('formLabelVpaHint');
+  String get formLabelVpaPayee => _t('formLabelVpaPayee');
+  String get formLabelVpaPayeeHint => _t('formLabelVpaPayeeHint');
+  String get formLabelAtmId => _t('formLabelAtmId');
+  String get formLabelAtmIdHint => _t('formLabelAtmIdHint');
+  String get formLabelCardLast4 => _t('formLabelCardLast4');
+  String get formLabelVehicleNo => _t('formLabelVehicleNo');
+  String get formLabelVehicleNoHint => _t('formLabelVehicleNoHint');
+  String get formLabelPlazaName => _t('formLabelPlazaName');
+  String get formLabelPlazaNameHint => _t('formLabelPlazaNameHint');
+  String get formLabelBeneficiaryAcct => _t('formLabelBeneficiaryAcct');
+  String get formLabelBeneficiaryIfsc => _t('formLabelBeneficiaryIfsc');
+  String get formLabelBeneficiaryIfscHint =>
+      _t('formLabelBeneficiaryIfscHint');
   String get ombudsmanPremiumFeature => _t('ombudsmanPremiumFeature');
   String get ombudsmanPremiumBlurb => _t('ombudsmanPremiumBlurb');
   String get paywallUnlimited => _t('paywallUnlimited');

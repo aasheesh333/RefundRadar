@@ -31,13 +31,18 @@ void main() {
       expect(repo.isLocked(template, const {}, isPremiumUser: true), isFalse);
     });
 
-    test('unlocks free allowlist template for free user', () {
+    test('ignores freeTemplateIds allowlist (partition is by isPremium only)', () {
+      // Regression: previously a template with isPremium=true but listed in
+      // freeTemplateIds would be unlocked. Now the partition is driven
+      // solely by the template's own isPremium flag — freeTemplateIds is
+      // not consulted by isLocked, so this premium template stays
+      // locked for a free user even when its id is allowlisted.
       final repo = TemplateRepository();
       final template = _template(id: 'free_allowed', isPremium: true);
 
       expect(
         repo.isLocked(template, const {'free_allowed'}, isPremiumUser: false),
-        isFalse,
+        isTrue,
       );
     });
 

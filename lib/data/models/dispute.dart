@@ -54,6 +54,18 @@ class Dispute {
   final String? description;
   final List<ActivityLogEntry> activityLog;
 
+  // -- Category-specific data (Wave 2) ------------------------------------
+  // Captured at dispute-create time so escalation-email merge tokens are
+  // pre-filled and the user only has to tap Send. All optional.
+  final String? vpa;
+  final String? vpaPayee;
+  final String? vehicleNo;
+  final String? plazaName;
+  final String? atmId;
+  final String? cardLast4;
+  final String? beneficiaryAccountNo;
+  final String? beneficiaryIfsc;
+
   const Dispute({
     required this.id,
     this.uid = '',
@@ -72,6 +84,14 @@ class Dispute {
     required this.createdAt,
     this.description,
     this.activityLog = const [],
+    this.vpa,
+    this.vpaPayee,
+    this.vehicleNo,
+    this.plazaName,
+    this.atmId,
+    this.cardLast4,
+    this.beneficiaryAccountNo,
+    this.beneficiaryIfsc,
   });
 
   static const Object _unset = Object();
@@ -94,6 +114,14 @@ class Dispute {
     DateTime? createdAt,
     Object? description = _unset,
     List<ActivityLogEntry>? activityLog,
+    Object? vpa = _unset,
+    Object? vpaPayee = _unset,
+    Object? vehicleNo = _unset,
+    Object? plazaName = _unset,
+    Object? atmId = _unset,
+    Object? cardLast4 = _unset,
+    Object? beneficiaryAccountNo = _unset,
+    Object? beneficiaryIfsc = _unset,
   }) =>
       Dispute(
         id: id ?? this.id,
@@ -121,6 +149,26 @@ class Dispute {
             ? this.description
             : description as String?,
         activityLog: activityLog ?? this.activityLog,
+        vpa: identical(vpa, _unset) ? this.vpa : vpa as String?,
+        vpaPayee: identical(vpaPayee, _unset)
+            ? this.vpaPayee
+            : vpaPayee as String?,
+        vehicleNo: identical(vehicleNo, _unset)
+            ? this.vehicleNo
+            : vehicleNo as String?,
+        plazaName: identical(plazaName, _unset)
+            ? this.plazaName
+            : plazaName as String?,
+        atmId: identical(atmId, _unset) ? this.atmId : atmId as String?,
+        cardLast4: identical(cardLast4, _unset)
+            ? this.cardLast4
+            : cardLast4 as String?,
+        beneficiaryAccountNo: identical(beneficiaryAccountNo, _unset)
+            ? this.beneficiaryAccountNo
+            : beneficiaryAccountNo as String?,
+        beneficiaryIfsc: identical(beneficiaryIfsc, _unset)
+            ? this.beneficiaryIfsc
+            : beneficiaryIfsc as String?,
       );
 
   DisputeStatus reopenTarget() {
@@ -174,6 +222,14 @@ class Dispute {
         'createdAt': toUtcIso(createdAt),
         'description': description,
         'activityLog': activityLog.map((e) => e.toJson()).toList(),
+        'vpa': vpa,
+        'vpaPayee': vpaPayee,
+        'vehicleNo': vehicleNo,
+        'plazaName': plazaName,
+        'atmId': atmId,
+        'cardLast4': cardLast4,
+        'beneficiaryAccountNo': beneficiaryAccountNo,
+        'beneficiaryIfsc': beneficiaryIfsc,
       };
 
   factory Dispute.fromJson(Map<String, dynamic> json) => Dispute(
@@ -210,5 +266,13 @@ class Dispute {
                 ?.map((e) => ActivityLogEntry.fromJson(e as Map<String, dynamic>))
                 .toList() ??
             [],
+        vpa: json['vpa'] as String?,
+        vpaPayee: json['vpaPayee'] as String?,
+        vehicleNo: json['vehicleNo'] as String?,
+        plazaName: json['plazaName'] as String?,
+        atmId: json['atmId'] as String?,
+        cardLast4: json['cardLast4'] as String?,
+        beneficiaryAccountNo: json['beneficiaryAccountNo'] as String?,
+        beneficiaryIfsc: json['beneficiaryIfsc'] as String?,
       );
 }

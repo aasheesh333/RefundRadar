@@ -85,17 +85,23 @@ Map<String, String> fillValuesForDispute(Dispute? dispute) {
     'PLACE': '',
     'ACCOUNT_NO': '',
     // UPI
-    'VPA': '',
-    'VPA_PAYEE': '',
+    'VPA': dispute.vpa ?? '',
+    'VPA_PAYEE': dispute.vpaPayee ?? '',
     // FASTag / toll
     'TAG_ID': dispute.entityId ?? '',
-    'VEHICLE_NO': '',
-    'PLAZA_NAME': '',
+    'VEHICLE_NO': dispute.vehicleNo ?? '',
+    'PLAZA_NAME': dispute.plazaName ?? '',
     'LANE_ID': '',
     'ISSUE_TYPE': desc.isNotEmpty ? desc : dispute.type.id,
     'CROSSINGS_USED': '',
     'PASS_ACTIVATION_DATE': '',
     'SECURITY_DEPOSIT': '',
+    // ATM
+    'ATM_ID': dispute.atmId ?? '',
+    'CARD_LAST4': dispute.cardLast4 ?? '',
+    // Wrong transfer beneficiary
+    'BENEFICIARY_ACCOUNT_NO': dispute.beneficiaryAccountNo ?? '',
+    'BENEFICIARY_IFSC': dispute.beneficiaryIfsc ?? '',
     // Legal / advanced blanks
     'OMBUDSMAN_REF': dispute.ticketNumbers['ombudsman'] ??
         dispute.ticketNumbers['l3'] ??
@@ -161,6 +167,10 @@ Map<String, String> _emptyAll() {
     'CROSSINGS_USED',
     'PASS_ACTIVATION_DATE',
     'SECURITY_DEPOSIT',
+    'ATM_ID',
+    'CARD_LAST4',
+    'BENEFICIARY_ACCOUNT_NO',
+    'BENEFICIARY_IFSC',
     'OMBUDSMAN_REF',
     'OMBUDSMAN_ORDER_DATE',
     'ADVOCATE_NAME',

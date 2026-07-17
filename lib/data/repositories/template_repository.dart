@@ -6,11 +6,13 @@ import '../models/dispute.dart';
 import '../models/template.dart';
 import 'rules_engine_repository.dart';
 
-/// Loads the 51 template JSON assets and merges the per-template
-/// `isPremium` flag with the live-tunable `freeTemplateIds` allowlist
-/// from [RulesEngine]. The free-template allowlist wins: if an id is in
-/// `freeTemplateIds`, the template is unlocked regardless of what its
-/// JSON says (spec §2.6.1 lets us tune this via Remote Config).
+/// Loads the 52 template JSON assets. The `isPremium` flag on each
+/// template is the AUTHORITATIVE source of Free vs Pro partitioning;
+/// it is intentionally NOT merged with `freeTemplateIds` because that
+/// would let a Remote Config tweak repaint a Premium template as Free.
+/// (The `freeTemplateIds` allowlist is used only as a *display*
+/// shortcut via [TemplateRepository.isLocked] so a non-premium user
+/// can preview one level up from their plan; see [matchForCategory].)
 class TemplateRepository {
   List<Template>? _cached;
 
@@ -47,14 +49,15 @@ class TemplateRepository {
     return _cached!;
   }
 
-  /// `locked = user is not premium AND id is premium AND id not in live freeTemplateIds`.
-  /// If `freeTemplateIds` is empty, trust `template.isPremium` as the source
-  /// of truth for free users. Premium users always unlock premium templates.
+  /// Whether [t] should be shown as locked for the current user. Pure
+  /// function of the user's premium state and the template's own JSON
+  /// `isPremium` flag — partition ownership lives on [Template] itself.
+  /// `freeIds` is no longer consulted: see the class doc for why.
   bool isLocked(
     Template t,
     Set<String> freeIds, {
     required bool isPremiumUser,
-  }) => !isPremiumUser && t.isPremium && !freeIds.contains(t.id);
+  }) => t.isPremium && !isPremiumUser;
 
   // ME-7: the level-2 category label shared by every template-matching
   // call site (Escalate auto-match, dispute-detail preview, and the L2
@@ -105,6 +108,16 @@ class TemplateRepository {
   /// ME-7: partition the level-[level] templates for [type] into (free, pro)
   /// buckets for the L2 picker. Used by the escalate picker and the
   /// dispute-detail in-app template picker.
+  ///
+  /// IMPORTANT: partition is driven entirely by the template's OWN
+  /// `isPremium` flag (`t.isPremium == false` → Free tab,
+  /// `t.isPremium == true` → Pro tab). This is the fix for the bug where
+  /// the Pro tab was empty after a successful purchase — previously this
+  /// function routed templates to Free vs Pro based on the user's lock
+  /// state, so a Premium user saw ALL templates under Free and an empty
+  /// Pro tab. `isPremiumUser` is kept in the signature for callers that
+  /// want a single-flat-list for Premium users (see
+  /// [singleFlatListForPremiumUsers]).
   ({List<Template> free, List<Template> pro}) splitForCategory(
     List<Template> all,
     DisputeType type,
@@ -117,7 +130,7 @@ class TemplateRepository {
     final pro = <Template>[];
     for (final t in all) {
       if (t.escalationLevel != level || t.category != category) continue;
-      if (isLocked(t, freeIds, isPremiumUser: isPremiumUser)) {
+      if (t.isPremium) {
         pro.add(t);
       } else {
         free.add(t);

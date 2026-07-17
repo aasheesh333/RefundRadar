@@ -127,6 +127,65 @@ void main() {
       expect(back.description, isNull);
     });
 
+    test('round-trips category-specific fields (Wave 2)', () {
+      // The merge-token sources: vpa, vpaPayee, vehicleNo, plazaName,
+      // atmId, cardLast4, beneficiaryAccountNo, beneficiaryIfsc.
+      final d = Dispute(
+        id: 'd1',
+        type: DisputeType.wrongTransfer,
+        amount: 2000,
+        txnDate: DateTime(2026, 6, 1),
+        txnId: 'UTR1',
+        createdAt: DateTime(2026, 6, 1),
+        vpa: 'me@upi',
+        vpaPayee: 'wrong@upi',
+        vehicleNo: 'MH12AB1234',
+        plazaName: 'Khopoli',
+        atmId: 'SBI-MGM',
+        cardLast4: '1234',
+        beneficiaryAccountNo: '1234567890',
+        beneficiaryIfsc: 'SBIN0001234',
+      );
+      final j = d.toJson();
+      expect(j['vpa'], 'me@upi');
+      expect(j['vpaPayee'], 'wrong@upi');
+      expect(j['vehicleNo'], 'MH12AB1234');
+      expect(j['plazaName'], 'Khopoli');
+      expect(j['atmId'], 'SBI-MGM');
+      expect(j['cardLast4'], '1234');
+      expect(j['beneficiaryAccountNo'], '1234567890');
+      expect(j['beneficiaryIfsc'], 'SBIN0001234');
+      final back = Dispute.fromJson(j);
+      expect(back.vpa, 'me@upi');
+      expect(back.vpaPayee, 'wrong@upi');
+      expect(back.vehicleNo, 'MH12AB1234');
+      expect(back.plazaName, 'Khopoli');
+      expect(back.atmId, 'SBI-MGM');
+      expect(back.cardLast4, '1234');
+      expect(back.beneficiaryAccountNo, '1234567890');
+      expect(back.beneficiaryIfsc, 'SBIN0001234');
+    });
+
+    test('round-trips null category-specific fields (defaults)', () {
+      final d = base();
+      final j = d.toJson();
+      expect(j['vpa'], isNull);
+      expect(j['vehicleNo'], isNull);
+      expect(j['plazaName'], isNull);
+      expect(j['atmId'], isNull);
+      expect(j['cardLast4'], isNull);
+      expect(j['beneficiaryAccountNo'], isNull);
+      expect(j['beneficiaryIfsc'], isNull);
+      final back = Dispute.fromJson(j);
+      expect(back.vpa, isNull);
+      expect(back.vehicleNo, isNull);
+      expect(back.plazaName, isNull);
+      expect(back.atmId, isNull);
+      expect(back.cardLast4, isNull);
+      expect(back.beneficiaryAccountNo, isNull);
+      expect(back.beneficiaryIfsc, isNull);
+    });
+
     test('round-trips DateTime ISO strings (no microsecond loss)', () {
       final t = DateTime(2025, 7, 4, 14, 30, 15);
       final d = base(txnDate: t, createdAt: t);
@@ -215,6 +274,29 @@ void main() {
       final d = base(resolvedAmount: 0);
       final d2 = d.copyWith(resolvedAmount: 500.0);
       expect(d2.resolvedAmount, 500.0);
+    });
+
+    test('copyWith round-trips category-specific fields', () {
+      final d = base();
+      final d2 = d.copyWith(
+        vpa: 'me@upi',
+        vehicleNo: 'MH12AB1234',
+        beneficiaryAccountNo: '1234567890',
+      );
+      expect(d2.vpa, 'me@upi');
+      expect(d2.vehicleNo, 'MH12AB1234');
+      expect(d2.beneficiaryAccountNo, '1234567890');
+      expect(d2.plazaName, isNull); // untouched
+    });
+
+    test('copyWith(<catField>: null) clears that field', () {
+      final d = base().copyWith(
+        vpa: 'me@upi',
+        plazaName: 'Khopoli',
+      );
+      final cleared = d.copyWith(vpa: null);
+      expect(cleared.vpa, isNull);
+      expect(cleared.plazaName, 'Khopoli'); // other field preserved
     });
 
     test('copyWith(resolvedAmount: null) clears the field', () {

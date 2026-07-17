@@ -107,15 +107,38 @@ void main() {
       expect(buckets.pro.map((t) => t.id), ['upi_pro1', 'upi_pro2']);
     });
 
-    test('everything is free for a premium user', () {
+    // Regression: previously a premium user saw EVERY template in the
+    // Free bucket and an empty Pro bucket (since partition was driven
+    // by the user's lock state, not the template's own isPremium flag).
+    // The new behaviour partitions on isPremium only — the Pro tab
+    // remains populated after purchase so the user can still discover
+    // and switch back to a premium template.
+    test('premium user still sees the Pro tab (partition is by isPremium, not lock)', () {
       final buckets = repo.splitForCategory(
         templates,
         DisputeType.upiP2p,
         const {},
         isPremiumUser: true,
       );
-      expect(buckets.pro, isEmpty);
-      expect(buckets.free.length, 3);
+      expect(buckets.free.map((t) => t.id), ['upi_free']);
+      expect(buckets.pro.map((t) => t.id), ['upi_pro1', 'upi_pro2']);
+    });
+
+    test('fastag_l2 lands in Pro bucket (only premium FASTag templates)', () {
+      final withFastagFree = [
+        // Existing fastag_l2 is non-premium by default in this fixture.
+        // Override it to premium=true so it would land in Pro.
+        _t(id: 'fastag_l2', category: 'FASTag', premium: true),
+        _t(id: 'fastag_free', category: 'FASTag'),
+      ];
+      final buckets = repo.splitForCategory(
+        withFastagFree,
+        DisputeType.fastag,
+        const {},
+        isPremiumUser: false,
+      );
+      expect(buckets.free.map((t) => t.id), ['fastag_free']);
+      expect(buckets.pro.map((t) => t.id), ['fastag_l2']);
     });
   });
 }

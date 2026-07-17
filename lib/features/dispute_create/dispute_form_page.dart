@@ -72,6 +72,16 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   final _amountCtrl = TextEditingController();
   final _utrCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
+  // Category-specific capture (Wave 2) — populated into Dispute so the
+  // escalation-email merge tokens (VPA, VEHICLE_NO, …) are pre-filled.
+  final _vpaCtrl = TextEditingController();
+  final _vpaPayeeCtrl = TextEditingController();
+  final _vehicleNoCtrl = TextEditingController();
+  final _plazaCtrl = TextEditingController();
+  final _atmIdCtrl = TextEditingController();
+  final _cardLast4Ctrl = TextEditingController();
+  final _beneficiaryAcctCtrl = TextEditingController();
+  final _beneficiaryIfscCtrl = TextEditingController();
   DateTime? _date;
   String _bankName = '';
   String _selectedEntityId = '';
@@ -101,6 +111,14 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     _amountCtrl.dispose();
     _utrCtrl.dispose();
     _descCtrl.dispose();
+    _vpaCtrl.dispose();
+    _vpaPayeeCtrl.dispose();
+    _vehicleNoCtrl.dispose();
+    _plazaCtrl.dispose();
+    _atmIdCtrl.dispose();
+    _cardLast4Ctrl.dispose();
+    _beneficiaryAcctCtrl.dispose();
+    _beneficiaryIfscCtrl.dispose();
     super.dispose();
   }
 
@@ -385,6 +403,13 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
 
       final desc = _descCtrl.text.trim();
       final now = DateTime.now();
+      // Wave 2: trim and nullify the optional category-specific inputs so
+      // empty strings don't reach Firestore.
+      String? nullifyEmpty(String s) {
+        final t = s.trim();
+        return t.isEmpty ? null : t;
+      }
+
       final dispute = Dispute(
         id: '',
         uid: uid,
@@ -405,6 +430,14 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
             highlighted: true,
           ),
         ],
+        vpa: nullifyEmpty(_vpaCtrl.text),
+        vpaPayee: nullifyEmpty(_vpaPayeeCtrl.text),
+        vehicleNo: nullifyEmpty(_vehicleNoCtrl.text),
+        plazaName: nullifyEmpty(_plazaCtrl.text),
+        atmId: nullifyEmpty(_atmIdCtrl.text),
+        cardLast4: nullifyEmpty(_cardLast4Ctrl.text),
+        beneficiaryAccountNo: nullifyEmpty(_beneficiaryAcctCtrl.text),
+        beneficiaryIfsc: nullifyEmpty(_beneficiaryIfscCtrl.text),
       );
       final repo = ref.read(disputeRepositoryProvider);
       Dispute saved;
@@ -779,6 +812,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                               ),
                             ),
                           ),
+                          // Wave 2: category-specific fields, captured at
+                          // create time so the escalation email body is
+                          // pre-filled with VPA / vehicle / plaza / ATM id /
+                          // beneficiary account details.
+                          ..._buildCategorySpecificFields(type, tc, l10n),
                         ],
                       ),
                     ),
@@ -880,6 +918,123 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         ),
       ),
     );
+  }
+
+  List<Widget> _buildCategorySpecificFields(
+    DisputeType type,
+    AppThemeColors tc,
+    AppLocalizations? l10n,
+  ) {
+    Widget field(
+      String label,
+      TextEditingController c, {
+      String? helper,
+      TextInputType? keyboard,
+      int? maxLen,
+      List<TextInputFormatter>? formatters,
+    }) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: FormFieldBox(
+          label: label,
+          helper: helper,
+          child: TextField(
+            controller: c,
+            keyboardType: keyboard,
+            maxLength: maxLen,
+            inputFormatters: formatters,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: tc.textPrimary,
+              fontFamily: AppTypography.family,
+            ),
+            cursorColor: tc.ctaBackground,
+            decoration: const InputDecoration(
+              isCollapsed: true,
+              isDense: true,
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
+              counterText: '',
+            ),
+          ),
+        ),
+      );
+    }
+
+    switch (type) {
+      case DisputeType.upiP2p:
+      case DisputeType.upiP2m:
+        return [
+          field(
+            l10n?.formLabelVpa ?? 'YOUR VPA',
+            _vpaCtrl,
+            helper: l10n?.formLabelVpaHint ?? 'e.g. name@upi',
+          ),
+        ];
+      case DisputeType.imps:
+        return [
+          field(
+            l10n?.formLabelVpa ?? 'YOUR VPA / ACCOUNT',
+            _vpaCtrl,
+            helper: l10n?.formLabelVpaHint ?? 'e.g. name@upi or A/C no.',
+          ),
+        ];
+      case DisputeType.atm:
+        return [
+          field(
+            l10n?.formLabelAtmId ?? 'ATM ID / LOCATION',
+            _atmIdCtrl,
+            helper: l10n?.formLabelAtmIdHint ?? 'e.g. SBI ATM, MG Road',
+          ),
+          field(
+            l10n?.formLabelCardLast4 ?? 'CARD LAST 4 DIGITS',
+            _cardLast4Ctrl,
+            keyboard: TextInputType.number,
+            maxLen: 4,
+            formatters: [FilteringTextInputFormatter.digitsOnly],
+          ),
+        ];
+      case DisputeType.fastag:
+        return [
+          field(
+            l10n?.formLabelVehicleNo ?? 'VEHICLE NUMBER',
+            _vehicleNoCtrl,
+            helper: l10n?.formLabelVehicleNoHint ?? 'e.g. MH12AB1234',
+            maxLen: 12,
+          ),
+          field(
+            l10n?.formLabelPlazaName ?? 'TOLL PLAZA',
+            _plazaCtrl,
+            helper: l10n?.formLabelPlazaNameHint ??
+                'e.g. Khopoli Plaza, Mumbai-Pune',
+          ),
+        ];
+      case DisputeType.wrongTransfer:
+        return [
+          field(
+            l10n?.formLabelVpaPayee ?? 'PAYEE VPA / ACCOUNT',
+            _vpaPayeeCtrl,
+            helper: l10n?.formLabelVpaPayeeHint ??
+                'VPA or account credited by mistake',
+          ),
+          field(
+            l10n?.formLabelBeneficiaryAcct ?? 'BENEFICIARY ACCOUNT',
+            _beneficiaryAcctCtrl,
+            keyboard: TextInputType.number,
+            maxLen: 18,
+            formatters: [FilteringTextInputFormatter.digitsOnly],
+          ),
+          field(
+            l10n?.formLabelBeneficiaryIfsc ?? 'BENEFICIARY IFSC',
+            _beneficiaryIfscCtrl,
+            helper: l10n?.formLabelBeneficiaryIfscHint ?? '11 chars',
+            maxLen: 11,
+          ),
+        ];
+      case DisputeType.bankCharge:
+        return [];
+    }
   }
 
   Widget _buildInfoBanner(DisputeType type) {

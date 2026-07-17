@@ -4,7 +4,7 @@
   "titleHi": "FASTag — IHMCL गलत कटौती (सामान्य)",
   "category": "FASTag",
   "escalationLevel": 3,
-  "isPremium": false,
+  "isPremium": true,
   "bodyEn": "To: falsededuction@ihmcl.com\nCC: etc.nodal@ihmcl.com\n\nSubject: Double FASTag Deduction at Single Crossing — Vehicle {VEHICLE_NO}\n\nIHMCL,\n\nVehicle {VEHICLE_NO} was charged TWICE for a single crossing at toll plaza {PLAZA_NAME} on {TXN_DATETIME}.\n\nFirst Txn ID: {TXN_ID}\nSecond Txn ID: {TXN_ID_2}\nAmount each: Rs. {AMOUNT}\nTotal wrongly deducted: Rs. {TOTAL_AMOUNT}\n\nA single vehicle crossing must result in exactly one fare deduction. As per IHMCL SOP, please refund Rs. {TOTAL_AMOUNT} and levy the applicable operator penalty.\n\nI have attached both deduction receipts / screenshots from my FASTag statement.\n\nRegards,\n{USER_NAME}\nMobile: {MOBILE_NO}",
   "bodyHi": "प्रति: falsededuction@ihmcl.com\nCC: etc.nodal@ihmcl.com\n\nविषय: एक ही क्रॉसिंग पर दोहरी FASTag कटौती — वाहन {VEHICLE_NO}\n\nIHMCL,\n\nवाहन {VEHICLE_NO} को {TXN_DATETIME} को टोल प्लाज़ा {PLAZA_NAME} पर एक ही क्रॉसिंग के लिए दो बार कटौती की गई।\n\nपहला Txn ID: {TXN_ID}\nदूसरा Txn ID: {TXN_ID_2}\nप्रत्येक राशि: Rs. {AMOUNT}\nकुल गलत कटौती: Rs. {TOTAL_AMOUNT}\n\nएक वाहन क्रॉसिंग के लिए ठीक एक ही किराया कटौती होनी चाहिए। IHMCL SOP अनुसार Rs. {TOTAL_AMOUNT} रिफंड करें और लागू ऑपरेटर पेनल्टी लगाएँ।\n\nमैंने अपने FASTag स्टेटमेंट से दोनों कटौती रसीदियाँ / स्क्रीनशॉट संलग्न किए हैं।\n\nभवदीय,\n{USER_NAME}\nमोबाइल: {MOBILE_NO}"
 }
