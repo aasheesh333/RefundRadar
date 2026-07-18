@@ -12,19 +12,6 @@ import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/services/revenue_cat_service.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 
-/// Premium upsell page (Backlog B3).
-///
-/// Connects to RevenueCat to:
-///   - fetch the current offering's packages(),
-///   - drive `purchasePackage()` on plan buttons,
-///   - `restorePurchases()` on the Restore button,
-///   - log `paywall_view` once per visit and `purchase` on success.
-///
-/// If the SDK isn't configured (debug builds without `--dart-define`), we
-/// still show the page but display a "unavailable in this build" banner
-/// and let the user dismiss. The Test Store key fallback in
-/// `RevenueCatService.envSdkKey` means this branch should rarely hit on a
-/// real device — but keep it for safety.
 class PaywallPage extends ConsumerStatefulWidget {
   final String returnPath;
   final String trigger;
@@ -100,7 +87,8 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
         scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context)?.paywallTitle ?? 'Premium unlocked',
+              AppLocalizations.of(context)?.paywallTitle ??
+                  'Premium unlocked',
             ),
           ),
         );
@@ -140,12 +128,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
         SnackBar(
           content: Text(
             ok
-                ? (l10n?.paywallRestored ?? 'Premium restored 🎉')
-                // Task 8.1 — restorePurchases() swallows all exceptions
-                // and returns `false`, so a `false` here could mean either
-                // "no prior purchases" OR "network/play-services error".
-                // The generic localized message covers both cases without
-                // leaking raw exception text.
+                ? (l10n?.paywallRestored ?? 'Premium restored')
                 : (l10n?.paywallRestoreFailedGeneric ??
                     'Could not restore purchases. Check your connection and try again.'),
           ),
@@ -166,65 +149,17 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-          title: Text(AppLocalizations.of(context)?.paywallTitle ?? 'Go Premium')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const Icon(Icons.workspace_premium,
-              size: 72, color: AppColors.alert),
-          const SizedBox(height: 16),
-          Text(
-            // Contextual paywall (Task 7.4): when triggered from a specific
-            // template, name it in the headline so the upsell feels directly
-            // tied to what the user tried to access. Fall back to the generic
-            // headline for non-template triggers (settings, free-limit hit).
-            () {
-              final l10n = AppLocalizations.of(context);
-              final title = widget.templateTitle;
-              if (title != null && title.isNotEmpty) {
-                return l10n?.paywallHeadlineTemplate(title) ??
-                    'Unlock “$title” and 50+ premium templates.';
-              }
-              return l10n?.paywallHeadline ??
-                  'Recover more. Unlimited disputes + 50+ templates.';
-            }(),
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 24),
-          _buildPlansArea(),
-          const SizedBox(height: 24),
-          const _ComparisonTable(),
-          const SizedBox(height: 16),
-          TextButton(
-            onPressed: _purchasingPackageId == null ? _restore : null,
-            child: Text(AppLocalizations.of(context)?.paywallRestore ?? 'Restore purchases'),
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: () => context.go(widget.returnPath),
-            child: Text(AppLocalizations.of(context)?.paywallMaybeLater ?? 'Maybe later'),
-          ),
-        ],
-      ),
-    );
+  String _headline() {
+    final l10n = AppLocalizations.of(context);
+    final title = widget.templateTitle;
+    if (title != null && title.isNotEmpty) {
+      return l10n?.paywallHeadlineTemplate(title) ??
+          'Unlock "$title" and 50+ premium templates.';
+    }
+    return l10n?.paywallHeadline ??
+        'Recover more. Unlimited disputes + 50+ templates.';
   }
 
-  /// Live store price for a package — uses Play Billing's localized
-  /// `storeProduct.priceString` (e.g. "₹99.00", "US$0.99") instead of
-  /// the previous hardcoded ₹99/₹499/₹1,999 override. The underlying
-  /// purchase still charges whatever the linked Play Store product costs,
-  /// so this is now display-only of the *real* price.
-  ///
-  /// Crashlytics log: when the device locale resolves to `en-IN` or any
-  /// Indian locale but the priceString doesn't contain "₹", that usually
-  /// means the Play Store account region doesn't match the device (e.g.
-  /// an Indian user logged into a US account) — useful telemetry for
-  /// explaining "wrong currency" support tickets.
   String _livePriceFor(Package p) {
     final priceString = p.storeProduct.priceString;
     try {
@@ -238,10 +173,44 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
           'region may not match device locale.',
         );
       }
-    } catch (_) {
-      // Localizations not ready yet — skip the soft check.
-    }
+    } catch (_) {}
     return priceString;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
+      backgroundColor: tc.bg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _TopBar(tc: tc, l10n: l10n, returnPath: widget.returnPath),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                children: [
+                  const SizedBox(height: 8),
+                  _HeroHeader(headline: _headline(), tc: tc),
+                  const SizedBox(height: 24),
+                  _buildPlansArea(),
+                  const SizedBox(height: 24),
+                  const _ComparisonTable(),
+                  const SizedBox(height: 24),
+                  _RestoreRow(
+                    onRestore: _purchasingPackageId == null ? _restore : null,
+                    onDismiss: () => context.go(widget.returnPath),
+                    tc: tc,
+                    l10n: l10n,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildPlansArea() {
@@ -260,11 +229,6 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
     }
     final packages = _offerings?.current?.availablePackages;
     if (packages == null || packages.isEmpty) {
-      // SDK not configured OR no offering attached in dashboard. Show the
-      // Notion-plan INR prices (spec §6.2: monthly ₹99 / yearly ₹499) so
-      // the page is informative even before the live products are wired in
-      // RevenueCat/Play Console. Taps surface a "setup pending" SnackBar —
-      // we never silently swallow the tap.
       final scaffoldMessenger = ScaffoldMessenger.of(context);
       return Column(
         children: [
@@ -272,7 +236,9 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
             children: [
               Expanded(
                 child: _PlanCard(
-                  title: AppLocalizations.of(context)?.paywallMonthlyTitle ?? 'Monthly',
+                  title:
+                      AppLocalizations.of(context)?.paywallMonthlyTitle ??
+                          'Monthly',
                   price: '₹99',
                   highlighted: false,
                   onTap: _purchasingPackageId == null
@@ -290,7 +256,9 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: _PlanCard(
-                  title: AppLocalizations.of(context)?.paywallYearlyTitle ?? 'Yearly',
+                  title:
+                      AppLocalizations.of(context)?.paywallYearlyTitle ??
+                          'Yearly',
                   price: '₹499',
                   highlighted: true,
                   badge: 'Save 58%',
@@ -310,7 +278,8 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
           ),
           const SizedBox(height: 12),
           _PlanCard(
-            title: AppLocalizations.of(context)?.paywallLifetimeTitle ?? 'Lifetime',
+            title: AppLocalizations.of(context)?.paywallLifetimeTitle ??
+                'Lifetime',
             price: '₹1,999',
             highlighted: false,
             fullWidth: true,
@@ -332,6 +301,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
               'Pricing in INR. Live purchases unlock once Google Play products are linked to RevenueCat.',
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontFamily: AppTypography.family,
                 fontSize: 11,
                 color: tc.textSecondary,
                 height: 1.4,
@@ -341,7 +311,6 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
         ],
       );
     }
-    // Order: Monthly, Yearly first (Yearly highlighted), Lifetime last.
     final sorted = [...packages]..sort((a, b) {
         int rank(Package p) => switch (p.packageType) {
               PackageType.monthly => 0,
@@ -379,7 +348,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
             if (yearly != null) ...[
               const SizedBox(width: 12),
               Expanded(
-                child: Builder(builder: (innerCtx) {
+                child: Builder(builder: (_) {
                   final y = yearly!;
                   return _PlanCard(
                     title: y.storeProduct.title,
@@ -398,7 +367,7 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
         ),
         if (lifetime != null) ...[
           const SizedBox(height: 12),
-          Builder(builder: (innerCtx) {
+          Builder(builder: (_) {
             final l = lifetime!;
             return _PlanCard(
               title: l.storeProduct.title,
@@ -413,10 +382,91 @@ class _PaywallPageState extends ConsumerState<PaywallPage> {
           }),
         ],
       ],
-     );
-   }
- }
+    );
+  }
+}
 
+class _TopBar extends StatelessWidget {
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  final String returnPath;
+  const _TopBar({
+    required this.tc,
+    required this.l10n,
+    required this.returnPath,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.arrow_back, color: tc.textPrimary),
+            onPressed: () => context.go(returnPath),
+          ),
+          Expanded(
+            child: Text(
+              l10n?.paywallTitle ?? 'Go Premium',
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: tc.textPrimary,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroHeader extends StatelessWidget {
+  final String headline;
+  final AppThemeColors tc;
+  const _HeroHeader({required this.headline, required this.tc});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: tc.alertSoft,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Icon(
+            Icons.workspace_premium,
+            size: 32,
+            color: AppColors.alert,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            headline,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: tc.textPrimary,
+              height: 1.3,
+              letterSpacing: -0.3,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class _PlanCard extends StatelessWidget {
   final String title;
@@ -439,49 +489,73 @@ class _PlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
-    return InkWell(
-      onTap: loading ? null : onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: fullWidth ? double.infinity : null,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: highlighted ? AppColors.accent : tc.divider,
-            width: highlighted ? 2 : 1,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: loading ? null : onTap,
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        child: Container(
+          width: fullWidth ? double.infinity : null,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: tc.surface,
+            border: Border.all(
+              color: highlighted ? tc.ctaBackground : tc.divider,
+              width: highlighted ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(AppRadii.md),
           ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            if (badge != null) ...[
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
+          child: Column(
+            children: [
+              if (badge != null) ...[
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: tc.accentSoft,
+                    borderRadius: BorderRadius.circular(AppRadii.pill),
+                  ),
+                  child: Text(
                     AppLocalizations.of(context)?.paywallSave ?? 'Save 58%',
-                    style: const TextStyle(
-                        fontSize: 11, color: AppColors.accent)),
+                    style: TextStyle(
+                      fontFamily: AppTypography.family,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: tc.ctaBackground,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+              Text(
+                title,
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: tc.textPrimary,
+                ),
               ),
               const SizedBox(height: 8),
+              if (loading)
+                const SizedBox(
+                  height: 28,
+                  width: 28,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                Text(
+                  price,
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: tc.textPrimary,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
             ],
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            if (loading)
-              const SizedBox(
-                height: 28,
-                width: 28,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            else
-              Text(price,
-                  style: const TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.w800)),
-          ],
+          ),
         ),
       ),
     );
@@ -494,72 +568,216 @@ class _ComparisonTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
-    return Table(
-      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-      border: TableBorder.symmetric(
-        inside: BorderSide(color: tc.divider),
+    return Container(
+      decoration: BoxDecoration(
+        color: tc.surface,
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        border: Border.all(color: tc.divider),
       ),
-      children: [
-        TableRow(children: [
-          const Padding(padding: EdgeInsets.all(12), child: Text('')),
-          Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(l10n?.paywallFreeRow ?? 'Free',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontWeight: FontWeight.w600))),
-          Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(l10n?.paywallPremiumRow ?? 'Premium',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontWeight: FontWeight.w600))),
-        ]),
-        TableRow(children: [
-          Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(l10n?.paywallActiveDisputes ?? 'Active disputes')),
-          const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('1', textAlign: TextAlign.center)),
-          Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(l10n?.paywallUnlimited ?? 'Unlimited',
-                  textAlign: TextAlign.center)),
-        ]),
-        TableRow(children: [
-          Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(l10n?.paywallTemplates ?? 'Templates')),
-          const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('5', textAlign: TextAlign.center)),
-          const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('50+', textAlign: TextAlign.center)),
-        ]),
-        TableRow(children: [
-          Padding(
-              padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          _headerRow(tc, l10n),
+          Divider(height: 1, color: tc.divider),
+          _row(
+            tc,
+            l10n?.paywallActiveDisputes ?? 'Active disputes',
+            '1',
+            l10n?.paywallUnlimited ?? 'Unlimited',
+          ),
+          Divider(height: 1, color: tc.divider),
+          _row(
+            tc,
+            l10n?.paywallTemplates ?? 'Templates',
+            '5',
+            '50+',
+          ),
+          Divider(height: 1, color: tc.divider),
+          _iconRow(
+            tc,
+            l10n?.paywallOmbudsmanLetter ?? 'Ombudsman letter generator',
+          ),
+          Divider(height: 1, color: tc.divider),
+          _iconRow(
+            tc,
+            l10n?.paywallHindiTemplates ?? 'Hindi premium templates',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _headerRow(AppThemeColors tc, AppLocalizations? l10n) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+      child: Row(
+        children: [
+          Expanded(flex: 5, child: const SizedBox.shrink()),
+          Expanded(
+            flex: 2,
+            child: Center(
               child: Text(
-                  l10n?.paywallOmbudsmanLetter ?? 'Ombudsman letter generator')),
-          Padding(
-              padding: const EdgeInsets.all(12),
-              child: Icon(Icons.close, color: tc.textTertiary)),
-          const Padding(
-              padding: EdgeInsets.all(12),
-              child: Icon(Icons.check, color: AppColors.accent)),
-        ]),
-        TableRow(children: [
-          Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(l10n?.paywallHindiTemplates ??
-                  'Hindi premium templates')),
-          Padding(
-              padding: const EdgeInsets.all(12),
-              child: Icon(Icons.close, color: tc.textTertiary)),
-          const Padding(
-              padding: EdgeInsets.all(12),
-              child: Icon(Icons.check, color: AppColors.accent)),
-        ]),
+                l10n?.paywallFreeRow ?? 'Free',
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: tc.textSecondary,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Center(
+              child: Text(
+                l10n?.paywallPremiumRow ?? 'Premium',
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: tc.ctaBackground,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _row(AppThemeColors tc, String label, String freeVal, String premVal) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 5,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: tc.textPrimary,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Center(
+              child: Text(
+                freeVal,
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 13,
+                  color: tc.textSecondary,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Center(
+              child: Text(
+                premVal,
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: tc.ctaBackground,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _iconRow(AppThemeColors tc, String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 5,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: tc.textPrimary,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child:
+                Center(child: Icon(Icons.close, size: 16, color: tc.textTertiary)),
+          ),
+          Expanded(
+            flex: 2,
+            child: Center(
+              child: Container(
+                width: 22,
+                height: 22,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: tc.accentSoft,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.check, size: 14, color: tc.ctaBackground),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RestoreRow extends StatelessWidget {
+  final VoidCallback? onRestore;
+  final VoidCallback onDismiss;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _RestoreRow({
+    required this.onRestore,
+    required this.onDismiss,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TextButton(
+          onPressed: onRestore,
+          child: Text(
+            l10n?.paywallRestore ?? 'Restore purchases',
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: tc.textSecondary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        TextButton(
+          onPressed: onDismiss,
+          child: Text(
+            l10n?.paywallMaybeLater ?? 'Maybe later',
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: tc.textTertiary,
+            ),
+          ),
+        ),
       ],
     );
   }

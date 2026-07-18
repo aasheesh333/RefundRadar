@@ -32,167 +32,49 @@ class SettingsPage extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // top header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    l10n?.settingsTitle ?? 'Settings',
-                    style: TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w700,
-                      color: tc.textPrimary,
-                    ),
-                  ),
-                  Tooltip(
-                    message: l10n?.commonClose ?? 'Close',
-                    child: Semantics(
-                      button: true,
-                      label: l10n?.commonClose ?? 'Close',
-                      child: InkWell(
-                        onTap: () => Navigator.of(context).maybePop(),
-                        borderRadius: BorderRadius.circular(24),
-                        child: Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: tc.surface,
-                            border: Border.all(
-                              color: tc.divider,
-                              width: 1,
-                            ),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.close,
-                            size: 18,
-                            color: tc.textSecondary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // profile row
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: tc.divider, width: 1),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [tc.ctaBackground, AppColors.primaryDark],
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'A',
-                        style: TextStyle(
-                          color: tc.ctaForeground,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n?.settingsRefundRadarUser ?? 'Refund Radar user',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: tc.textPrimary,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          l10n?.settingsLocalProfile ?? 'Local profile',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: tc.textSecondary,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: () => context.push(AppRoutes.paywallWithParams(
-                      trigger: 'settings',
-                      returnPath: AppRoutes.settings,
-                    )),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isPremium
-                            ? tc.premiumGoldSoft
-                            : tc.accentSoft,
-                        borderRadius: BorderRadius.circular(AppRadii.pill),
-                      ),
-                      child: Text(
-                        isPremium
-                            ? (l10n?.settingsProBadge ?? '⭐ Pro')
-                            : (l10n?.paywallTitle ?? 'Upgrade'),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: isPremium
-                              ? AppColors.premiumGold
-                              : tc.ctaBackground,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // body cards
+            _PageHeader(tc: tc, l10n: l10n),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                 children: [
-                  _Card(
+                  _UserCard(isPremium: isPremium, tc: tc, l10n: l10n),
+                  const SizedBox(height: 16),
+                  _SectionCard(
                     label: l10n?.settingsSmsDetection ?? 'SMS detection',
+                    tc: tc,
                     child: Column(
                       children: [
                         Row(
                           children: [
                             Expanded(
-                              child: Text(
-                                l10n?.settingsAutoDetectUtr ?? 'Auto-detect UTR',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: tc.textPrimary,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n?.settingsAutoDetectUtr ??
+                                        'Auto-detect UTR',
+                                    style: TextStyle(
+                                      fontFamily: AppTypography.family,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: tc.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    l10n?.settingsOnDeviceLabel ??
+                                        'On-device. Nothing leaves your phone.',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: tc.textSecondary,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             ToggleSwitch(
-                              value: ref.watch(smsDetectionEnabledProvider),
+                              value:
+                                  ref.watch(smsDetectionEnabledProvider),
                               onChanged: (v) async {
                                 if (v) {
                                   final status =
@@ -205,7 +87,8 @@ class SettingsPage extends ConsumerWidget {
                                             .notifier)
                                         .state = true;
                                   } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(
                                       SnackBar(
                                         content: Text(
                                           l10n?.settingsSmsPermissionHint ??
@@ -225,62 +108,48 @@ class SettingsPage extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: l10n?.settingsOnDeviceLabel ?? 'On-device. ',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  color: tc.ctaBackground,
-                                ),
-                              ),
-                              TextSpan(
-                                  text: l10n?.settingsNothingLeaves ??
-                                      'Nothing leaves your phone.'),
-                            ],
-                          ),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: tc.textSecondary,
-                            height: 1.3,
-                          ),
-                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 10),
-                  _Card(
+                  _SectionCard(
                     label: l10n?.settingsNotifications ?? 'Notifications',
-                    child: _ToggleRows(
-                      items: [
-                        _ToggleItem(
+                    tc: tc,
+                    child: Column(
+                      children: [
+                        _ToggleRow(
                           label: l10n?.settingsDeadlineReminders ??
                               'Deadline reminders',
                           value: ref.watch(notifDeadlineProvider),
                           onChanged: (v) => setNotifDeadline(ref, v),
+                          tc: tc,
                         ),
-                        _ToggleItem(
-                          label:
-                              l10n?.settingsDailyComp ?? 'Daily comp clock',
+                        const SizedBox(height: 10),
+                        _ToggleRow(
+                          label: l10n?.settingsDailyComp ??
+                              'Daily comp clock',
                           value: ref.watch(notifDailyProvider),
                           onChanged: (v) => setNotifDaily(ref, v),
+                          tc: tc,
                         ),
-                        _ToggleItem(
-                          label: l10n?.settingsWeeklyDigest ?? 'Weekly digest',
+                        const SizedBox(height: 10),
+                        _ToggleRow(
+                          label: l10n?.settingsWeeklyDigest ??
+                              'Weekly digest',
                           value: ref.watch(notifWeeklyProvider),
                           onChanged: (v) => setNotifWeekly(ref, v),
+                          tc: tc,
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 10),
-                  _Card(
+                  _SectionCard(
                     label: l10n?.settingsLanguage ?? 'Language',
+                    tc: tc,
                     child: Column(
                       children: [
-RadioRow(
+                        RadioRow(
                           label: l10n?.settingsEnglish ?? 'English',
                           selected: locale.languageCode != 'hi',
                           onTap: () {
@@ -289,7 +158,7 @@ RadioRow(
                             persistLocaleCode('en');
                           },
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         RadioRow(
                           label: l10n?.settingsHindi ?? 'हिन्दी',
                           selected: locale.languageCode == 'hi',
@@ -303,8 +172,9 @@ RadioRow(
                     ),
                   ),
                   const SizedBox(height: 10),
-                  _Card(
+                  _SectionCard(
                     label: l10n?.settingsAppearance ?? 'Appearance',
+                    tc: tc,
                     child: Column(
                       children: [
                         RadioRow(
@@ -316,7 +186,7 @@ RadioRow(
                             persistThemeMode(ThemeMode.light);
                           },
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         RadioRow(
                           label: l10n?.settingsDark ?? 'Dark',
                           selected: themeMode == ThemeMode.dark,
@@ -326,9 +196,10 @@ RadioRow(
                             persistThemeMode(ThemeMode.dark);
                           },
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         RadioRow(
-                          label: l10n?.settingsSystemDefault ?? 'System default',
+                          label:
+                              l10n?.settingsSystemDefault ?? 'System default',
                           selected: themeMode == ThemeMode.system,
                           onTap: () {
                             ref.read(themeModeProvider.notifier).state =
@@ -340,21 +211,23 @@ RadioRow(
                     ),
                   ),
                   const SizedBox(height: 10),
-                  _Card(
+                  _SectionCard(
                     label: l10n?.settingsAbout ?? 'About',
+                    tc: tc,
                     child: Column(
                       children: [
-                        _RowPair(
+                        _InfoRow(
                           left: l10n?.settingsVersion ?? 'Version',
                           right:
-                              '${const String.fromEnvironment('VERSION_NAME', defaultValue: '1.0.0')}'
-                              ' (${const String.fromEnvironment('VERSION_CODE', defaultValue: '1')})',
+                              '${const String.fromEnvironment('VERSION_NAME', defaultValue: '1.0.0')} (${const String.fromEnvironment('VERSION_CODE', defaultValue: '1')})',
+                          tc: tc,
                         ),
-                        const SizedBox(height: 6),
-                        _RowPair(
+                        const SizedBox(height: 8),
+                        _InfoRow(
                           left: l10n?.settingsRbiSources ?? 'RBI sources',
                           right: '3 · Jul 2026',
                           rightColor: AppColors.accent,
+                          tc: tc,
                         ),
                       ],
                     ),
@@ -362,76 +235,51 @@ RadioRow(
                   const SizedBox(height: 10),
                   InkWell(
                     onTap: () => _showLegalDialog(context, ref),
-                    child: _Card(
-                      label: l10n?.settingsLegal ?? 'Legal',
-                      child: Text(
-                        l10n?.settingsLegalRow ??
-                            'Disclaimer · Privacy · Delete data',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: tc.textPrimary,
-                        ),
+                    borderRadius: BorderRadius.circular(AppRadii.md),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: tc.surface,
+                        border: Border.all(color: tc.divider),
+                        borderRadius: BorderRadius.circular(AppRadii.md),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            l10n?.settingsLegal ?? 'Legal',
+                            style: TextStyle(
+                              fontFamily: AppTypography.family,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.8,
+                              color: tc.textSecondary,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            l10n?.settingsLegalRow ??
+                                'Disclaimer · Privacy · Delete data',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: tc.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(Icons.chevron_right,
+                              size: 16, color: tc.textSecondary),
+                        ],
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            // sign out / footer
-            SafeArea(
-              top: false,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(20, 9, 20, 9),
-                decoration: BoxDecoration(
-                  color: tc.surface,
-                  border: Border(
-                    top: BorderSide(
-                      color: tc.divider,
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n?.settingsNotAffiliated ??
-                            'Not affiliated with RBI/NPCI/banks',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: tc.textTertiary,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      height: 48,
-                      child: TextButton(
-                        onPressed: () => _confirmSignOut(context, ref),
-                        style: TextButton.styleFrom(
-                          backgroundColor: tc.errorSoft,
-                          foregroundColor: AppColors.error,
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(AppRadii.md),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          minimumSize: const Size(0, 48),
-                        ),
-                        child: Text(
-                          l10n?.settingsSignOut ?? 'Sign out',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            _SignOutFooter(
+              tc: tc,
+              l10n: l10n,
+              onSignOut: () => _confirmSignOut(context, ref),
             ),
           ],
         ),
@@ -522,7 +370,10 @@ RadioRow(
           ),
           TextButton(
             onPressed: () => Navigator.pop(c, true),
-            child: Text(l10n?.settingsDeleteData ?? 'Delete my data'),
+            child: Text(
+              l10n?.settingsDeleteData ?? 'Delete my data',
+              style: const TextStyle(color: AppColors.error),
+            ),
           ),
         ],
       ),
@@ -575,7 +426,8 @@ RadioRow(
     }
   }
 
-  Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmSignOut(
+      BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
@@ -589,15 +441,16 @@ RadioRow(
           ),
           TextButton(
             onPressed: () => Navigator.pop(c, true),
-            child: Text(l10n?.settingsSignOut ?? 'Sign out'),
+            child: Text(
+              l10n?.settingsSignOut ?? 'Sign out',
+              style: const TextStyle(color: AppColors.error),
+            ),
           ),
         ],
       ),
     );
     if (confirmed != true || !context.mounted) return;
 
-    // Anonymous re-auth: signs out then mints a fresh uid — cloud data under
-    // the previous uid becomes unreachable (warned above).
     await ref.read(reauthProvider)();
     ref.invalidate(userIdProvider);
     if (!context.mounted) return;
@@ -607,33 +460,165 @@ RadioRow(
   }
 }
 
-class _Card extends StatelessWidget {
-  const _Card({required this.label, required this.child});
-  final String label;
-  final Widget child;
+class _PageHeader extends StatelessWidget {
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _PageHeader({required this.tc, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
-    final tc = AppThemeColors.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.arrow_back, color: tc.textPrimary),
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
+          Expanded(
+            child: Text(
+              l10n?.settingsTitle ?? 'Settings',
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: tc.textPrimary,
+                letterSpacing: -0.3,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UserCard extends StatelessWidget {
+  final bool isPremium;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _UserCard({
+    required this.isPremium,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: tc.surface,
-        border: Border.all(color: tc.divider, width: 1),
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        border: Border.all(color: tc.divider),
+        borderRadius: BorderRadius.circular(AppRadii.md),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: tc.ctaBackground.withValues(alpha: 0.12),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              'A',
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: tc.ctaBackground,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n?.settingsRefundRadarUser ?? 'Refund Radar user',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: tc.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  l10n?.settingsLocalProfile ?? 'Local profile',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: tc.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            onTap: () => context.push(AppRoutes.paywallWithParams(
+              trigger: 'settings',
+              returnPath: AppRoutes.settings,
+            )),
+            borderRadius: BorderRadius.circular(AppRadii.pill),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: isPremium ? tc.premiumGoldSoft : tc.accentSoft,
+                borderRadius: BorderRadius.circular(AppRadii.pill),
+              ),
+              child: Text(
+                isPremium
+                    ? (l10n?.settingsProBadge ?? 'Pro')
+                    : (l10n?.paywallTitle ?? 'Upgrade'),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: isPremium ? AppColors.premiumGold : tc.ctaBackground,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  final String label;
+  final Widget child;
+  final AppThemeColors tc;
+  const _SectionCard({
+    required this.label,
+    required this.child,
+    required this.tc,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: tc.surface,
+        border: Border.all(color: tc.divider),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 2, bottom: 6),
+            padding: const EdgeInsets.only(bottom: 8),
             child: Text(
               label.toUpperCase(),
               style: TextStyle(
                 fontFamily: AppTypography.family,
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
-                letterSpacing: 0.8,
+                letterSpacing: 1.0,
                 color: tc.textSecondary,
               ),
             ),
@@ -645,25 +630,60 @@ class _Card extends StatelessWidget {
   }
 }
 
-class _RowPair extends StatelessWidget {
-  const _RowPair({
-    required this.left,
-    required this.right,
-    this.rightColor,
+class _ToggleRow extends StatelessWidget {
+  final String label;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+  final AppThemeColors tc;
+  const _ToggleRow({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+    required this.tc,
   });
-  final String left;
-  final String right;
-  final Color? rightColor;
 
   @override
   Widget build(BuildContext context) {
-    final tc = AppThemeColors.of(context);
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: value ? tc.textPrimary : tc.textSecondary,
+            ),
+          ),
+        ),
+        ToggleSwitch(value: value, onChanged: onChanged),
+      ],
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String left;
+  final String right;
+  final Color? rightColor;
+  final AppThemeColors tc;
+  const _InfoRow({
+    required this.left,
+    required this.right,
+    this.rightColor,
+    required this.tc,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
         Expanded(
           child: Text(
             left,
             style: TextStyle(
+              fontFamily: AppTypography.family,
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: tc.textSecondary,
@@ -673,9 +693,11 @@ class _RowPair extends StatelessWidget {
         Text(
           right,
           style: TextStyle(
+            fontFamily: AppTypography.family,
             fontSize: 12,
             fontWeight: FontWeight.w700,
             color: rightColor ?? tc.textPrimary,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ],
@@ -683,51 +705,62 @@ class _RowPair extends StatelessWidget {
   }
 }
 
-class _ToggleItem {
-  final String label;
-  final bool value;
-  final ValueChanged<bool>? onChanged;
-  const _ToggleItem({
-    required this.label,
-    required this.value,
-    required this.onChanged,
+class _SignOutFooter extends StatelessWidget {
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  final VoidCallback onSignOut;
+  const _SignOutFooter({
+    required this.tc,
+    required this.l10n,
+    required this.onSignOut,
   });
-}
-
-class _ToggleRows extends StatelessWidget {
-  const _ToggleRows({required this.items});
-  final List<_ToggleItem> items;
 
   @override
   Widget build(BuildContext context) {
-    final tc = AppThemeColors.of(context);
-    return Column(
-      children: [
-        for (var i = 0; i < items.length; i++) ...[
-          if (i != 0) const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  items[i].label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: items[i].value
-                        ? tc.textPrimary
-                        : tc.textSecondary,
-                  ),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+      decoration: BoxDecoration(
+        color: tc.surface,
+        border: Border(top: BorderSide(color: tc.divider)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              l10n?.settingsNotAffiliated ??
+                  'Not affiliated with RBI/NPCI/banks',
+              style: TextStyle(
+                fontSize: 10,
+                color: tc.textTertiary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            height: 40,
+            child: OutlinedButton(
+              onPressed: onSignOut,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.error,
+                side: const BorderSide(color: AppColors.error, width: 0.5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.md),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              child: Text(
+                l10n?.settingsSignOut ?? 'Sign out',
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.error,
                 ),
               ),
-              const SizedBox(width: 10),
-              ToggleSwitch(
-                value: items[i].value,
-                onChanged: items[i].onChanged,
-              ),
-            ],
+            ),
           ),
         ],
-      ],
+      ),
     );
   }
 }

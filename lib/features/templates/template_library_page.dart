@@ -107,59 +107,42 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
 
     return Column(
       children: [
-        // header
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+          padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              IconButton(
+                icon: Icon(Icons.arrow_back, color: tc.textPrimary),
+                onPressed: () => context.pop(),
+              ),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n?.templateLibraryTitle ?? 'Templates',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: tc.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      l10n?.templateLibrarySubtitle ??
-                          'RBI-compliant dispute letters',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: tc.textSecondary,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  l10n?.templateLibraryTitle ?? 'Templates',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: tc.textPrimary,
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        // Premium upsell banner — makes templates a clear point-of-sale for
-        // free users. Always visible on the library so the value prop is
-        // front-and-center, not buried behind individual locked cards.
         if (!isPremiumUser)
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    tc.premiumGoldSoft,
-                    tc.surface,
-                  ],
+                  colors: [tc.premiumGoldSoft, tc.surface],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 border: Border.all(color: AppColors.premiumGold, width: 1),
-                borderRadius: BorderRadius.circular(AppRadii.lg),
+                borderRadius: BorderRadius.circular(AppRadii.md),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,6 +160,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                           l10n?.templateLibraryUpsellTitle ??
                               'Unlock 50+ premium templates',
                           style: TextStyle(
+                            fontFamily: AppTypography.family,
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: tc.textPrimary,
@@ -185,7 +169,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
                     l10n?.templateLibraryUpsellBody ??
                         'Get faster refunds with ready-to-send complaints for RBI, NPCI, banking ombudsman and more.',
@@ -193,7 +177,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       color: tc.textSecondary,
-                      height: 1.5,
+                      height: 1.4,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -209,8 +193,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                       icon: const Icon(Icons.lock_open, size: 18),
                       label: Text(
                         l10n?.templateLibraryUpsellCta ?? 'Upgrade to Pro',
-                        style:
-                            const TextStyle(fontWeight: FontWeight.w700),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ),
                   ),
@@ -220,7 +203,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
           ),
         if (disputes.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: DropdownButtonFormField<String>(
               initialValue: selected?.id,
               decoration: InputDecoration(
@@ -235,7 +218,6 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                   DropdownMenuItem(
                     value: d.id,
                     child: Text(
-                      // LO-1: Indian-grouped amount in the dispute selector.
                       '${d.entityName ?? d.type.id} · ₹${IndianNumberFormatter.format(d.amount)}',
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -244,24 +226,21 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
               onChanged: (id) => setState(() => _selectedDisputeId = id),
             ),
           ),
-        // filter pills
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
           child: FilterPills(
             pills: _categories
-                .map(
-                  (c) => (
-                    label: c == 'All' ? 'All $totalCount' : c,
-                    selected: _selectedCategory == c,
-                    onTap: () => setState(() => _selectedCategory = c),
-                  ),
-                )
+                .map((c) => (
+                      label: c == 'All' ? 'All $totalCount' : c,
+                      selected: _selectedCategory == c,
+                      onTap: () => setState(() => _selectedCategory = c),
+                    ))
                 .toList(),
           ),
         ),
         Expanded(
           child: ListView.separated(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             itemCount: filtered.length,
             separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (c, i) {
@@ -277,12 +256,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                 localeCode: localeCode,
                 onTap: () {
                   if (locked) {
-                    _showLockedPreview(
-                      c,
-                      t,
-                      localeCode,
-                      dispute: selected,
-                    );
+                    _showLockedPreview(c, t, localeCode, dispute: selected);
                   } else {
                     _showTemplatePreview(c, t, localeCode, dispute: selected);
                   }
@@ -291,15 +265,17 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
             },
           ),
         ),
-        // sources footer
         Container(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-          color: tc.surfaceAlt,
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          decoration: BoxDecoration(
+            color: tc.surfaceAlt,
+            border: Border(top: BorderSide(color: tc.divider)),
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('📚', style: TextStyle(fontSize: 14)),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   'Sources · RBI Master Directions DPSS.CO.PD.No.629/02.03.001 (2018) · Banking Ombudsman Scheme 2006 · NPCI FASTag dispute guidelines',
@@ -345,11 +321,6 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     );
   }
 
-  /// Task 7.3 — locked-card tap opens a bottom sheet with a blurred body
-  /// preview and an "Unlock with Premium" CTA (rather than jumping straight
-  /// to the paywall). Users can read the first part of the template to
-  /// decide whether it's worth buying, then tap through to the paywall with
-  /// the template's id/title already wired through `paywallWithParams`.
   void _showLockedPreview(
     BuildContext context,
     Template t,
@@ -374,7 +345,6 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Drag handle
               Center(
                 child: Container(
                   width: 36,
@@ -386,13 +356,13 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                   ),
                 ),
               ),
-              // Title + Pro badge
               Row(
                 children: [
                   Expanded(
                     child: Text(
                       t.titleFor(localeCode),
                       style: TextStyle(
+                        fontFamily: AppTypography.family,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: tc.textPrimary,
@@ -417,13 +387,8 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                 ),
               ),
               const SizedBox(height: 14),
-              // Blurred preview — show the top ~30% of the template body
-              // behind a soft scrim so the user gets a sense of structure
-              // without being able to read the full text. The remaining
-              // lines are masked by a gradient fade to "Locked to continue".
               Stack(
                 children: [
-                  // Faded/blurred preview text.
                   ClipRect(
                     child: Container(
                       constraints: BoxConstraints(
@@ -443,7 +408,6 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                       ),
                     ),
                   ),
-                  // Gradient fade to "locked" affordance.
                   Positioned.fill(
                     child: IgnorePointer(
                       child: DecoratedBox(
@@ -465,8 +429,6 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                 ],
               ),
               const SizedBox(height: 10),
-              // CTA: Unlock with Premium → paywall with template context
-              // (Task 7.4). The paywall headline names this template.
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -504,10 +466,6 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
   }
 }
 
-/// Template card matching mockup Screen 10. Each card has:
-/// - soft-color emoji tile, title, level/category subtitle,
-/// - "Used N×" / "New" / 🔒 chip on the right,
-/// - body preview (2-line clamp), and footer row with reference + Use → link.
 class _TemplateCard extends StatelessWidget {
   const _TemplateCard({
     required this.template,
@@ -533,49 +491,41 @@ class _TemplateCard extends StatelessWidget {
             prefix: '🔒',
           )
         : StatusPill(
-            label:
-                l10n?.templateLevelLabel(template.escalationLevel) ??
-                'Level ${template.escalationLevel}',
+            label: l10n?.templateLevelLabel(template.escalationLevel) ??
+                'L${template.escalationLevel}',
             fg: AppColors.accent,
             bg: tc.accentSoft,
           );
 
-    // Body preview: render the actual template body (tokens fill with
-    // fallbacks without a dispute) so the user sees what they'd unlock —
-    // matches the Escalate picker's preview. Locked cards keep the Pro
-    // badge + "Unlock →" CTA below to signal the paywall (Task 7.2).
     final preview = filledTemplateBody(template, localeCode, null);
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadii.lg),
+      borderRadius: BorderRadius.circular(AppRadii.md),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: tc.surface,
-          border: Border.all(color: tc.divider, width: 1),
-          borderRadius: BorderRadius.circular(AppRadii.lg),
+          border: Border.all(color: tc.divider),
+          borderRadius: BorderRadius.circular(AppRadii.md),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Icon tile
             Container(
               width: 32,
               height: 32,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: _softColorFor(template.category, tc),
                 borderRadius: BorderRadius.circular(AppRadii.sm),
               ),
-              child: Center(
-                child: Text(
-                  _emojiFor(template.category, template.escalationLevel),
-                  style: const TextStyle(fontSize: 14),
-                ),
+              child: Text(
+                _emojiFor(template.category, template.escalationLevel),
+                style: const TextStyle(fontSize: 14),
               ),
             ),
             const SizedBox(width: 12),
-            // Body
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -586,7 +536,8 @@ class _TemplateCard extends StatelessWidget {
                         child: Text(
                           template.titleFor(localeCode),
                           style: TextStyle(
-                            fontSize: 15,
+                            fontFamily: AppTypography.family,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: tc.textPrimary,
                           ),
@@ -606,7 +557,7 @@ class _TemplateCard extends StatelessWidget {
                       color: tc.textSecondary,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Text(
                     preview,
                     maxLines: 2,
@@ -615,28 +566,29 @@ class _TemplateCard extends StatelessWidget {
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       color: tc.textSecondary,
-                      height: 1.5,
+                      height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Expanded(
                         child: Text(
                           'RBI/NPCI compliant',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 10,
                             fontWeight: FontWeight.w600,
+                            letterSpacing: 0.8,
                             color: tc.ctaBackground,
                           ),
                         ),
                       ),
                       Text(
                         locked ? 'Unlock →' : 'Use →',
-                        style: const TextStyle(
-                          fontSize: 12,
+                        style: TextStyle(
+                          fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.accent,
+                          color: locked ? AppColors.premiumGold : AppColors.accent,
                         ),
                       ),
                     ],
@@ -651,16 +603,16 @@ class _TemplateCard extends StatelessWidget {
   }
 
   Color _softColorFor(String category, AppThemeColors tc) => switch (category) {
-    'UPI / IMPS / ATM' => tc.alertSoft,
-    'FASTag' => tc.accentSoft,
-    'Advanced / legal' => tc.premiumGoldSoft,
-    _ => tc.surfaceAlt,
-  };
+        'UPI / IMPS / ATM' => tc.alertSoft,
+        'FASTag' => tc.accentSoft,
+        'Advanced / legal' => tc.premiumGoldSoft,
+        _ => tc.surfaceAlt,
+      };
 
   String _emojiFor(String category, int level) => switch (category) {
-    'UPI / IMPS / ATM' => '📧',
-    'FASTag' => '🚗',
-    'Advanced / legal' => '🏛️',
-    _ => '📄',
-  };
+        'UPI / IMPS / ATM' => '📧',
+        'FASTag' => '🚗',
+        'Advanced / legal' => '🏛️',
+        _ => '📄',
+      };
 }

@@ -19,9 +19,6 @@ import 'package:refund_radar/shared/utils/indian_number_formatter.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 
-/// Non-terminal disputes shown on Home (active only).
-/// Includes `draft`: the create form saves new disputes as draft until
-/// L1 is filed, so excluding draft hides every newly-created dispute.
 List<Dispute> activeHomeDisputes(List<Dispute> disputes) => disputes
     .where((d) =>
         d.status != DisputeStatus.resolved &&
@@ -81,61 +78,8 @@ class HomePage extends ConsumerWidget {
           ),
         ),
       ),
-      floatingActionButton: Padding(
-        // SafeArea-aware: honour system inset (notch / gesture nav) on the
-        // right + bottom so the FAB doesn't get clipped on landscape or
-        // ROM-gesture phones. Manual 16dp fallback when inset is 0.
-        padding: EdgeInsets.only(
-          right: 16 + MediaQuery.of(context).padding.right,
-          bottom: 16 + MediaQuery.of(context).padding.bottom,
-        ),
-        child: Tooltip(
-          message: AppLocalizations.of(context)?.homeNewDispute ?? 'New dispute',
-          child: Semantics(
-            button: true,
-            label: AppLocalizations.of(context)?.homeNewDispute ?? 'New dispute',
-            child: Builder(builder: (context) {
-              final tc = AppThemeColors.of(context);
-              return Container(
-              height: 52,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                color: tc.ctaBackground,
-                borderRadius: BorderRadius.circular(AppRadii.pill),
-                boxShadow: AppShadows.fab,
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(AppRadii.pill),
-                  onTap: () => context.push(AppRoutes.disputesCreate),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.add, color: tc.ctaForeground, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        AppLocalizations.of(context)?.homeNewDispute ??
-                            'New dispute',
-                        style: TextStyle(
-                          fontFamily: AppTypography.family,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: tc.ctaForeground,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-            }),
-          ),
-        ),
-      ),
     );
   }
-
 }
 
 class _Body extends ConsumerWidget {
@@ -161,111 +105,8 @@ class _Body extends ConsumerWidget {
         ) ??
         '₹${_formatIndian(disputedSum)} disputed · ₹${_formatIndian(penaltySum)} penalty accrued';
 
-    // Build a list of widgets so we can splice the detected-transactions
-    // banner before the disputes when there are unclaimed detections.
     final children = <Widget>[
-      // header
-      Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppLocalizations.of(context)?.appName ?? 'Refund Radar',
-                  style: TextStyle(
-                    fontFamily: AppTypography.family,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: tc.ctaBackground,
-                  ),
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  l10n?.homeActiveDisputes(disputes.length) ??
-                      '${disputes.length} active ${disputes.length == 1 ? 'dispute' : 'disputes'}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: tc.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Tooltip(
-            message: l10n?.homeRemindersTooltip ?? 'Reminders',
-            child: Semantics(
-              button: true,
-              label: l10n?.homeRemindersTooltip ?? 'Reminders',
-              child: InkWell(
-                onTap: () => context.push(AppRoutes.reminders),
-                borderRadius: BorderRadius.circular(24),
-                child: SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: Icon(Icons.notifications_outlined,
-                      size: 22, color: tc.ctaBackground),
-                ),
-              ),
-            ),
-          ),
-          Tooltip(
-            message: l10n?.homeTemplatesTooltip ?? 'Templates',
-            child: Semantics(
-              button: true,
-              label: l10n?.homeTemplatesTooltip ?? 'Templates',
-              child: InkWell(
-                onTap: () => context.push(AppRoutes.templates),
-                borderRadius: BorderRadius.circular(24),
-                child: SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: Icon(Icons.description_outlined,
-                      size: 22, color: tc.ctaBackground),
-                ),
-              ),
-            ),
-          ),
-          Tooltip(
-            message: AppLocalizations.of(context)?.settingsTitle ?? 'Settings',
-            child: Semantics(
-              button: true,
-              label: AppLocalizations.of(context)?.settingsTitle ?? 'Settings',
-              child: InkWell(
-                onTap: () => context.push(AppRoutes.settings),
-                borderRadius: BorderRadius.circular(24),
-                child: Container(
-                  width: 48,
-                  height: 48,
-                  alignment: Alignment.center,
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: tc.surfaceAlt,
-                      shape: BoxShape.circle,
-                      border:
-                          Border.all(color: AppColors.premiumGold, width: 2),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'A',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: tc.ctaBackground,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      _PageHeader(disputeCount: disputes.length, tc: tc, l10n: l10n),
       const SizedBox(height: 12),
       OwedCounterCard(
         totalOwed: totalOwed,
@@ -275,26 +116,21 @@ class _Body extends ConsumerWidget {
       ),
     ];
 
-    // Pro upsell card — makes premium a front-and-center point-of-sale on
-    // the Home screen for free users. Hidden once the user upgrades.
     if (!isPremium) {
       children
         ..add(const SizedBox(height: 14))
-        ..add(_HomeProUpsellCard());
+        ..add(const _HomeProUpsellCard());
     }
 
-    // Detected transactions banner (Task C8). Only show when there are
-    // unclaimed detections. Each card taps through to the dispute form
-    // pre-filled; dismiss removes the detection from the running list.
     if (detections.isNotEmpty) {
       children
-        ..add(const SizedBox(height: 14))
+        ..add(const SizedBox(height: 18))
         ..add(_DetectedTransactionsSection(detections: detections));
     }
 
     if (disputes.isNotEmpty) {
       children.addAll([
-        const SizedBox(height: 14),
+        const SizedBox(height: 18),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -314,16 +150,23 @@ class _Body extends ConsumerWidget {
                 button: true,
                 label: l10n?.homeViewAllDisputes ?? 'View all disputes',
                 child: Container(
-                  // 48dp minimum tap target; text stays 12px visually.
                   padding: const EdgeInsets.symmetric(
                       horizontal: 4, vertical: 14),
-                  child: Text(
-                    l10n?.homeViewAllDisputes ?? 'View all →',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.accent,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        l10n?.homeViewAllDisputes ?? 'View all',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: tc.ctaBackground,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(Icons.arrow_forward,
+                          size: 13, color: tc.ctaBackground),
+                    ],
                   ),
                 ),
               ),
@@ -341,17 +184,101 @@ class _Body extends ConsumerWidget {
       ]);
     }
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
-      children: children,
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+          sliver: SliverList.list(children: children),
+        ),
+      ],
     );
   }
 
-  /// Format an amount using the Indian numbering system (e.g. 1,00,000)
-  /// without the leading ₹ symbol — delegates to the shared helper so the
-  /// breakdown subtitle matches the hero card exactly.
   static String _formatIndian(double amount) =>
       IndianNumberFormatter.format(amount);
+}
+
+class _PageHeader extends StatelessWidget {
+  final int disputeCount;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _PageHeader({
+    required this.disputeCount,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 8, 4, 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)?.appName ?? 'Refund Radar',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: tc.textPrimary,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  l10n?.homeActiveDisputes(disputeCount) ??
+                      '$disputeCount active ${disputeCount == 1 ? 'dispute' : 'disputes'}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: tc.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: l10n?.homeRemindersTooltip ?? 'Reminders',
+            icon: Icon(Icons.notifications_outlined,
+                size: 21, color: tc.textPrimary),
+            onPressed: () => context.push(AppRoutes.reminders),
+          ),
+          IconButton(
+            tooltip: l10n?.homeTemplatesTooltip ?? 'Templates',
+            icon: Icon(Icons.description_outlined,
+                size: 21, color: tc.textPrimary),
+            onPressed: () => context.push(AppRoutes.templates),
+          ),
+          GestureDetector(
+            onTap: () => context.push(AppRoutes.settings),
+            child: Container(
+              width: 32,
+              height: 32,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: tc.surfaceAlt,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.premiumGold, width: 1.5),
+              ),
+              child: Text(
+                'A',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: tc.textPrimary,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
+    );
+  }
 }
 
 class _EmptyState extends StatelessWidget {
@@ -359,82 +286,58 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
+    final l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 80,
               height: 80,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: tc.accentSoft,
-                shape: BoxShape.circle,
+                color: tc.surfaceAlt,
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: const Center(
-                child: Text('💰', style: TextStyle(fontSize: 36)),
-              ),
+              child: const Text('💰', style: TextStyle(fontSize: 36)),
             ),
             const SizedBox(height: 20),
             Text(
-              AppLocalizations.of(context)?.homeEmptyTitle ?? 'No disputes yet',
+              l10n?.homeEmptyTitle ?? 'No disputes yet',
               style: TextStyle(
                 fontFamily: AppTypography.family,
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: FontWeight.w700,
                 color: tc.textPrimary,
               ),
             ),
             const SizedBox(height: 6),
             Text(
-              AppLocalizations.of(context)?.homeEmptySubtitle ??
+              l10n?.homeEmptySubtitle ??
                   'Add your first stuck transaction to start tracking compensation.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.w400,
                 color: tc.textSecondary,
-                height: 1.45,
+                height: 1.4,
               ),
             ),
-            const SizedBox(height: 24),
-            Builder(builder: (context) {
-              final cta = AppThemeColors.of(context);
-              return Container(
-              height: 52,
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              decoration: BoxDecoration(
-                color: cta.ctaBackground,
-                borderRadius: BorderRadius.circular(AppRadii.md),
-                boxShadow: AppShadows.button,
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: tc.ctaBackground,
+                foregroundColor: tc.ctaForeground,
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadii.md),
-                  onTap: () => context.push(AppRoutes.disputesCreate),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.add, color: cta.ctaForeground, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        AppLocalizations.of(context)?.homeAddDispute ??
-                            'Add dispute',
-                        style: TextStyle(
-                          fontFamily: AppTypography.family,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: cta.ctaForeground,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
-            );
-            }),
+              onPressed: () => context.push(AppRoutes.disputesCreate),
+              icon: const Icon(Icons.add, size: 18),
+              label: Text(l10n?.homeAddDispute ?? 'Add dispute'),
+            ),
           ],
         ),
       ),
@@ -442,10 +345,6 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-/// Detected-transactions banner section (Task C8). Renders one card per
-/// unclaimed [UtrDetection]; tapping the card opens the dispute form
-/// pre-filled and marks the detection claimed, the dismiss button drops
-/// the detection from the running session list.
 class _DetectedTransactionsSection extends ConsumerWidget {
   final List<UtrDetection> detections;
   const _DetectedTransactionsSection({required this.detections});
@@ -459,8 +358,17 @@ class _DetectedTransactionsSection extends ConsumerWidget {
       children: [
         Row(
           children: [
-            const Text('🔍', style: TextStyle(fontSize: 14)),
-            const SizedBox(width: 6),
+            Container(
+              width: 24,
+              height: 24,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: tc.accentSoft,
+                borderRadius: BorderRadius.circular(AppRadii.sm),
+              ),
+              child: const Text('🔍', style: TextStyle(fontSize: 11)),
+            ),
+            const SizedBox(width: 8),
             Text(
               l10n?.homeDetectedTitle ?? 'Detected transactions',
               style: TextStyle(
@@ -497,9 +405,6 @@ class _DetectedCard extends ConsumerWidget {
   final UtrDetection detection;
   const _DetectedCard({required this.detection});
 
-  /// Format an integer amount using the Indian numbering system
-  /// (1,00,000 etc.) without the leading ₹ symbol — delegates to the
-  /// shared helper so the detected card matches the rest of the home page.
   static String _formatIndianAmount(double amount) =>
       IndianNumberFormatter.format(amount);
 
@@ -516,25 +421,27 @@ class _DetectedCard extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
       decoration: BoxDecoration(
         color: tc.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppColors.accent.withValues(alpha: 0.35),
-          width: 1,
-        ),
-        boxShadow: AppShadows.card,
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        border: Border.all(color: tc.divider),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 40,
-            height: 40,
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               color: tc.accentSoft,
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(AppRadii.sm),
             ),
-            child: const Center(
-              child: Text('UTR', style: TextStyle(fontSize: 11)),
+            child: Text(
+              'UTR',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: tc.ctaBackground,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -546,6 +453,7 @@ class _DetectedCard extends ConsumerWidget {
                   l10n?.homeDetectedCardAmount(amountStr, sender) ??
                       '₹$amountStr · $sender',
                   style: TextStyle(
+                    fontFamily: AppTypography.family,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: tc.textPrimary,
@@ -566,7 +474,6 @@ class _DetectedCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Dismiss — drops the detection from the running list.
           Tooltip(
             message: l10n?.homeDetectedDismiss ?? 'Dismiss',
             child: Semantics(
@@ -577,19 +484,17 @@ class _DetectedCard extends ConsumerWidget {
                     .read(utrDetectionsProvider.notifier)
                     .markClaimed(detection.utr),
                 borderRadius: BorderRadius.circular(20),
-                child: const Padding(
-                  padding: EdgeInsets.all(8),
-                  child:
-                      Icon(Icons.close, size: 18, color: AppColors.alert),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(Icons.close,
+                      size: 16, color: tc.textTertiary),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 4),
-          // Claim — deep-link to the dispute form pre-filled.
           FilledButton(
             onPressed: () {
-              // Mark claimed so the banner disappears; tap the router.
               ref
                   .read(utrDetectionsProvider.notifier)
                   .markClaimed(detection.utr);
@@ -628,16 +533,12 @@ class _Loading extends StatelessWidget {
   const _Loading();
   @override
   Widget build(BuildContext context) {
-    // Skeleton list rather than a spinner — the home page renders a
-    // stack of dispute cards, so the placeholder should mimic them.
     return const SkeletonList(itemCount: 4, itemHeight: 110);
   }
 }
 
-/// Compact Pro upsell card shown on the Home screen for free users.
-/// Tapping routes to the paywall. Uses a gold-tinted gradient to visually
-/// distinguish it from dispute cards and signal "premium value".
 class _HomeProUpsellCard extends StatelessWidget {
+  const _HomeProUpsellCard();
   @override
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
@@ -652,20 +553,25 @@ class _HomeProUpsellCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [tc.premiumGoldSoft, tc.surface],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: tc.surface,
           border: Border.all(color: AppColors.premiumGold, width: 1),
           borderRadius: BorderRadius.circular(AppRadii.lg),
         ),
         child: Row(
           children: [
-            const Icon(
-              Icons.workspace_premium,
-              color: AppColors.premiumGold,
-              size: 28,
+            Container(
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: tc.premiumGoldSoft,
+                borderRadius: BorderRadius.circular(AppRadii.sm),
+              ),
+              child: const Icon(
+                Icons.workspace_premium,
+                color: AppColors.premiumGold,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -676,6 +582,7 @@ class _HomeProUpsellCard extends StatelessWidget {
                     l10n?.homeUpsellTitle ??
                         'Recover every rupee with Pro',
                     style: TextStyle(
+                      fontFamily: AppTypography.family,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: tc.textPrimary,

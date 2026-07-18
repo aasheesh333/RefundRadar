@@ -5,11 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
-import 'package:refund_radar/shared/widgets/onboarding_step_header.dart';
 
-/// Onboarding SMS permission page.
-/// Android grants inbox access; RefundRadar filters likely refund-related
-/// messages on-device and keeps manual paste available when users skip.
 class SmsPermissionPage extends StatelessWidget {
   const SmsPermissionPage({super.key});
 
@@ -22,93 +18,68 @@ class SmsPermissionPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
-              child: Row(
-                children: [
-                  Material(
-                    color: tc.surface,
-                    shape: CircleBorder(
-                      side: BorderSide(color: tc.divider, width: 1),
-                    ),
-                    child: Tooltip(
-                      message: l10n?.smsPermissionBack ?? 'Back',
-                      child: Semantics(
-                        button: true,
-                        label: l10n?.smsPermissionBack ?? 'Back',
-                        child: InkWell(
-                          customBorder: const CircleBorder(),
-                          onTap: () => context.go(AppRoutes.onboard),
-                          child: SizedBox(
-                            width: 48,
-                            height: 48,
-                            child: Center(
-                              child: Icon(
-                                Icons.arrow_back,
-                                size: 22,
-                                color: tc.textPrimary,
-                              ),
-                            ),
-                          ),
+            _PageHeader(tc: tc, l10n: l10n),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 8),
+                    Center(
+                      child: Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: tc.accentSoft,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Center(
+                          child: Text('📱', style: TextStyle(fontSize: 34)),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OnboardingStepHeader(
-                      step: 'Setup',
-                      title: l10n?.smsPermissionGrant ?? 'Allow SMS import',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // body
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Center(child: _HeroPhone()),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     Text(
                       l10n?.smsPermissionTitle ??
                           'Use SMS import to fill disputes faster',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: AppTypography.family,
-                        fontSize: 20,
+                        fontSize: 22,
                         fontWeight: FontWeight.w700,
                         height: 1.2,
+                        letterSpacing: -0.3,
                         color: tc.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      l10n?.smsPermissionSubtitle ??
-                          'Android grants inbox access. RefundRadar scans messages on this phone to find likely refund-related bank or merchant SMS and prefill UTR, amount, and date.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        height: 1.45,
-                        color: tc.textSecondary,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        l10n?.smsPermissionSubtitle ??
+                            'Android grants inbox access. RefundRadar scans messages on this phone to find likely refund-related bank or merchant SMS and prefill UTR, amount, and date.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: AppTypography.family,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          height: 1.5,
+                          color: tc.textSecondary,
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 24),
+                    _HowItWorksCard(tc: tc, l10n: l10n),
                     const SizedBox(height: 16),
-                    const _HowItWorksCard(),
-                    const SizedBox(height: 12),
-                    const _PrivacyNote(),
-                    const SizedBox(height: 12),
-                    const _SampleSmsCard(),
+                    _PrivacyNote(tc: tc, l10n: l10n),
+                    const SizedBox(height: 16),
+                    _SampleSmsCard(tc: tc, l10n: l10n),
                   ],
                 ),
               ),
             ),
-            // sticky footer
-            const _SmsFooter(),
+            _SmsFooter(tc: tc, l10n: l10n),
           ],
         ),
       ),
@@ -116,26 +87,61 @@ class SmsPermissionPage extends StatelessWidget {
   }
 }
 
-class _HeroPhone extends StatelessWidget {
-  const _HeroPhone();
+class _PageHeader extends StatelessWidget {
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _PageHeader({required this.tc, required this.l10n});
+
   @override
   Widget build(BuildContext context) {
-    final tc = AppThemeColors.of(context);
-    return Container(
-      width: 72,
-      height: 72,
-      decoration: BoxDecoration(color: tc.accentSoft, shape: BoxShape.circle),
-      child: const Center(child: Text('📱', style: TextStyle(fontSize: 34))),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 16, 4),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.arrow_back, color: tc.textPrimary),
+            onPressed: () => context.go(AppRoutes.onboard),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n?.smsPermissionGrant ?? 'Allow SMS import',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                    color: tc.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  'Setup',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: tc.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class _HowItWorksCard extends StatelessWidget {
-  const _HowItWorksCard();
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _HowItWorksCard({required this.tc, required this.l10n});
+
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final tc = AppThemeColors.of(context);
     final steps = [
       (
         '1',
@@ -154,12 +160,11 @@ class _HowItWorksCard extends StatelessWidget {
       ),
     ];
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: tc.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
-        boxShadow: AppShadows.card,
-        border: Border.all(color: tc.divider, width: 1),
+        border: Border.all(color: tc.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,20 +172,21 @@ class _HowItWorksCard extends StatelessWidget {
           Text(
             l10n?.smsPermissionHowItWorks ?? 'HOW IT WORKS',
             style: TextStyle(
+              fontFamily: AppTypography.family,
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              letterSpacing: 1.0,
+              letterSpacing: 1.2,
               color: tc.textSecondary,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           for (final (n, txt) in steps) ...[
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 22,
-                  height: 22,
+                  width: 24,
+                  height: 24,
                   decoration: BoxDecoration(
                     color: tc.accentSoft,
                     shape: BoxShape.circle,
@@ -188,7 +194,8 @@ class _HowItWorksCard extends StatelessWidget {
                   child: Center(
                     child: Text(
                       n,
-                      style: const TextStyle(
+                      style: TextStyle(
+                        fontFamily: AppTypography.family,
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                         color: AppColors.accent,
@@ -196,12 +203,13 @@ class _HowItWorksCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     txt,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontFamily: AppTypography.family,
+                      fontSize: 13,
                       fontWeight: FontWeight.w500,
                       height: 1.4,
                       color: tc.textPrimary,
@@ -210,7 +218,7 @@ class _HowItWorksCard extends StatelessWidget {
                 ),
               ],
             ),
-            if (n != '3') const SizedBox(height: 8),
+            if (n != '3') const SizedBox(height: 10),
           ],
         ],
       ),
@@ -219,15 +227,16 @@ class _HowItWorksCard extends StatelessWidget {
 }
 
 class _PrivacyNote extends StatelessWidget {
-  const _PrivacyNote();
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _PrivacyNote({required this.tc, required this.l10n});
+
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final tc = AppThemeColors.of(context);
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: tc.premiumGoldSoft,
+        color: tc.alertSoft,
         borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
@@ -236,17 +245,19 @@ class _PrivacyNote extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(top: 1),
             child: Text(
-              '⚠️',
-              style: TextStyle(fontSize: 12, color: AppColors.premiumGold),
+              '⚠',
+              style: TextStyle(
+                  fontSize: 14, color: AppColors.alert),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               l10n?.smsPermissionPrivacyNote ??
                   'SMS parsing stays on-device for import. You can skip this and paste an SMS manually later.',
               style: TextStyle(
-                fontSize: 11,
+                fontFamily: AppTypography.family,
+                fontSize: 12,
                 fontWeight: FontWeight.w500,
                 height: 1.4,
                 color: tc.textPrimary,
@@ -260,18 +271,19 @@ class _PrivacyNote extends StatelessWidget {
 }
 
 class _SampleSmsCard extends StatelessWidget {
-  const _SampleSmsCard();
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _SampleSmsCard({required this.tc, required this.l10n});
+
   @override
   Widget build(BuildContext context) {
-    final tc = AppThemeColors.of(context);
-    final l10n = AppLocalizations.of(context);
     final labelColor = tc.isDark ? AppColors.accent : AppColors.primary;
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: tc.surfaceAlt,
         borderRadius: BorderRadius.circular(AppRadii.lg),
-        border: Border.all(color: tc.divider, width: 1),
+        border: Border.all(color: tc.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,34 +295,44 @@ class _SampleSmsCard extends StatelessWidget {
                 l10n?.smsPermissionSampleTitle ??
                     'Sample auto-detected event',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontFamily: AppTypography.family,
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: tc.textPrimary,
                 ),
               ),
-              Text(
-                l10n?.smsPermissionSampleDetected ?? 'SMS detected',
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: labelColor,
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: tc.accentSoft,
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
+                ),
+                child: Text(
+                  l10n?.smsPermissionSampleDetected ?? 'SMS detected',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: labelColor,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: tc.surface,
-              borderRadius: BorderRadius.circular(AppRadii.xs),
+              borderRadius: BorderRadius.circular(AppRadii.sm),
             ),
             child: RichText(
               text: TextSpan(
                 style: TextStyle(
-                  fontSize: 11,
-                  height: 1.45,
+                  fontSize: 12,
+                  height: 1.5,
                   fontFamily: 'monospace',
                   color: tc.textSecondary,
                 ),
@@ -346,34 +368,27 @@ class _SampleSmsCard extends StatelessWidget {
 }
 
 class _SmsFooter extends StatelessWidget {
-  const _SmsFooter();
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _SmsFooter({required this.tc, required this.l10n});
+
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final tc = AppThemeColors.of(context);
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       decoration: BoxDecoration(
         color: tc.surface,
-        border: Border(top: BorderSide(color: tc.divider, width: 1)),
+        border: Border(top: BorderSide(color: tc.divider)),
       ),
       child: SafeArea(
         top: false,
         child: Column(
           children: [
-            // Grant permission (primary)
             SizedBox(
               width: double.infinity,
-              height: 52,
+              height: 48,
               child: FilledButton(
                 onPressed: () async {
-                  // Runtime SMS permission (declared in AndroidManifest).
-                  // On grant → continue onboarding. On denial → show the
-                  // SnackBar and STAY on this page (the previous flow
-                  // navigated past the SnackBar so the user never saw it;
-                  // the "Continue without SMS" button below handles the
-                  // manual-paste path). On plugin-missing (desktop) →
-                  // continue onboarding since SMS isn't available at all.
                   try {
                     final status = await Permission.sms.request();
                     if (!context.mounted) return;
@@ -389,7 +404,6 @@ class _SmsFooter extends StatelessWidget {
                         ),
                       ),
                     );
-                    // Stay on page so the denial message is visible.
                     return;
                   } catch (_) {
                     // Plugin missing / desktop — continue onboarding.
@@ -400,12 +414,12 @@ class _SmsFooter extends StatelessWidget {
                   backgroundColor: tc.ctaBackground,
                   foregroundColor: tc.ctaForeground,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadii.sm),
+                    borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
                 ),
                 child: Text(
                   l10n?.smsPermissionGrant ?? 'Allow SMS import',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: AppTypography.family,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -414,70 +428,37 @@ class _SmsFooter extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            // Maybe later (outlined)
             SizedBox(
               width: double.infinity,
-              height: 52,
+              height: 48,
               child: OutlinedButton(
                 onPressed: () => context.go(AppRoutes.onboardBanks),
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(
-                    color: tc.isDark ? AppColors.accent : AppColors.primary,
-                    width: 1.5,
-                  ),
+                  side: BorderSide(color: tc.divider),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadii.sm),
+                    borderRadius: BorderRadius.circular(AppRadii.md),
                   ),
                 ),
                 child: Text(
                   l10n?.smsPermissionSkip ?? 'Skip and paste manually',
                   style: TextStyle(
                     fontFamily: AppTypography.family,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: tc.isDark ? AppColors.accent : AppColors.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: tc.ctaBackground,
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 6),
-            // 3-dot progress (2nd = filled/accent)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 8,
-                  height: 8,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: tc.divider,
-                      borderRadius: const BorderRadius.all(Radius.circular(4)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 24,
-                  height: 8,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: AppColors.accent,
-                      borderRadius: const BorderRadius.all(Radius.circular(4)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 8,
-                  height: 8,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: tc.divider,
-                      borderRadius: const BorderRadius.all(Radius.circular(4)),
-                    ),
-                  ),
-                ),
-              ],
+            const SizedBox(height: 10),
+            Text(
+              'Not now',
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: tc.textTertiary,
+              ),
             ),
           ],
         ),

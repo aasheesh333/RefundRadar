@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
-import '../../core/providers/app_state_provider.dart';
-import '../../core/theme/app_theme_colors.dart';
-import '../../core/theme/app_tokens.dart';
-import '../../l10n/app_localizations.dart';
-import '../../shared/widgets/hero_emoji_circle.dart';
-import '../../shared/widgets/page_dots.dart';
+import 'package:refund_radar/core/providers/app_state_provider.dart';
+import 'package:refund_radar/core/theme/app_theme_colors.dart';
+import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/l10n/app_localizations.dart';
+import 'package:refund_radar/shared/widgets/hero_emoji_circle.dart';
+import 'package:refund_radar/shared/widgets/page_dots.dart';
 
 class OnboardingPage extends ConsumerStatefulWidget {
   const OnboardingPage({super.key});
@@ -39,8 +39,6 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 
   void _skip() async {
-    // Skip marks onboarding complete (so it doesn't replay next launch)
-    // and jumps straight to home.
     await markOnboardingComplete(ref);
     if (mounted) context.go(AppRoutes.home);
   }
@@ -82,51 +80,56 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     final slides = _slidesFor(l10n, tc);
     return Scaffold(
       backgroundColor: tc.bg,
-      body: Column(
-        children: [
-          // top bar with skip — safe top only
-          SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8, right: 16),
-              child: Align(
-                alignment: Alignment.topRight,
-                child: TextButton(
-                  onPressed: _skip,
-                  style: TextButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    foregroundColor: tc.textSecondary,
-                  ),
-                  child: Text(
-                    l10n?.onboardSkip ?? 'Skip',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 16, top: 8, right: 16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Refund Radar',
+                      style: TextStyle(
+                        fontFamily: AppTypography.family,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: tc.textPrimary,
+                      ),
                     ),
                   ),
+                  TextButton(
+                    onPressed: _skip,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      foregroundColor: tc.textSecondary,
+                    ),
+                    child: Text(
+                      l10n?.onboardSkip ?? 'Skip',
+                      style: TextStyle(
+                        fontFamily: AppTypography.family,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: PageView.builder(
+                controller: _pc,
+                itemCount: slides.length,
+                onPageChanged: (i) => setState(() => _page = i),
+                itemBuilder: (context, i) => _SlideView(
+                  slide: slides[i],
+                  totalSlides: slides.length,
                 ),
               ),
             ),
-          ),
-          // slides
-          Expanded(
-            child: PageView.builder(
-              controller: _pc,
-              itemCount: slides.length,
-              onPageChanged: (i) => setState(() => _page = i),
-              itemBuilder: (context, i) => _SlideView(
-                slide: slides[i],
-                totalSlides: slides.length,
-              ),
-            ),
-          ),
-          // bottom stack: dots + CTA + disclaimer — safe bottom so CTA
-          // never clips under the system nav / gesture bar
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -134,7 +137,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   const SizedBox(height: 14),
                   SizedBox(
                     width: double.infinity,
-                    height: 54,
+                    height: 48,
                     child: FilledButton(
                       onPressed: _next,
                       style: FilledButton.styleFrom(
@@ -146,20 +149,40 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                       ),
                       child: Text(
                         slides[_page].ctaLabel,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                        style: TextStyle(
+                          fontFamily: AppTypography.family,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
+                  TextButton(
+                    onPressed: _skip,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      foregroundColor: tc.textTertiary,
+                    ),
+                    child: Text(
+                      'Not now',
+                      style: TextStyle(
+                        fontFamily: AppTypography.family,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
                   Text(
                     l10n?.settingsNotAffiliated ??
                         'Independent tool · Not affiliated with RBI/NPCI/banks',
                     textAlign: TextAlign.center,
                     style: TextStyle(
+                      fontFamily: AppTypography.family,
                       fontSize: 11,
+                      fontWeight: FontWeight.w500,
                       color: tc.textTertiary,
                       height: 1.4,
                     ),
@@ -167,8 +190,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -223,10 +246,11 @@ class _SlideView extends StatelessWidget {
                   fontSize: compact ? 24 : 28,
                   fontWeight: FontWeight.w700,
                   height: 1.2,
+                  letterSpacing: -0.3,
                   color: tc.textPrimary,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 310),
                 child: Text(
@@ -236,9 +260,9 @@ class _SlideView extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontFamily: AppTypography.family,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    height: 1.45,
+                    height: 1.5,
                     color: tc.textSecondary,
                   ),
                 ),

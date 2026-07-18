@@ -14,20 +14,15 @@ import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
-import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 
-/// Paywall location for free users who deep-link (or navigate) to the
-/// ombudsman letter page. Returns to the dispute detail so purchase success
-/// does not re-enter this gated page until premium is active.
 String ombudsmanLetterPaywallLocation(String disputeId) =>
     AppRoutes.paywallWithParams(
       trigger: 'ombudsman_letter',
       returnPath: AppRoutes.disputeDetail(disputeId),
     );
 
-/// `true` when the letter page must redirect free users to the paywall.
 bool shouldGateOmbudsmanLetter(bool isPremium) => !isPremium;
 
 class OmbudsmanLetterPage extends ConsumerStatefulWidget {
@@ -86,18 +81,9 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
 
   @override
   Widget build(BuildContext context) {
-    // Gate on the authoritative AsyncValue<bool> rather than the derived
-    // `isPremiumProvider` bool. The derived bool collapses loading→false
-    // (fail-safe for paywall gates), but on THIS page that fail-safe
-    // bounces a genuine premium user to the paywall during the brief
-    // hydration window (and the sticky `_paywallRedirectScheduled` guard
-    // then blocks recovery). Skip the redirect while premium status is
-    // still loading; only redirect once it has resolved to non-premium.
     final premiumStatus = ref.watch(premiumStatusProvider);
     final isPremium = premiumStatus.valueOrNull ?? false;
     if (premiumStatus.isLoading) {
-      // Still resolving entitlement — render a neutral loading surface
-      // rather than the gated (SizedBox.shrink) or full letter UI.
       return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     if (shouldGateOmbudsmanLetter(isPremium)) {
@@ -110,27 +96,46 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
     final tc = AppThemeColors.of(context);
     final l10n = AppLocalizations.of(context);
     return Scaffold(
+      backgroundColor: tc.bg,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Custom header (Task 9) — replaces default AppBar with themed
-            // AppBackButton + title Row, dark-mode safe.
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+              padding: const EdgeInsets.fromLTRB(8, 8, 16, 4),
               child: Row(
                 children: [
-                  AppBackButton(onTap: () => context.pop()),
-                  const SizedBox(width: 12),
+                  IconButton(
+                    icon: Icon(Icons.arrow_back, color: tc.textPrimary),
+                    onPressed: () => context.pop(),
+                  ),
                   Expanded(
-                    child: Text(
-                      l10n?.ombudsmanLetterTitle ?? 'Ombudsman letter',
-                      style: TextStyle(
-                        fontFamily: AppTypography.family,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: tc.textPrimary,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n?.ombudsmanLetterTitle ?? 'Ombudsman letter',
+                          style: TextStyle(
+                            fontFamily: AppTypography.family,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.3,
+                            color: tc.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          AppLocalizations.of(context)
+                                  ?.ombudsmanPremiumFeature ??
+                              'Premium feature',
+                          style: TextStyle(
+                            fontFamily: AppTypography.family,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.premiumGold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -150,159 +155,332 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
                       message: 'Could not sign in. Tap retry.',
                       onRetry: () => ref.invalidate(userIdProvider),
                     );
-          }
-          final disputesAsync = ref.watch(disputesProvider(uid));
-          return rulesAsync.when(
-            data: (rules) {
-              return disputesAsync.when(
-                loading: () => const SkeletonList(itemCount: 3),
-                error: (e, _) => BrandedErrorBanner(
-                  message: friendlyError(e),
-                  detail: errorDetail(e),
-                  onRetry: () => ref.invalidate(disputesProvider(uid)),
-                ),
-                data: (disputes) {
-                  Dispute? dispute;
-                  for (final d in disputes) {
-                    if (d.id == widget.disputeId) {
-                      dispute = d;
-                      break;
-                    }
                   }
-                  if (dispute == null) {
-                    return BrandedErrorBanner(
-                      message: 'Dispute not found.',
-                      onRetry: () => ref.invalidate(disputesProvider(uid)),
-                    );
-                  }
-                  final liveDispute = dispute;
-                  return ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: tc.ctaBackground.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: tc.ctaBackground),
+                  final disputesAsync = ref.watch(disputesProvider(uid));
+                  return rulesAsync.when(
+                    data: (rules) {
+                      return disputesAsync.when(
+                        loading: () => const SkeletonList(itemCount: 3),
+                        error: (e, _) => BrandedErrorBanner(
+                          message: friendlyError(e),
+                          detail: errorDetail(e),
+                          onRetry: () =>
+                              ref.invalidate(disputesProvider(uid)),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppLocalizations.of(
-                                    context,
-                                  )?.ombudsmanPremiumFeature ??
-                                  'Premium feature',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: tc.ctaBackground,
+                        data: (disputes) {
+                          Dispute? dispute;
+                          for (final d in disputes) {
+                            if (d.id == widget.disputeId) {
+                              dispute = d;
+                              break;
+                            }
+                          }
+                          if (dispute == null) {
+                            return BrandedErrorBanner(
+                              message: 'Dispute not found.',
+                              onRetry: () =>
+                                  ref.invalidate(disputesProvider(uid)),
+                            );
+                          }
+                          final liveDispute = dispute;
+                          return ListView(
+                            padding:
+                                const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                            children: [
+                              _PremiumHero(tc: tc, l10n: l10n),
+                              const SizedBox(height: 16),
+                              if (_letter.isEmpty)
+                                Center(
+                                  child: FilledButton.icon(
+                                    onPressed: () =>
+                                        _generateLetter(liveDispute),
+                                    icon: const Icon(Icons.auto_fix_high,
+                                        size: 18),
+                                    label: Text(
+                                      AppLocalizations.of(context)
+                                              ?.ombudsmanGenerate ??
+                                          'Generate letter',
+                                      style: TextStyle(
+                                        fontFamily: AppTypography.family,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: tc.ctaBackground,
+                                      foregroundColor: tc.ctaForeground,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            AppRadii.md),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              else ...[
+                                _LetterCard(
+                                  letter: _letter,
+                                  tc: tc,
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: SizedBox(
+                                        height: 46,
+                                        child: OutlinedButton.icon(
+                                          onPressed: () {
+                                            Clipboard.setData(
+                                              ClipboardData(text: _letter),
+                                            );
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  l10n
+                                                          ?.escalateCopiedToClipboard ??
+                                                      'Copied',
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          icon: const Icon(Icons.copy,
+                                              size: 16),
+                                          label: Text(
+                                            AppLocalizations.of(context)
+                                                    ?.ombudsmanCopy ??
+                                                'Copy',
+                                            style: TextStyle(
+                                              fontFamily:
+                                                  AppTypography.family,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          style: OutlinedButton.styleFrom(
+                                            side: BorderSide(
+                                                color: tc.divider),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      AppRadii.md),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: SizedBox(
+                                        height: 46,
+                                        child: FilledButton.icon(
+                                          onPressed: () => launchExternalUrl(
+                                            rules.officialLinks['rbi_cms'] ??
+                                                'https://cms.rbi.org.in',
+                                          ),
+                                          icon: const Icon(Icons.open_in_new,
+                                              size: 16),
+                                          label: Text(
+                                            AppLocalizations.of(context)
+                                                    ?.ombudsmanOpenCms ??
+                                                'Open cms.rbi.org.in',
+                                            style: TextStyle(
+                                              fontFamily:
+                                                  AppTypography.family,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor:
+                                                tc.ctaBackground,
+                                            foregroundColor:
+                                                tc.ctaForeground,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      AppRadii.md),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 46,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () {
+                                      Clipboard.setData(
+                                        ClipboardData(text: _letter),
+                                      );
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            l10n?.escalateCopiedToClipboard ??
+                                                'Copied',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.share, size: 16),
+                                    label: Text(
+                                      AppLocalizations.of(context)
+                                              ?.ombudsmanShareCopy ??
+                                          'Share (copy to clipboard)',
+                                      style: TextStyle(
+                                        fontFamily: AppTypography.family,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(color: tc.divider),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            AppRadii.md),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              const SizedBox(height: 24),
+                              Text(
+                                'Refund Radar is an independent informational tool. '
+                                'It is not affiliated with RBI, NPCI, NHAI, IHMCL, or any bank.',
+                                style: TextStyle(
+                                  fontFamily: AppTypography.family,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color:
+                                      AppThemeColors.of(context).textTertiary,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              AppLocalizations.of(
-                                    context,
-                                  )?.ombudsmanPremiumBlurb ??
-                                  'Generate a pre-filled Template C complaint summary that you can paste into cms.rbi.org.in.',
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      if (_letter.isEmpty)
-                        Center(
-                          child: FilledButton.icon(
-                            onPressed: () => _generateLetter(liveDispute),
-                            icon: const Icon(Icons.auto_fix_high),
-                            label: Text(
-                              AppLocalizations.of(context)?.ombudsmanGenerate ??
-                                  'Generate letter',
-                            ),
-                          ),
-                        )
-                      else ...[
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: SelectableText(_letter),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: () => Clipboard.setData(
-                                  ClipboardData(text: _letter),
-                                ),
-                                icon: const Icon(Icons.copy),
-                                label: Text(
-                                  AppLocalizations.of(context)?.ombudsmanCopy ??
-                                      'Copy',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: FilledButton.icon(
-                                onPressed: () => launchExternalUrl(
-                                  rules.officialLinks['rbi_cms'] ??
-                                      'https://cms.rbi.org.in',
-                                ),
-                                icon: const Icon(Icons.open_in_new),
-                                label: Text(
-                                  AppLocalizations.of(
-                                        context,
-                                      )?.ombudsmanOpenCms ??
-                                      'Open cms.rbi.org.in',
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        OutlinedButton.icon(
-                          onPressed: () =>
-                              Clipboard.setData(ClipboardData(text: _letter)),
-                          icon: const Icon(Icons.share),
-                          label: Text(
-                            AppLocalizations.of(context)?.ombudsmanShareCopy ??
-                                'Share (copy to clipboard)',
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 24),
-                      Text(
-                        'Refund Radar is an independent informational tool. '
-                        'It is not affiliated with RBI, NPCI, NHAI, IHMCL, or any bank.',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppThemeColors.of(context).textTertiary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    loading: () => const SkeletonList(itemCount: 3),
+                    error: (e, _) => BrandedErrorBanner(
+                      message: friendlyError(e),
+                      detail: errorDetail(e),
+                      onRetry: () => ref.invalidate(rulesEngineProvider),
+                    ),
                   );
-                },
-              );
-            },
-            loading: () => const SkeletonList(itemCount: 3),
-            error: (e, _) => BrandedErrorBanner(
-              message: friendlyError(e),
-              detail: errorDetail(e),
-              onRetry: () => ref.invalidate(rulesEngineProvider),
-            ),
-          );
                 },
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PremiumHero extends StatelessWidget {
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _PremiumHero({required this.tc, required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: tc.premiumGoldSoft,
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        border:
+            Border.all(color: AppColors.premiumGold.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.premiumGold.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(AppRadii.sm),
+            ),
+            child: const Text('📝', style: TextStyle(fontSize: 16)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n?.ombudsmanPremiumFeature ?? 'Premium feature',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: tc.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  l10n?.ombudsmanPremiumBlurb ??
+                      'Generate a pre-filled Template C complaint summary that you can paste into cms.rbi.org.in.',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    height: 1.4,
+                    color: tc.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LetterCard extends StatelessWidget {
+  final String letter;
+  final AppThemeColors tc;
+  const _LetterCard({required this.letter, required this.tc});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: tc.surface,
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        border: Border.all(color: tc.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'LETTER',
+            style: TextStyle(
+              fontFamily: AppTypography.family,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+              color: tc.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SelectableText(
+            letter,
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 12,
+              height: 1.6,
+              color: tc.textPrimary,
+            ),
+          ),
+        ],
       ),
     );
   }

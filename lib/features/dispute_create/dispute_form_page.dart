@@ -26,8 +26,6 @@ import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/form_field_box.dart';
 import 'package:refund_radar/shared/widgets/bank_picker_tile.dart';
 
-/// Merges onboarding-selected bank IDs (catalog names first) with [fallback].
-/// Pure helper for the form picker and unit tests.
 List<({String name, String id})> mergeOnboardBanksWithFallback({
   required List<String> selectedIds,
   required List<BankEntry> catalog,
@@ -51,9 +49,6 @@ List<({String name, String id})> mergeOnboardBanksWithFallback({
 
 class DisputeFormPage extends ConsumerStatefulWidget {
   final String type;
-  /// Pre-filled from a UTR-auto-detect notification tap (Task C7).
-  /// When non-null, the form opens with these values already applied so
-  /// the user can tap "Create dispute" without re-keying anything.
   final String? prefilledUtr;
   final double? prefilledAmount;
   final String? prefilledSender;
@@ -72,8 +67,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   final _amountCtrl = TextEditingController();
   final _utrCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
-  // Category-specific capture (Wave 2) — populated into Dispute so the
-  // escalation-email merge tokens (VPA, VEHICLE_NO, …) are pre-filled.
   final _vpaCtrl = TextEditingController();
   final _vpaPayeeCtrl = TextEditingController();
   final _vehicleNoCtrl = TextEditingController();
@@ -86,17 +79,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   String _bankName = '';
   String _selectedEntityId = '';
   bool _utrFound = false;
-  // Re-entrancy guard: double-tap on the submit button must not fire two
-  // saveDispute calls (the `id == ''` branch in FirestoreDisputeRepository
-  // does `_col.add`, so two concurrent saves would create duplicate
-  // disputes). Set true on entry, cleared on success/failure.
   bool _saving = false;
 
   @override
   void initState() {
     super.initState();
-    // Apply pre-filled UTR data from an auto-detect notification tap
-    // (Task C7). The router passes these as query params on /disputes/form.
     if (widget.prefilledUtr != null && widget.prefilledUtr!.isNotEmpty) {
       _utrCtrl.text = widget.prefilledUtr!;
       _utrFound = true;
@@ -212,6 +199,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                     AppLocalizations.of(c)?.formPickBankSms ??
                         'Pick a bank SMS',
                     style: TextStyle(
+                      fontFamily: AppTypography.family,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: tc.textPrimary,
@@ -221,7 +209,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                 Expanded(
                   child: ListView.separated(
                     itemCount: messages.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1),
+separatorBuilder: (_, _) => const Divider(height: 1),
                     itemBuilder: (itemCtx, i) {
                       final m = messages[i];
                       return ListTile(
@@ -253,15 +241,9 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   }
 
   void _save() async {
-    // B-D8 re-entrancy guard. Double-tap on the submit button would fire
-    // two concurrent saveDispute calls → two duplicate disputes (add()
-    // branch in FirestoreDisputeRepository does NOT dedupe). Set the guard
-    // up front before any await so a fast second tap returns immediately.
     if (_saving) return;
     setState(() => _saving = true);
 
-    // Capture l10n synchronously before any await — using BuildContext
-    // across an async gap triggers use_build_context_synchronously.
     final l10n = AppLocalizations.of(context);
 
     try {
@@ -319,8 +301,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         );
         return;
       }
-      // Prefer already-resolved uid; only await if still loading. Always
-      // bound with a timeout so _saving never sticks forever.
       String? resolvedUid = ref.read(userIdProvider).asData?.value;
       if (!isValidAuthUid(resolvedUid)) {
         try {
@@ -350,8 +330,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       }
       final uid = resolvedUid!;
 
-      // B3 free-tier gate: free users limited to 1 active dispute (spec §4.3).
-      // Active = status in {draft, filed_l1, filed_l2, ombudsman}.
       final isPremium = ref.read(isPremiumProvider);
       if (!isPremium) {
         List<Dispute> existing;
@@ -403,8 +381,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
 
       final desc = _descCtrl.text.trim();
       final now = DateTime.now();
-      // Wave 2: trim and nullify the optional category-specific inputs so
-      // empty strings don't reach Firestore.
       String? nullifyEmpty(String s) {
         final t = s.trim();
         return t.isEmpty ? null : t;
@@ -444,10 +420,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       try {
         saved = await repo.saveDispute(uid, dispute);
       } catch (e, st) {
-        // saveDispute itself failed — this is the only real create failure.
-        // Friendly copy per error class. `unavailable` = offline (Firestore
-        // queues writes but our `_ensureUserDoc` get() throws first);
-        // `permission-denied` = auth race; everything else = transient.
         final s = e.toString().toLowerCase();
         final msg =
             s.contains('permission-denied') ||
@@ -463,9 +435,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(msg)));
-        // Surface the underlying failure to Crashlytics so we see the
-        // distribution of failure causes in release builds (vs. today
-        // where everything is a silent SnackBar).
         try {
           await FirebaseCrashlytics.instance.recordError(
             e,
@@ -473,19 +442,10 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
             reason: 'DisputeFormPage._save',
             fatal: false,
           );
-        } catch (_) {
-          /* Crashlytics not initialised */
-        }
+        } catch (_) {}
         return;
       }
 
-      // Side effects below are best-effort: a failure here must NOT un-save
-      // the dispute (the old rollback-via-deleteDispute path silently
-      // destroyed disputes the user thought were saved). Each step is
-      // isolated in its own try/catch so one failing step can't skip the
-      // rest, and none of them can delete the saved dispute.
-
-      // B3: increment free-tier counter (no-op for premium, but cheap).
       if (!isPremium) {
         try {
           await ref.read(freeDisputesUsedProvider.notifier).increment();
@@ -493,7 +453,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
           debugPrint('best-effort step failed: $e');
         }
       }
-      // B4 analytics: dispute_created event (spec §10).
       try {
         ref
             .read(analyticsServiceProvider)
@@ -504,18 +463,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       } catch (e) {
         debugPrint('best-effort step failed: $e');
       }
-      // B6: generate / sync reminders + schedule local notifications.
-      //    Per-reminder try/catch inside the sync helper makes this
-      //    non-fatal: a notification scheduling failure doesn't un-save
-      //    the dispute. Firestore reminder write has its own auth retry.
       try {
         await syncRemindersForDispute(ref, uid, saved);
       } catch (e) {
         debugPrint('best-effort step failed: $e');
       }
-      // Home uses a FutureProvider AND reminders has its own provider;
-      // invalidate BOTH or the new dispute's reminders won't show on the
-      // reminders page (only Home invalidated historically — see M-D10).
       try {
         ref.invalidate(disputesProvider(uid));
         ref.invalidate(remindersProvider(uid));
@@ -543,76 +495,21 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
         child: SafeArea(
           child: Column(
             children: [
-              // header
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
-                child: Row(
-                  children: [
-                    AppBackButton(onTap: () => context.pop()),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n?.formStep2Of4 ?? 'STEP 2 OF 2',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.2,
-                              color: tc.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 1),
-                          Text(
-                            l10n?.formDisputeDetails ?? 'Dispute details',
-                            style: TextStyle(
-                              fontFamily: AppTypography.family,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: tc.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: tc.accentSoft,
-                        borderRadius: BorderRadius.circular(AppRadii.pill),
-                      ),
-                      child: Text(
-                        _typeShort(type),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.accent,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _PageHeader(type: type, tc: tc, l10n: l10n),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
                   children: [
-                    // grouped form card
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: tc.surface,
-                        border: Border.all(color: tc.divider, width: 1),
-                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: tc.divider),
+                        borderRadius: BorderRadius.circular(AppRadii.lg),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // BANK
                           FormFieldBox(
                             label: l10n?.formLabelBank ?? 'Bank',
                             child: rulesAsync.when(
@@ -642,8 +539,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          // UTR
+                          const SizedBox(height: 12),
                           FormFieldBox(
                             label: l10n?.formLabelUtr ?? 'UTR / RRN NUMBER',
                             helper: _utrFound
@@ -696,14 +592,11 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          // AMOUNT
+                          const SizedBox(height: 12),
                           FormFieldBox(
-                            label:
-                                l10n?.formLabelAmountDebited ??
+                            label: l10n?.formLabelAmountDebited ??
                                 'AMOUNT DEBITED',
-                            helper:
-                                l10n?.formAmountCap ?? 'Max ₹5,00,000',
+                            helper: l10n?.formAmountCap ?? 'Max ₹5,00,000',
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.baseline,
                               textBaseline: TextBaseline.alphabetic,
@@ -725,6 +618,9 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                       fontWeight: FontWeight.w700,
                                       color: tc.textPrimary,
                                       fontFamily: AppTypography.family,
+                                      fontFeatures: const [
+                                        FontFeature.tabularFigures(),
+                                      ],
                                     ),
                                     cursorColor: tc.ctaBackground,
                                     keyboardType: TextInputType.number,
@@ -745,8 +641,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          // DATE
+                          const SizedBox(height: 12),
                           FormFieldBox(
                             label: l10n?.formLabelTxnDate ?? 'TXN DATE',
                             child: GestureDetector(
@@ -765,7 +660,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                     child: Text(
                                       _date == null
                                           ? (l10n?.formSelectDate ??
-                                                'Select date')
+                                              'Select date')
                                           : _fmtDate(_date!),
                                       style: TextStyle(
                                         fontSize: 14,
@@ -776,26 +671,23 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                                       ),
                                     ),
                                   ),
-                                  const Text(
-                                    '📅',
-                                    style: TextStyle(fontSize: 13),
-                                  ),
+                                  Icon(Icons.calendar_today_outlined,
+                                      size: 16, color: tc.textSecondary),
                                 ],
                               ),
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          // DESCRIPTION
+                          const SizedBox(height: 12),
                           FormFieldBox(
-                            label:
-                                l10n?.formLabelDescription ??
-                                'DESCRIPTION (optional)',
+                            label: l10n?.formLabelDescription ??
+                                'DESCRIPTION (OPTIONAL)',
                             child: TextField(
                               controller: _descCtrl,
                               minLines: 3,
                               maxLines: 6,
                               maxLength: 500,
-                              maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                              maxLengthEnforcement:
+                                  MaxLengthEnforcement.enforced,
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
@@ -812,106 +704,21 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                               ),
                             ),
                           ),
-                          // Wave 2: category-specific fields, captured at
-                          // create time so the escalation email body is
-                          // pre-filled with VPA / vehicle / plaza / ATM id /
-                          // beneficiary account details.
                           ..._buildCategorySpecificFields(type, tc, l10n),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    // RBI info banner
+                    const SizedBox(height: 12),
                     _buildInfoBanner(type),
                   ],
                 ),
               ),
-              // sticky footer
-              Container(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-                decoration: BoxDecoration(
-                  color: tc.surface,
-                  border: Border(top: BorderSide(color: tc.divider, width: 1)),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n?.formEstimated ?? 'ESTIMATED',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
-                              color: tc.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(height: 1),
-                          Text(
-                            _estimate(type),
-                  style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.accent,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    AnimatedOpacity(
-                      opacity: _saving ? 0.6 : 1.0,
-                      duration: const Duration(milliseconds: 150),
-                      child: Container(
-                        height: 52,
-                        padding: const EdgeInsets.symmetric(horizontal: 22),
-                        decoration: BoxDecoration(
-                          color: tc.ctaBackground,
-                          borderRadius: BorderRadius.circular(AppRadii.md),
-                          boxShadow: AppShadows.button,
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(AppRadii.md),
-                            // onTap is null while _saving — disables the tap
-                            // affordance AND the InkWell ripple (Material rule:
-                            // a null onTap is treated as a disabled ink well).
-                            onTap: _saving ? null : _save,
-                            child: Center(
-                              child: _saving
-                                  ? SizedBox(
-                                      width: 22,
-                                      height: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.4,
-                                        valueColor: AlwaysStoppedAnimation(
-                                          tc.ctaForeground,
-                                        ),
-                                      ),
-                                    )
-                                  : Text(
-                                      AppLocalizations.of(
-                                            context,
-                                          )?.formCreateDispute ??
-                                          'Create dispute',
-                                      style: TextStyle(
-                                        fontFamily: AppTypography.family,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: tc.ctaForeground,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              _StickyFooter(
+                estimate: _estimate(type),
+                saving: _saving,
+                onSave: _saving ? null : _save,
+                tc: tc,
+                l10n: l10n,
               ),
             ],
           ),
@@ -934,7 +741,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       List<TextInputFormatter>? formatters,
     }) {
       return Padding(
-        padding: const EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.only(top: 12),
         child: FormFieldBox(
           label: label,
           helper: helper,
@@ -1042,28 +849,36 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     final l10n = AppLocalizations.of(context);
     if (type == DisputeType.wrongTransfer) {
       return Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: tc.alertSoft,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(AppRadii.md),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '⚠',
-              style: TextStyle(fontSize: 12, color: AppColors.alert),
+            Container(
+              width: 24,
+              height: 24,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.alert.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(AppRadii.sm),
+              ),
+              child: const Text('⚠',
+                  style: TextStyle(fontSize: 12, color: AppColors.alert)),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 l10n?.formWrongUpiNote ??
                     'Wrong UPI transfers are not covered by RBI compensation. Recovery depends on beneficiary consent via bank/NPCI.',
                 style: TextStyle(
-                  fontSize: 11,
+                  fontFamily: AppTypography.family,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: tc.textPrimary,
-                  height: 1.4,
+                  height: 1.45,
                 ),
               ),
             ),
@@ -1073,38 +888,44 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     }
     if (type.tatDays == null) return const SizedBox.shrink();
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: tc.accentSoft,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppRadii.md),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '✓',
-            style: TextStyle(fontSize: 12, color: AppColors.success),
+          Container(
+            width: 24,
+            height: 24,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.success.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(AppRadii.sm),
+            ),
+            child:
+                const Text('✓', style: TextStyle(fontSize: 12, color: AppColors.success)),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: RichText(
               text: TextSpan(
                 style: TextStyle(
-                  fontSize: 11,
+                  fontFamily: AppTypography.family,
+                  fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: tc.textPrimary,
-                  height: 1.4,
+                  height: 1.45,
                 ),
                 children: [
                   TextSpan(
-                    text:
-                        l10n?.formRbiCircularPrefix('${type.tatDays}') ??
+                    text: l10n?.formRbiCircularPrefix('${type.tatDays}') ??
                         'RBI Circular DPSS/2018 — T+${type.tatDays} refund rule applies. ',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   TextSpan(
-                    text:
-                        l10n?.formEligiblePerDayComp('${type.tatDays}') ??
+                    text: l10n?.formEligiblePerDayComp('${type.tatDays}') ??
                         "You're eligible for ₹100/day comp beyond T+${type.tatDays}.",
                   ),
                 ],
@@ -1116,19 +937,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     );
   }
 
-  String _typeShort(DisputeType t) {
-    final l10n = AppLocalizations.of(context);
-    return switch (t) {
-      DisputeType.upiP2p => 'UPI',
-      DisputeType.upiP2m => 'UPI',
-      DisputeType.atm => 'ATM',
-      DisputeType.imps => 'IMPS',
-      DisputeType.fastag => 'FASTag',
-      DisputeType.bankCharge => l10n?.typeShortBank ?? 'Bank',
-      DisputeType.wrongTransfer => l10n?.typeShortWrong ?? 'Wrong',
-    };
-  }
-
   String _fmtDate(DateTime d) =>
       '${d.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]} ${d.year}, ${((d.hour % 12) == 0 ? 12 : d.hour % 12)}:${d.minute.toString().padLeft(2, '0')} ${d.hour < 12 ? 'AM' : 'PM'}';
 
@@ -1138,9 +946,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     if (raw == null || raw <= 0) {
       return l10n?.formAddAmountToEstimate ?? 'Add amount to estimate';
     }
-    // HI-1 / ME-3: cap the live preview at the ₹5,00,000 maximum the
-    // form accepts, so the estimate never shows a value the user can't
-    // actually submit.
     final amount = raw > 500000 ? 500000.0 : raw;
     final amtStr = CompensationCalculator.formatIndian(amount);
     if (type.tatDays == null || type.compensationPerDay == null) {
@@ -1164,7 +969,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                 amtStr,
                 CompensationCalculator.formatIndian(comp.compensationDue),
               ) ??
-              'Claim $amtStr + ${CompensationCalculator.formatIndian(comp.compensationDue).toString()} compo')
+            'Claim $amtStr + ${CompensationCalculator.formatIndian(comp.compensationDue).toString()} compo')
         : (l10n?.formClaimAmountCompo(amtStr) ?? 'Claim $amtStr + compo');
   }
 
@@ -1181,7 +986,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       return;
     }
 
-    // Non-FASTag: show ALL banks with onboarding picks first.
     final selectedIds = await AddBanksPage.loadSelectedBanks();
     if (!context.mounted) return;
     await _showBankPickerWithSearch(context, selectedIds);
@@ -1195,6 +999,10 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     ({String name, String id})? picked;
     await showModalBottomSheet(
       context: context,
+      backgroundColor: tc.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (c) => SafeArea(
         child: ListView.separated(
           shrinkWrap: true,
@@ -1202,18 +1010,26 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
           separatorBuilder: (_, _) => const Divider(height: 1),
           itemBuilder: (_, i) {
             final b = list[i];
+            final isSelected = _bankName == b.name;
             return ListTile(
               leading: CircleAvatar(
                 backgroundColor: tc.surfaceAlt,
                 child: Text(
                   b.name.isEmpty ? '?' : b.name.substring(0, 1).toUpperCase(),
                   style: TextStyle(
-                    color: tc.ctaBackground,
+                    color: isSelected ? tc.ctaBackground : tc.textPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              title: Text(b.name),
+              title: Text(b.name,
+                  style: TextStyle(
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: tc.textPrimary,
+                  )),
+              trailing: isSelected
+                  ? Icon(Icons.check_circle, size: 20, color: tc.ctaBackground)
+                  : null,
               onTap: () {
                 picked = b;
                 Navigator.pop(c);
@@ -1231,10 +1047,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     }
   }
 
-  /// Non-FASTag picker: shows ALL `BankCatalog.banks` with a search bar.
-  /// Onboarding-picked banks (that exist in the catalog) are shown first
-  /// under a 'Your banks' header, then 'All banks' follows. 'other' is
-  /// always pinned at the bottom.
   Future<void> _showBankPickerWithSearch(
     BuildContext context,
     List<String> selectedIds,
@@ -1253,12 +1065,10 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            // Your banks (onboarding-picked, that exist in the catalog).
             final yourBanks = BankCatalog.banks
                 .where((b) => selectedIds.contains(b.id))
                 .toList();
 
-            // All banks (filtered by search). 'other' always included.
             final allBanks = BankCatalog.banks.where((b) {
               if (b.id == 'other') return true;
               if (searchQuery.isEmpty) return true;
@@ -1268,7 +1078,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                   b.id.toLowerCase().contains(q);
             }).toList();
 
-            // Pull 'other' out so it can be pinned at the bottom.
             BankEntry? otherEntry;
             final remaining = <BankEntry>[];
             for (final b in allBanks) {
@@ -1278,17 +1087,12 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                 remaining.add(b);
               }
             }
-            // HI-3: never fall back to an arbitrary bank (the old `.last`
-            // could surface a random bank when the 'other' entry is renamed
-            // or removed). If 'other' is missing, simply hide the pinned
-            // tile — the user still has every real bank above.
             final other = otherEntry;
 
             return SizedBox(
               height: MediaQuery.of(context).size.height * 0.7,
               child: Column(
                 children: [
-                  // Handle bar
                   Container(
                     width: 40,
                     height: 4,
@@ -1298,7 +1102,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  // Title
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Align(
@@ -1306,6 +1109,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                       child: Text(
                         l10n?.formLabelBank ?? 'Select Bank',
                         style: TextStyle(
+                          fontFamily: AppTypography.family,
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: tc.textPrimary,
@@ -1313,7 +1117,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                       ),
                     ),
                   ),
-                  // Search bar
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
                     child: TextField(
@@ -1337,13 +1140,10 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                           setSheetState(() => searchQuery = value),
                     ),
                   ),
-                  // List
                   Expanded(
                     child: ListView(
                       padding: const EdgeInsets.only(bottom: 20),
                       children: [
-                        // Your banks section (only when not searching and the
-                        // user has onboarding picks in the catalog)
                         if (searchQuery.isEmpty && yourBanks.isNotEmpty) ...[
                           _bankSectionHeader(
                             sheetContext,
@@ -1360,7 +1160,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                             }),
                           const SizedBox(height: 8),
                         ],
-                        // All banks / search results
                         _bankSectionHeader(
                           sheetContext,
                           searchQuery.isEmpty
@@ -1377,7 +1176,6 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                             });
                             Navigator.pop(context);
                           }),
-                        // Other bank pinned at bottom (only if present in the catalog)
                         if (other != null)
                           _bankTile(sheetContext, other, tc, () {
                             setState(() {
@@ -1394,7 +1192,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
             );
           },
         );
-},
+      },
     );
   }
 
@@ -1408,6 +1206,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
       child: Text(
         label,
         style: TextStyle(
+          fontFamily: AppTypography.family,
           fontSize: 11,
           fontWeight: FontWeight.w700,
           letterSpacing: 1,
@@ -1437,14 +1236,191 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
                   fontSize: 15,
                   fontWeight:
                       isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? AppColors.accent : tc.textPrimary,
+                  color: isSelected ? tc.ctaBackground : tc.textPrimary,
                 ),
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle, size: 20, color: AppColors.accent),
+              Icon(Icons.check_circle, size: 20, color: tc.ctaBackground),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PageHeader extends StatelessWidget {
+  final DisputeType type;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _PageHeader({
+    required this.type,
+    required this.tc,
+    required this.l10n,
+  });
+
+  String _typeShort(DisputeType t) => switch (t) {
+        DisputeType.upiP2p => 'UPI',
+        DisputeType.upiP2m => 'UPI',
+        DisputeType.atm => 'ATM',
+        DisputeType.imps => 'IMPS',
+        DisputeType.fastag => 'FASTag',
+        DisputeType.bankCharge => 'Bank',
+        DisputeType.wrongTransfer => 'Wrong',
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 16, 4),
+      child: Row(
+        children: [
+          AppBackButton(onTap: () => context.pop()),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n?.formStep2Of4 ?? 'STEP 2 OF 2',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
+                    color: tc.textTertiary,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  l10n?.formDisputeDetails ?? 'Dispute details',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: tc.textPrimary,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: tc.accentSoft,
+              borderRadius: BorderRadius.circular(AppRadii.pill),
+            ),
+            child: Text(
+              _typeShort(type),
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: tc.ctaBackground,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StickyFooter extends StatelessWidget {
+  final String estimate;
+  final bool saving;
+  final VoidCallback? onSave;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  const _StickyFooter({
+    required this.estimate,
+    required this.saving,
+    required this.onSave,
+    required this.tc,
+    required this.l10n,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        12 + MediaQuery.of(context).padding.bottom,
+      ),
+      decoration: BoxDecoration(
+        color: tc.surface,
+        border: Border(top: BorderSide(color: tc.divider)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n?.formEstimated ?? 'ESTIMATED',
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                    color: tc.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  estimate,
+                  style: TextStyle(
+                    fontFamily: AppTypography.family,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: tc.ctaBackground,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            height: 46,
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: tc.ctaBackground,
+                foregroundColor: tc.ctaForeground,
+                disabledBackgroundColor: tc.ctaBackground.withValues(alpha: 0.5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.md),
+                ),
+              ),
+              onPressed: onSave,
+              child: saving
+                  ? SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.4,
+                        valueColor:
+                            AlwaysStoppedAnimation(tc.ctaForeground),
+                      ),
+                    )
+                  : Text(
+                      AppLocalizations.of(context)?.formCreateDispute ??
+                          'Create dispute',
+                      style: TextStyle(
+                        fontFamily: AppTypography.family,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1468,10 +1444,11 @@ class _InlineChipButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
+              fontFamily: AppTypography.family,
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.accent,
+              color: tc.ctaBackground,
             ),
           ),
         ),
