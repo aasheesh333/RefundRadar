@@ -69,7 +69,7 @@ void main() {
       expect(ids, {'atm_bank_complaint', 'atm_npci_portal'});
     });
 
-    test('IMPS sees imps_ + the branch-visit L1', () {
+    test('IMPS sees only imps_ templates (strict, no UPI leak)', () {
       final ids = templates
           .where((t) => repo.matchesType(t, DisputeType.imps))
           .map((t) => t.id)
@@ -77,7 +77,6 @@ void main() {
       expect(ids, {
         'imps_bank_complaint',
         'imps_npci_portal',
-        'upi_imp_personally_visit_branch_l1',
       });
     });
   });

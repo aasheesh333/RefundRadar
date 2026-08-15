@@ -82,15 +82,19 @@ class TemplateRepository {
         DisputeType.wrongTransfer => 'Wrong transfer',
       };
 
-  /// Whether [t] is relevant to a dispute of [type]. Stricter than the
-  /// shared library category: a UPI P2P dispute only ever sees UPI P2P +
-  /// generic-UPI templates, an ATM dispute only ATM ones, etc. ID-prefix
-  /// based (the template id encodes its target type).
+  /// Whether [t] is relevant to a dispute of [type] — the single
+  /// strict type gate used by every dispute-scoped flow (Escalate auto
+  /// match, template picker, dispute-detail preview, L1/L2 pickers).
+  ///
+  /// A FASTag dispute only ever sees `fastag_*` templates, an ATM
+  /// dispute only `atm_*`, a UPI-P2P only `upi_p2p_*` + shared generic
+  /// UPI helpers, etc. ID-prefix based (the template id encodes its
+  /// target type).
   bool matchesType(Template t, DisputeType type) {
     final id = t.id;
     bool prefix(String p) => id.startsWith(p);
-    // Templates shared by all UPI-flavour types (P2P/P2M) — branch
-    // one-pagers, chargebacks, UCPMP fraud, appellate + legal notices.
+    // Generic UPI templates shared by the two UPI flavours only
+    // (P2P/P2M) — chargebacks, UCPMP fraud, appellate + legal notices.
     bool genericUpi() =>
         prefix('upi_') &&
         !prefix('upi_p2p_') &&
@@ -103,8 +107,9 @@ class TemplateRepository {
             genericUpi() ||
             id == 'upi_initial_chat_friendly_l1',
       DisputeType.atm => prefix('atm_'),
-      DisputeType.imps =>
-        prefix('imps_') || id == 'upi_imp_personally_visit_branch_l1',
+      // Strict: only imps_ templates. The UPI branch-visit letter is not
+      // shown for IMPS (its body addresses UPI transactions).
+      DisputeType.imps => prefix('imps_'),
       DisputeType.fastag => prefix('fastag_'),
       DisputeType.bankCharge => prefix('bank_charge'),
       DisputeType.wrongTransfer => prefix('wrong_transfer'),

@@ -16,11 +16,12 @@ import 'package:refund_radar/l10n/app_localizations.dart';
 /// Full-screen Template Picker shown when the user taps the pencil on the
 /// Dispute Detail / Timeline card.
 ///
-/// Wave 4a — clean-minimal Material 3 page. Filters to the **dispute's
-/// category** (UPI / IMPS / ATM, FASTag, Bank charges, Wrong transfer)
-/// and renders both Level 1 (bank) and Level 2 (NPCI / portal) rows.
-/// Tap a template to open the full-screen Preview (which then writes
-/// the selection back to the dispute).
+/// Wave 4a — clean-minimal Material 3 page. Filters strictly to the
+/// **dispute's type** via [TemplateRepository.filterForType] (a FASTag
+/// dispute only ever sees `fastag_*` templates, an ATM dispute only
+/// `atm_*`, etc.) and renders both Level 1 (bank) and Level 2
+/// (NPCI / portal) rows. Tap a template to open the full-screen Preview
+/// (which then writes the selection back to the dispute).
 class TemplatePickerPage extends ConsumerWidget {
   final String disputeId;
   const TemplatePickerPage({super.key, required this.disputeId});
@@ -140,11 +141,14 @@ class TemplatePickerPage extends ConsumerWidget {
     final repo = ref.read(templateRepositoryProvider);
     final locale = Localizations.localeOf(context).languageCode;
     final category = TemplateRepository.categoryFor(d.type);
-    final candidates = all
-        .where((t) =>
-            t.category == category &&
-            (t.escalationLevel == 1 || t.escalationLevel == 2))
-        .toList();
+    // Strict per-type scope: a FASTag dispute only sees `fastag_*`
+    // templates, an ATM dispute only `atm_*`, etc. The old
+    // `t.category == category` match lumped UPI + IMPS + ATM together.
+    final candidates =
+        repo
+            .filterForType(all, d.type)
+            .where((t) => t.escalationLevel == 1 || t.escalationLevel == 2)
+            .toList();
 
     if (candidates.isEmpty) return _empty(tc, l10n);
 
