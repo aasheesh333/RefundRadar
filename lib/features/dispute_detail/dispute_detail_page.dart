@@ -142,12 +142,8 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
         }
       }
     }
-    matchedTemplate ??= repo.matchForCategory(
-      allTemplates,
-      dispute.type,
-      freeIds,
-      isPremiumUser: isPremiumUser,
-    );
+    matchedTemplate ??=
+        repo.defaultForType(allTemplates, dispute.type);
 
     return Column(
       children: [

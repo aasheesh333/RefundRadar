@@ -554,9 +554,56 @@ class AppLocalizations {
     'settingsTitle': {'en': 'Settings', 'hi': 'सेटिंग्स'},
     // Bottom navigation destinations.
     'navHome': {'en': 'Home', 'hi': 'होम'},
-    'navHistory': {'en': 'History', 'hi': 'इतिहास'},
-    'navTemplates': {'en': 'Templates', 'hi': 'टेम्पलेट'},
-    'navSettings': {'en': 'Settings', 'hi': 'सेटिंग्स'},
+    'navHistory': {'en': 'History', 'hi': '\u0907\u0924\u093f\u0939\u093e\u0938'},
+    'navTemplates': {'en': 'Templates', 'hi': '\u091f\u0947\u092e\u094d\u092a\u0932\u0947\u091f\u094d\u0938'},
+    'navSettings': {'en': 'Settings', 'hi': '\u0938\u0947\u091f\u093f\u0902\u0917\u094d\u0938'},
+    // One-time complainant profile (used to pre-fill every grievance email).
+    'commonSave': {'en': 'Save', 'hi': '\u0938\u0947\u0935 \u0915\u0930\u0947\u0902'},
+    'profileName': {'en': 'FULL NAME', 'hi': '\u092a\u0942\u0930\u093e \u0928\u093e\u092e'},
+    'profileMobile': {'en': 'MOBILE NUMBER', 'hi': '\u092e\u094b\u092c\u093e\u0907\u0932 \u0928\u0902\u092c\u0930'},
+    'profileEmail': {'en': 'EMAIL ADDRESS', 'hi': '\u0908\u092e\u0947\u0932 \u092a\u0924\u093e'},
+    'profileEmailHint': {
+      'en': 'bank will reply here',
+      'hi': '\u092c\u0948\u0902\u0915 \u092f\u0939\u093e\u0901 \u091c\u0935\u093e\u092c \u0926\u0947\u0917\u093e',
+    },
+    'profileAccount': {
+      'en': 'BANK ACCOUNT (OPTIONAL)',
+      'hi': '\u092c\u0948\u0902\u0915 \u0916\u093e\u0924\u093e (\u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915)',
+    },
+    'profileAccountHint': {'en': 'a/c no.', 'hi': '\u0916\u093e\u0924\u093e \u0938\u0902.'},
+    'profilePlace': {'en': 'CITY / PLACE (OPTIONAL)', 'hi': '\u0936\u0939\u0930 / \u0938\u094d\u0925\u093e\u0928 (\u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915)'},
+    'profileAddress': {'en': 'ADDRESS (OPTIONAL)', 'hi': '\u092a\u0924\u093e (\u0935\u0948\u0915\u0932\u094d\u092a\u093f\u0915)'},
+    'profileEditTitle': {'en': 'Your details', 'hi': '\u0906\u092a\u0915\u0940 \u091c\u093e\u0928\u0915\u093e\u0930\u0940'},
+    'profileEditSubtitle': {
+      'en':
+          'One-time setup. Auto-filled in every complaint email so nothing needs manual editing.',
+      'hi':
+          '\u090f\u0915 \u092c\u093e\u0930 \u0938\u0947\u091f\u0905\u092a\u0964 \u0939\u0930 \u0936\u093f\u0915\u093e\u092f\u0924 \u0908\u092e\u0947\u0932 \u092e\u0947\u0902 \u0905\u092a\u0928\u0947-\u0906\u092a \u092d\u0930 \u091c\u093e\u0924\u093e \u0939\u0948 \u0924\u093e\u0915\u093f \u0915\u0941\u091b \u092d\u0940 \u0939\u093e\u0925 \u0938\u0947 \u0928 \u0932\u093f\u0916\u0928\u093e \u092a\u0921\u093c\u0947\u0964',
+    },
+    'profileOnboardKicker': {'en': 'ONE-TIME SETUP', 'hi': '\u090f\u0915 \u092c\u093e\u0930 \u0938\u0947\u091f\u0905\u092a'},
+    'profileOnboardTitle': {'en': 'Your details', 'hi': '\u0906\u092a\u0915\u0940 \u091c\u093e\u0928\u0915\u093e\u0930\u0940'},
+    'profileOnboardBody': {
+      'en':
+          'Fill once — every complaint email auto-fills your name, mobile, email and account so you just press Send. Stored on this device only.',
+      'hi':
+          '\u090f\u0915 \u092c\u093e\u0930 \u092d\u0930\u0947\u0902 \u2014 \u0939\u0930 \u0936\u093f\u0915\u093e\u092f\u0924 \u0908\u092e\u0947\u0932 \u092e\u0947\u0902 \u0906\u092a\u0915\u093e \u0928\u093e\u092e, \u092e\u094b\u092c\u093e\u0907\u0932, \u0908\u092e\u0947\u0932 \u0914\u0930 \u0916\u093e\u0924\u093e \u0905\u092a\u0928\u0947-\u0906\u092a \u092d\u0930 \u091c\u093e\u090f\u0917\u093e, \u092c\u0938 Send \u0926\u092c\u093e\u090f\u0901\u0964 \u0915\u0947\u0935\u0932 \u0907\u0938\u0940 \u092b\u094b\u0928 \u092a\u0930 \u0938\u0947\u0935 \u0939\u094b\u0924\u093e \u0939\u0948\u0964',
+    },
+    'profileSaveContinue': {'en': 'Save & continue', 'hi': '\u0938\u0947\u0935 \u0915\u0930\u0947\u0902 \u0914\u0930 \u0906\u0917\u0947 \u092c\u0922\u093c\u0947\u0902'},
+    'profileSkipLater': {'en': 'Skip — I’ll add it later', 'hi': '\u091b\u094b\u0921\u093c\u0947\u0902 \u2014 \u092c\u093e\u0926 \u092e\u0947\u0902 \u092d\u0930\u0942\u0901\u0917\u093e'},
+    'profileSaved': {'en': 'Details saved', 'hi': '\u091c\u093e\u0928\u0915\u093e\u0930\u0940 \u0938\u0947\u0935 \u0939\u094b \u0917\u0908'},
+    'profileRequiredForSend': {
+      'en': 'Add your name & email to send emails',
+      'hi': '\u0908\u092e\u0947\u0932 \u092d\u0947\u091c\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0928\u093e\u092e \u0914\u0930 \u0908\u092e\u0947\u0932 \u092d\u0930\u0947\u0902',
+    },
+    'escalateReadyBanner': {
+      'en': 'Ready to send — To, Subject and body are pre-filled. No editing needed.',
+      'hi': '\u092d\u0947\u091c\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u0924\u0948\u092f\u093e\u0930 \u2014 To, Subject \u0914\u0930 \u092a\u0942\u0930\u093e \u0908\u092e\u0947\u0932 \u092a\u0939\u0932\u0947 \u0938\u0947 \u092d\u0930\u093e \u0939\u0948\u0964 \u0915\u0941\u091b \u092d\u0940 \u092c\u0926\u0932\u0928\u0947 \u0915\u0940 \u091c\u093c\u0930\u0942\u0930\u0924 \u0928\u0939\u0940\u0902\u0964',
+    },
+    'escalateMissingProfileBanner': {
+      'en': 'Your details are missing — add them once to send this email.',
+      'hi': '\u0906\u092a\u0915\u0940 \u091c\u093e\u0928\u0915\u093e\u0930\u0940 \u0905\u0927\u0942\u0930\u0940 \u0939\u0948 \u2014 \u0908\u092e\u0947\u0932 \u092d\u0947\u091c\u0928\u0947 \u0915\u0947 \u0932\u093f\u090f \u090f\u0915 \u092c\u093e\u0930 \u092d\u0930\u0947\u0902\u0964',
+    },
+    'escalateAddDetails': {'en': 'Add details', 'hi': '\u091c\u093e\u0928\u0915\u093e\u0930\u0940 \u092d\u0930\u0947\u0902'},
     'settingsSmsDetection': {'en': 'SMS detection', 'hi': 'SMS पहचान'},
     'settingsAutoDetectUtr': {'en': 'Auto-detect UTR', 'hi': 'UTR ऑटो-पहचान'},
     'settingsSmsPermissionHint': {
@@ -1430,6 +1477,27 @@ class AppLocalizations {
   String get navHistory => _t('navHistory');
   String get navTemplates => _t('navTemplates');
   String get navSettings => _t('navSettings');
+  String get commonSave => _t('commonSave');
+  String get profileName => _t('profileName');
+  String get profileMobile => _t('profileMobile');
+  String get profileEmail => _t('profileEmail');
+  String get profileEmailHint => _t('profileEmailHint');
+  String get profileAccount => _t('profileAccount');
+  String get profileAccountHint => _t('profileAccountHint');
+  String get profilePlace => _t('profilePlace');
+  String get profileAddress => _t('profileAddress');
+  String get profileEditTitle => _t('profileEditTitle');
+  String get profileEditSubtitle => _t('profileEditSubtitle');
+  String get profileOnboardKicker => _t('profileOnboardKicker');
+  String get profileOnboardTitle => _t('profileOnboardTitle');
+  String get profileOnboardBody => _t('profileOnboardBody');
+  String get profileSaveContinue => _t('profileSaveContinue');
+  String get profileSkipLater => _t('profileSkipLater');
+  String get profileSaved => _t('profileSaved');
+  String get profileRequiredForSend => _t('profileRequiredForSend');
+  String get escalateReadyBanner => _t('escalateReadyBanner');
+  String get escalateMissingProfileBanner => _t('escalateMissingProfileBanner');
+  String get escalateAddDetails => _t('escalateAddDetails');
   String get settingsSmsDetection => _t('settingsSmsDetection');
   String get settingsAutoDetectUtr => _t('settingsAutoDetectUtr');
   String get settingsSmsPermissionHint => _t('settingsSmsPermissionHint');

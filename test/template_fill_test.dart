@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/template.dart';
 import 'package:refund_radar/data/models/template_fill.dart';
+import 'package:refund_radar/data/models/user_profile.dart';
 
 void main() {
   group('fillValuesForDispute', () {
@@ -184,6 +185,49 @@ void main() {
         )),
         2,
       );
+    });
+  });
+
+  group('profile token filling', () {
+    final profile = UserProfile(
+      name: 'Asha Verma',
+      mobile: '9898001122',
+      email: 'asha@example.com',
+      address: '12 MG Road',
+      place: 'Pune',
+      accountNo: 'XXXX1234',
+    );
+
+    Dispute d() => Dispute(
+          id: 'd1',
+          uid: 'u1',
+          type: DisputeType.upiP2p,
+          amount: 500,
+          txnDate: DateTime(2026, 1, 10),
+          txnId: '123456789012',
+          createdAt: DateTime(2026, 1, 11),
+        );
+
+    test('fillValuesForDispute injects profile identity tokens', () {
+      final m = fillValuesForDispute(d(), profile: profile);
+      expect(m['USER_NAME'], 'Asha Verma');
+      expect(m['MOBILE_NO'], '9898001122');
+      expect(m['EMAIL'], 'asha@example.com');
+      expect(m['ADDRESS'], '12 MG Road');
+      expect(m['PLACE'], 'Pune');
+      expect(m['ACCOUNT_NO'], 'XXXX1234');
+    });
+
+    test('missing profile leaves identity tokens blank, not raw', () {
+      final m = fillValuesForDispute(d());
+      expect(m['USER_NAME'], '');
+      expect(m['EMAIL'], '');
+    });
+
+    test('profile-only fill (no dispute) covers identity for previews', () {
+      final m = fillValuesForDispute(null, profile: profile);
+      expect(m['USER_NAME'], 'Asha Verma');
+      expect(m['EMAIL'], 'asha@example.com');
     });
   });
 }

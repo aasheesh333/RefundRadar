@@ -4,6 +4,7 @@ import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/template.dart';
+import 'package:refund_radar/data/models/user_profile.dart';
 import 'package:refund_radar/data/repositories/template_repository.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/features/templates/template_library_page.dart';
@@ -22,23 +23,17 @@ class EscalateTemplatePicker {
     required Dispute dispute,
     required List<Template> templates,
     required String localeCode,
-    required Set<String> freeIds,
     required bool isPremiumUser,
+    required UserProfile profile,
     required TemplateRepository repo,
     required String? selectedTemplateId,
     required void Function(String?) onSelectTemplate,
   }) {
     final tc = AppThemeColors.of(context);
 
-    // ME-7: partition via the shared helper so the free/pro buckets match
-    // every other call site. The old inline `switch (dispute.type)` + loop
-    // is now one delegated call.
-    final buckets = repo.splitForCategory(
-      templates,
-      dispute.type,
-      freeIds,
-      isPremiumUser: isPremiumUser,
-    );
+    // Per-type scoped buckets: free = this dispute type's 2 free
+    // templates (L1 + L2), pro = everything else relevant to the type.
+    final buckets = repo.splitForType(templates, dispute.type);
     final freeTemplates = buckets.free;
     final proTemplates = buckets.pro;
 
@@ -105,7 +100,7 @@ class EscalateTemplatePicker {
                           dispute,
                           freeTemplates,
                           repo,
-                          freeIds,
+                          profile,
                           isPremiumUser,
                           selectedTemplateId,
                           localeCode,
@@ -118,7 +113,7 @@ class EscalateTemplatePicker {
                           dispute,
                           proTemplates,
                           repo,
-                          freeIds,
+                          profile,
                           isPremiumUser,
                           selectedTemplateId,
                           localeCode,
@@ -146,7 +141,7 @@ class EscalateTemplatePicker {
     Dispute dispute,
     List<Template> templates,
     TemplateRepository repo,
-    Set<String> freeIds,
+    UserProfile profile,
     bool isPremiumUser,
     String? selectedTemplateId,
     String localeCode,
@@ -176,8 +171,7 @@ class EscalateTemplatePicker {
         final t = templates[index];
         final isSelected = t.id == selectedTemplateId;
         // Pro tab entries are gated for free users; premium users unlock them.
-        final isLocked = isProTab &&
-            repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser);
+        final isLocked = isProTab && t.isPremium && !isPremiumUser;
 
         return InkWell(
           onTap: isLocked
@@ -253,12 +247,12 @@ class EscalateTemplatePicker {
                 const SizedBox(height: 6),
                 if (isLocked)
                   _blurredPreview(
-                    filledTemplateBody(t, localeCode, dispute),
+                    filledTemplateBody(t, localeCode, dispute, profile: profile),
                     tc,
                   )
                 else
                   Text(
-                    filledTemplateBody(t, localeCode, dispute),
+                    filledTemplateBody(t, localeCode, dispute, profile: profile),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(

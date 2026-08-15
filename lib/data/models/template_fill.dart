@@ -1,16 +1,23 @@
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/template.dart';
+import 'package:refund_radar/data/models/user_profile.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/utils/date_time_ext.dart';
 
-/// Builds placeholder maps for [Template.fill] from an optional [Dispute].
-/// Covers every token used in `assets/templates/**/*.json` plus short aliases
-/// used by the wizard (`AMOUNT`, `DATE`, `BANK`, …). Missing fields become
-/// empty strings so users can spot blanks without leftover `{TOKEN}` for
-/// known keys.
-Map<String, String> fillValuesForDispute(Dispute? dispute) {
+/// Builds placeholder maps for [Template.fill] from an optional [Dispute]
+/// and [UserProfile]. Covers every token used in
+/// `assets/templates/**/*.json` plus short aliases used by the wizard
+/// (`AMOUNT`, `DATE`, `BANK`, …). Missing fields become empty strings so
+/// users can spot blanks without leftover `{TOKEN}` for known keys.
+Map<String, String> fillValuesForDispute(
+  Dispute? dispute, {
+  UserProfile? profile,
+}) {
+  final p = profile ?? UserProfile.empty;
   if (dispute == null) {
-    return _emptyAll();
+    final values = _emptyAll();
+    _applyProfile(values, p);
+    return values;
   }
 
   final amount = dispute.amount.toStringAsFixed(0);
@@ -77,13 +84,14 @@ Map<String, String> fillValuesForDispute(Dispute? dispute) {
     // Compensation
     'COMPENSATION_DUE': compensationDue,
     'DAYS_ELAPSED': daysElapsedStr,
-    // User (not collected yet → blank)
-    'USER_NAME': '',
-    'MOBILE_NO': '',
-    'EMAIL': '',
-    'ADDRESS': '',
-    'PLACE': '',
-    'ACCOUNT_NO': '',
+    // User (from one-time profile capture — editable in Settings /
+    // dispute-create so the complaint email needs no manual editing)
+    'USER_NAME': p.name,
+    'MOBILE_NO': p.mobile,
+    'EMAIL': p.email,
+    'ADDRESS': p.address,
+    'PLACE': p.place,
+    'ACCOUNT_NO': p.accountNo,
     // UPI
     'VPA': dispute.vpa ?? '',
     'VPA_PAYEE': dispute.vpaPayee ?? '',
@@ -129,11 +137,26 @@ Map<String, String> fillValuesForDispute(Dispute? dispute) {
   };
 }
 
-String filledBody(String body, Dispute? dispute) =>
-    Template.fill(body, fillValuesForDispute(dispute));
+String filledBody(
+  String body,
+  Dispute? dispute, {
+  UserProfile? profile,
+}) =>
+    Template.fill(body, fillValuesForDispute(dispute, profile: profile));
 
 String _fmtDate(DateTime d) =>
     '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+
+/// Merges the one-time profile identity values into an otherwise-blank
+/// token map (used for the no-dispute preview path).
+void _applyProfile(Map<String, String> values, UserProfile p) {
+  values['USER_NAME'] = p.name;
+  values['MOBILE_NO'] = p.mobile;
+  values['EMAIL'] = p.email;
+  values['ADDRESS'] = p.address;
+  values['PLACE'] = p.place;
+  values['ACCOUNT_NO'] = p.accountNo;
+}
 
 Map<String, String> _emptyAll() {
   const keys = [

@@ -83,7 +83,7 @@ class _AddBanksPageState extends ConsumerState<AddBanksPage> {
             _PageHeader(
               tc: tc,
               l10n: l10n,
-              onBack: () => context.go(AppRoutes.onboardSms),
+              onBack: () => context.go(AppRoutes.onboardProfile),
               onSkip: _finish,
             ),
             Padding(

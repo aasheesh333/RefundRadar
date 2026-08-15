@@ -5,6 +5,7 @@ export 'package:refund_radar/core/providers/premium_provider.dart'
     show isPremiumProvider;
 import 'package:refund_radar/core/providers/sms_detection_provider.dart';
 import 'package:refund_radar/core/providers/theme_provider.dart';
+import 'package:refund_radar/core/providers/user_profile_provider.dart';
 import 'package:refund_radar/services/notification_service.dart';
 
 /// App-level global state: premium-flag + install timestamp + free-dispute counter.
@@ -171,6 +172,9 @@ Future<void> hydratePersistedAppState(dynamic ref) async {
       sp.getBool(_kPrefNotifWeekly) ?? false;
   ref.read(smsDetectionEnabledProvider.notifier).state =
       await loadSmsDetectionEnabled();
+  // One-time complainant profile (name/mobile/email/…) — pre-fills every
+  // grievance email. Hydrated here so the first render already has it.
+  ref.read(userProfileProvider.notifier).state = await loadPersistedUserProfile();
   await ref.read(freeDisputesUsedProvider.notifier).hydrate();
   // Theme mode + locale are persisted in their own SharedPreferences keys
   // (theme_provider.dart). Hydrate them last so the first frame renders

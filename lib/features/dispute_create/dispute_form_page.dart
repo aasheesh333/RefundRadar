@@ -6,6 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
+import 'package:refund_radar/core/providers/user_profile_provider.dart';
+import 'package:refund_radar/data/models/user_profile.dart';
+import 'package:refund_radar/features/profile/profile_form.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
@@ -75,6 +78,7 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   final _cardLast4Ctrl = TextEditingController();
   final _beneficiaryAcctCtrl = TextEditingController();
   final _beneficiaryIfscCtrl = TextEditingController();
+  final _profileKey = GlobalKey<ProfileFormState>();
   DateTime? _date;
   String _bankName = '';
   String _selectedEntityId = '';
@@ -245,6 +249,7 @@ separatorBuilder: (_, _) => const Divider(height: 1),
     setState(() => _saving = true);
 
     final l10n = AppLocalizations.of(context);
+    final previousProfile = ref.read(userProfileProvider);
 
     try {
       final amount = double.tryParse(_amountCtrl.text) ?? 0;
@@ -386,6 +391,17 @@ separatorBuilder: (_, _) => const Divider(height: 1),
         return t.isEmpty ? null : t;
       }
 
+      // Write any edits to the inline "Your details" section back to the
+      // one-time profile so every later email is pre-addressed.
+      final editedProfile = _profileKey.currentState?.current;
+      if (editedProfile != null && editedProfile != previousProfile) {
+        try {
+          await saveUserProfile(ref, editedProfile);
+        } catch (e) {
+          debugPrint('best-effort step failed: $e');
+        }
+      }
+
       final dispute = Dispute(
         id: '',
         uid: uid,
@@ -486,6 +502,7 @@ separatorBuilder: (_, _) => const Divider(height: 1),
     final tc = AppThemeColors.of(context);
     final type = DisputeType.fromId(widget.type);
     final rulesAsync = ref.watch(rulesEngineProvider);
+    final profile = ref.watch(userProfileProvider);
     return Scaffold(
       backgroundColor: tc.bg,
       resizeToAvoidBottomInset: true,
@@ -707,6 +724,13 @@ separatorBuilder: (_, _) => const Divider(height: 1),
                           ..._buildCategorySpecificFields(type, tc, l10n),
                         ],
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    _ProfileDetailsCard(
+                      profile: profile,
+                      tc: tc,
+                      l10n: l10n,
+                      formKey: _profileKey,
                     ),
                     const SizedBox(height: 12),
                     _buildInfoBanner(type),
@@ -1452,6 +1476,123 @@ class _InlineChipButton extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Inline collapsible "Your details" card on dispute-create. Pre-filled
+/// from the persisted one-time profile; edits are written back to the
+/// profile when the dispute is saved so the follow-up email needs no
+/// typing. Required for one-tap sending (name + email at minimum).
+class _ProfileDetailsCard extends StatefulWidget {
+  final UserProfile profile;
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  final GlobalKey<ProfileFormState> formKey;
+  const _ProfileDetailsCard({
+    required this.profile,
+    required this.tc,
+    required this.l10n,
+    required this.formKey,
+  });
+
+  @override
+  State<_ProfileDetailsCard> createState() => _ProfileDetailsCardState();
+}
+
+class _ProfileDetailsCardState extends State<_ProfileDetailsCard> {
+  bool _expanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Open by default when details are missing so nothing blocks sending.
+    _expanded = !widget.profile.isSendReady;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tc = widget.tc;
+    final l10n = widget.l10n;
+    final ready = widget.profile.isSendReady;
+    return Container(
+      decoration: BoxDecoration(
+        color: tc.surface,
+        border: Border.all(color: tc.divider),
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            borderRadius: BorderRadius.circular(AppRadii.lg),
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  Text(
+                    l10n?.profileEditTitle ?? 'Your details',
+                    style: TextStyle(
+                      fontFamily: AppTypography.family,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: tc.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: ready ? const Color(0xFFE8F5E9) : tc.alertSoft,
+                      borderRadius: BorderRadius.circular(AppRadii.xl),
+                    ),
+                    child: Text(
+                      ready ? 'Ready' : 'Incomplete',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: ready ? AppColors.success : AppColors.alert,
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    _expanded
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                    size: 20,
+                    color: tc.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_expanded)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n?.profileRequiredForSend ??
+                        'Add your name & email to send emails',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: tc.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                  ProfileForm(
+                    key: widget.formKey,
+                    initial: widget.profile,
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

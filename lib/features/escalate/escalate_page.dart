@@ -17,6 +17,10 @@ import 'package:refund_radar/data/models/template.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/data/repositories/template_repository.dart';
 import 'package:refund_radar/features/escalate/widgets/escalate_post_send_dialog.dart';
+import 'package:refund_radar/core/providers/user_profile_provider.dart';
+import 'package:refund_radar/data/models/user_profile.dart';
+import 'package:refund_radar/data/repositories/reminder_repository.dart';
+import 'package:refund_radar/features/profile/profile_form.dart';
 import 'package:refund_radar/features/templates/template_library_page.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
@@ -120,11 +124,12 @@ class _EscalateBodyState extends ConsumerState<_EscalateBody> {
         : comp.deadlineDate.difference(DateTime.now()).inDays;
     final templatesAsync = ref.watch(templatesProvider);
     final rulesAsync = ref.watch(rulesEngineProvider);
-    final freeIds = rulesAsync.asData?.value.freeTemplateIds.toSet() ??
-        const <String>{};
     final isPremiumUser = ref.watch(isPremiumProvider);
+    final profile = ref.watch(userProfileProvider);
     final locale = ref.watch(localeProvider);
     final localeCode = locale.languageCode;
+    final ombudsmanEmail = _ombudsmanEmail(rulesAsync.asData?.value);
+    final profileReady = profile.isSendReady;
 
     return templatesAsync.when(
       loading: () => const SkeletonList(itemCount: 4),
@@ -144,13 +149,10 @@ class _EscalateBodyState extends ConsumerState<_EscalateBody> {
           }
         }
         final repo = ref.read(templateRepositoryProvider);
+        // One-tap default: the dispute type's free L1 bank complaint.
+        // Users only pick template + press Send — nothing else to fill.
         final match = picked ??
-            repo.matchForCategory(
-              templates,
-              dispute.type,
-              freeIds,
-              isPremiumUser: isPremiumUser,
-            );
+            repo.defaultForType(templates, dispute.type);
         return Stack(
           children: [
             Positioned.fill(
@@ -178,24 +180,34 @@ class _EscalateBodyState extends ConsumerState<_EscalateBody> {
                           ccOmbudsman: _ccOmbudsman,
                           onToggleCc: (v) =>
                               setState(() => _ccOmbudsman = v),
+                          ombudsmanEmail: ombudsmanEmail,
                           tc: tc,
                           l10n: l10n,
                         ),
                         const SizedBox(height: 16),
+                        if (!profileReady)
+                          _ProfileMissingBanner(
+                            tc: tc,
+                            l10n: l10n,
+                            onTapAdd: () => _openProfileSheet(context),
+                          ),
+                        if (!profileReady) const SizedBox(height: 16),
                         _EmailPreviewCard(
                           dispute: dispute,
                           matchedTemplate: match,
                           repo: repo,
-                          freeIds: freeIds,
+                          profile: profile,
                           isPremiumUser: isPremiumUser,
                           localeCode: localeCode,
                           ccOmbudsman: _ccOmbudsman,
+                          ombudsmanEmail: ombudsmanEmail,
+                          readyToSend: profileReady,
                           onChangeTemplate: () => _openTemplatePicker(
                                 context,
                                 dispute,
                                 templates,
                                 repo,
-                                freeIds,
+                                profile,
                                 isPremiumUser,
                                 localeCode,
                               ),
@@ -220,12 +232,14 @@ class _EscalateBodyState extends ConsumerState<_EscalateBody> {
                 dispute: dispute,
                 match: match,
                 repo: repo,
-                freeIds: freeIds,
+                profile: profile,
                 isPremiumUser: isPremiumUser,
                 localeCode: localeCode,
                 ccOmbudsman: _ccOmbudsman,
+                ombudsmanEmail: ombudsmanEmail,
                 tc: tc,
                 l10n: l10n,
+                onAddProfile: () => _openProfileSheet(context),
               ),
             ),
           ],
@@ -234,12 +248,23 @@ class _EscalateBodyState extends ConsumerState<_EscalateBody> {
     );
   }
 
+  Future<void> _openProfileSheet(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+    final saved = await showProfileEditSheet(context, ref,
+        nameRequired: true);
+    if (saved != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(l10n?.profileSaved ?? 'Details saved'),
+      ));
+    }
+  }
+
   void _openTemplatePicker(
     BuildContext context,
     Dispute dispute,
     List<Template> templates,
     TemplateRepository repo,
-    Set<String> freeIds,
+    UserProfile profile,
     bool isPremiumUser,
     String localeCode,
   ) {
@@ -250,12 +275,9 @@ class _EscalateBodyState extends ConsumerState<_EscalateBody> {
       builder: (sheetCtx) {
         final sheetTc = AppThemeColors.of(sheetCtx);
         final sheetL10n = AppLocalizations.of(sheetCtx);
-        final buckets = repo.splitForCategory(
-          templates,
-          dispute.type,
-          freeIds,
-          isPremiumUser: isPremiumUser,
-        );
+        // Per-type scoped picker: only templates relevant to this
+        // dispute type (free = the type's 2 free templates, rest Pro).
+        final buckets = repo.splitForType(templates, dispute.type);
         return SafeArea(
           child: SizedBox(
             height: MediaQuery.of(sheetCtx).size.height * 0.7,
@@ -304,15 +326,16 @@ class _EscalateBodyState extends ConsumerState<_EscalateBody> {
                                 const SizedBox(height: 8),
                             itemBuilder: (_, i) {
                               final t = bucket[i];
-                              final isLocked =
-                                  repo.isLocked(t, freeIds,
-                                      isPremiumUser: isPremiumUser);
+                              final isLocked = t.isPremium && !isPremiumUser;
                               return _sheetTile(
                                 context: sheetCtx,
                                 tc: sheetTc,
                                 l10n: sheetL10n,
                                 template: t,
                                 locked: isLocked,
+                                dispute: dispute,
+                                profile: profile,
+                                localeCode: localeCode,
                                 onTap: () {
                                   if (isLocked) {
                                     Navigator.pop(sheetCtx);
@@ -353,6 +376,9 @@ class _EscalateBodyState extends ConsumerState<_EscalateBody> {
     required AppLocalizations? l10n,
     required Template template,
     required bool locked,
+    required Dispute dispute,
+    required UserProfile profile,
+    required String localeCode,
     required VoidCallback onTap,
   }) {
     return Material(
@@ -396,6 +422,20 @@ class _EscalateBodyState extends ConsumerState<_EscalateBody> {
                 'L${template.escalationLevel} · ${template.category}',
                 style: TextStyle(fontSize: 11, color: tc.textSecondary),
               ),
+              if (!locked) ...[
+                const SizedBox(height: 6),
+                Text(
+                  filledTemplateBody(template, localeCode, dispute,
+                      profile: profile),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: tc.textSecondary,
+                    height: 1.35,
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -574,12 +614,14 @@ class _RecipientCard extends StatelessWidget {
   final Dispute dispute;
   final bool ccOmbudsman;
   final ValueChanged<bool> onToggleCc;
+  final String ombudsmanEmail;
   final AppThemeColors tc;
   final AppLocalizations? l10n;
   const _RecipientCard({
     required this.dispute,
     required this.ccOmbudsman,
     required this.onToggleCc,
+    required this.ombudsmanEmail,
     required this.tc,
     required this.l10n,
   });
@@ -607,7 +649,7 @@ class _RecipientCard extends StatelessWidget {
             emoji: '✉',
             emojiBg: tc.surfaceAlt,
             title: l10n?.escalateCcOmbudsman ?? 'CC RBI Ombudsman',
-            detail: 'crpc@rbi.org.in',
+            detail: ombudsmanEmail,
             selected: ccOmbudsman,
             tc: tc,
             trailing: ToggleSwitch(value: ccOmbudsman, onChanged: onToggleCc),
@@ -678,10 +720,12 @@ class _EmailPreviewCard extends StatelessWidget {
   final Dispute dispute;
   final Template? matchedTemplate;
   final TemplateRepository repo;
-  final Set<String> freeIds;
+  final UserProfile profile;
   final bool isPremiumUser;
   final String localeCode;
   final bool ccOmbudsman;
+  final String ombudsmanEmail;
+  final bool readyToSend;
   final VoidCallback onChangeTemplate;
   final AppThemeColors tc;
   final AppLocalizations? l10n;
@@ -689,10 +733,12 @@ class _EmailPreviewCard extends StatelessWidget {
     required this.dispute,
     required this.matchedTemplate,
     required this.repo,
-    required this.freeIds,
+    required this.profile,
     required this.isPremiumUser,
     required this.localeCode,
     required this.ccOmbudsman,
+    required this.ombudsmanEmail,
+    required this.readyToSend,
     required this.onChangeTemplate,
     required this.tc,
     required this.l10n,
@@ -701,11 +747,11 @@ class _EmailPreviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = matchedTemplate;
-    final locked = t != null &&
-        repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser);
+    final locked = t != null && t.isPremium && !isPremiumUser;
     final subject = 'Escalation — UTR ${dispute.txnId}';
-    final body =
-        t != null ? filledTemplateBody(t, localeCode, dispute) : '';
+    final body = t != null
+        ? filledTemplateBody(t, localeCode, dispute, profile: profile)
+        : '';
 
     return Container(
       decoration: BoxDecoration(
@@ -789,9 +835,31 @@ class _EmailPreviewCard extends StatelessWidget {
           ),
           if (ccOmbudsman)
             Text(
-              '${l10n?.escalateCcLabel ?? 'CC:'} crpc@rbi.org.in',
+              '${l10n?.escalateCcLabel ?? 'CC:'} $ombudsmanEmail',
               style: TextStyle(fontSize: 11, color: tc.textSecondary),
             ),
+          if (readyToSend && !locked) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.check_circle,
+                    size: 14, color: AppColors.success),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    l10n?.escalateReadyBanner ??
+                        'Ready to send — everything is pre-filled. No editing needed.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.success,
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 10),
           if (locked)
             _lockedBanner(tc, l10n)
@@ -844,6 +912,65 @@ class _EmailPreviewCard extends StatelessWidget {
                 height: 1.4,
                 fontWeight: FontWeight.w500,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Banner shown above the email preview when the user has not yet saved
+/// their name + email. One-tap send is locked until these details exist.
+class _ProfileMissingBanner extends StatelessWidget {
+  final AppThemeColors tc;
+  final AppLocalizations? l10n;
+  final VoidCallback onTapAdd;
+  const _ProfileMissingBanner({
+    required this.tc,
+    required this.l10n,
+    required this.onTapAdd,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: tc.alertSoft,
+        borderRadius: BorderRadius.circular(AppRadii.md),
+        border: Border.all(color: AppColors.alert.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          const Text('👤', style: TextStyle(fontSize: 16)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l10n?.escalateMissingProfileBanner ??
+                  'Your details are missing — add them once to send this email.',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: tc.textPrimary,
+                height: 1.35,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: onTapAdd,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.alert,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadii.sm),
+              ),
+            ),
+            child: Text(
+              l10n?.escalateAddDetails ?? 'Add details',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -913,32 +1040,37 @@ class _StickyFooter extends StatelessWidget {
   final Dispute dispute;
   final Template? match;
   final TemplateRepository repo;
-  final Set<String> freeIds;
+  final UserProfile profile;
   final bool isPremiumUser;
   final String localeCode;
   final bool ccOmbudsman;
+  final String ombudsmanEmail;
   final AppThemeColors tc;
   final AppLocalizations? l10n;
+  final VoidCallback onAddProfile;
   const _StickyFooter({
     required this.dispute,
     required this.match,
     required this.repo,
-    required this.freeIds,
+    required this.profile,
     required this.isPremiumUser,
     required this.localeCode,
     required this.ccOmbudsman,
+    required this.ombudsmanEmail,
     required this.tc,
     required this.l10n,
+    required this.onAddProfile,
   });
 
   @override
   Widget build(BuildContext context) {
     final t = match;
-    final locked = t != null &&
-        repo.isLocked(t, freeIds, isPremiumUser: isPremiumUser);
+    final locked = t != null && t.isPremium && !isPremiumUser;
     final subject = 'Escalation — UTR ${dispute.txnId}';
-    final body =
-        t != null ? filledTemplateBody(t, localeCode, dispute) : '';
+    final body = t != null
+        ? filledTemplateBody(t, localeCode, dispute, profile: profile)
+        : '';
+    final profileEmpty = !profile.isSendReady;
 
     return Container(
       decoration: BoxDecoration(
@@ -1006,8 +1138,14 @@ class _StickyFooter extends StatelessWidget {
                     );
                     return;
                   }
+                  // One-tap send gate: profile details (name + email) are
+                  // mandatory so the bank has a reply-to address.
+                  if (profileEmpty) {
+                    onAddProfile();
+                    return;
+                  }
                   final to = _nodalEmail(dispute);
-                  final cc = ccOmbudsman ? 'crpc@rbi.org.in' : null;
+                  final cc = ccOmbudsman ? ombudsmanEmail : null;
                   final ok = await launchEmail(to,
                       subject: subject, body: body, cc: cc);
                   if (!context.mounted) return;
@@ -1025,7 +1163,10 @@ class _StickyFooter extends StatelessWidget {
                         text:
                             'To: $to\n${cc != null ? 'CC: $cc\n' : ''}Subject: $subject\n\n$body'));
                   }
-                  // Persist activity log.
+                  // Persist activity log + auto-advance the dispute stage.
+                  // Sending an L1 template marks the dispute filed at L1,
+                  // L2 at L2, L3 at Ombudsman — so tracking needs no
+                  // manual "mark filed" step and reminders auto-resync.
                   try {
                     final now = DateTime.now();
                     final updatedLog = <ActivityLogEntry>[
@@ -1047,8 +1188,12 @@ class _StickyFooter extends StatelessWidget {
                           timestamp: now,
                         ),
                     ];
-                    final updated =
-                        dispute.copyWith(activityLog: updatedLog);
+                    final level = match?.escalationLevel ?? 2;
+                    final staged = _advanceStage(dispute, level, now);
+                    final updated = dispute.copyWith(
+                        activityLog: updatedLog,
+                        status: staged.status,
+                        filedDates: staged.filedDates);
                     // No ref here — use the navigator's resolve ref via
                     // ProviderScope. The router owns the state; if a save
                     // fails the conversation logs upstream.
@@ -1058,6 +1203,14 @@ class _StickyFooter extends StatelessWidget {
                         .read(disputeRepositoryProvider)
                         .saveDispute(dispute.uid, updated);
                     mq.invalidate(disputesProvider(dispute.uid));
+                    try {
+                      await syncRemindersForDispute(
+                        mq, dispute.uid, updated,
+                      );
+                      mq.invalidate(remindersProvider(dispute.uid));
+                    } catch (_) {
+                      // Reminder sync is best-effort; never block send.
+                    }
                   } catch (_) {
                     // Best-effort.
                   }
@@ -1083,6 +1236,16 @@ class _StickyFooter extends StatelessWidget {
   }
 }
 
+/// RBI Ombudsman CC address from the rules engine
+/// (`escalationTargets.rbi_ombudsman.email`), falling back to the
+/// published CPC address. Fixes the hard-coded drift from the bundled
+/// rules (crpc vs cpc).
+String _ombudsmanEmail(RulesEngine? rules) {
+  final fromRules = rules?.target('rbi_ombudsman')['email'] as String?;
+  if (fromRules != null && fromRules.contains('@')) return fromRules;
+  return 'cpc@rbi.org.in';
+}
+
 String _nodalEmail(Dispute d) {
   final catalog = BankCatalog.nodalEmailFor(d.entityId ?? '');
   if (catalog != null) return catalog;
@@ -1096,3 +1259,40 @@ String _nodalEmail(Dispute d) {
 
 String _fmtDate(DateTime d) =>
     '${d.day} ${const ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.month - 1]} ${d.year}, ${((d.hour % 12) == 0 ? 12 : d.hour % 12)}:${d.minute.toString().padLeft(2, '0')} ${d.hour < 12 ? 'AM' : 'PM'}';
+
+/// Auto-advances the dispute stage after an escalation email is sent.
+/// Forward-only: sending an earlier-stage template never downgrades a
+/// dispute that is already at a later stage.
+Dispute _advanceStage(Dispute d, int templateLevel, DateTime now) {
+  String key;
+  DisputeStatus status;
+  if (templateLevel >= 3) {
+    key = 'ombudsman';
+    status = DisputeStatus.ombudsman;
+  } else if (templateLevel == 2) {
+    key = 'l2';
+    status = DisputeStatus.filedL2;
+  } else {
+    key = 'l1';
+    status = DisputeStatus.filedL1;
+  }
+  const order = {
+    DisputeStatus.draft: 0,
+    DisputeStatus.filedL1: 1,
+    DisputeStatus.filedL2: 2,
+    DisputeStatus.ombudsman: 3,
+  };
+  if ((order[d.status] ?? -1) >= (order[status] ?? -1)) {
+    if (d.status == DisputeStatus.resolved ||
+        d.status == DisputeStatus.expired) {
+      return d;
+    }
+    // Still record the filing date at this level.
+    final filed = Map<String, DateTime?>.from(d.filedDates);
+    filed[key] = now;
+    return d.copyWith(filedDates: filed);
+  }
+  final filed = Map<String, DateTime?>.from(d.filedDates);
+  filed[key] = now;
+  return d.copyWith(status: status, filedDates: filed);
+}

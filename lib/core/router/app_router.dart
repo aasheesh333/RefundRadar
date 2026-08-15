@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/features/onboarding/onboarding_page.dart';
+import 'package:refund_radar/features/onboarding/onboard_profile_page.dart';
 import 'package:refund_radar/features/sms_permission/sms_permission_page.dart';
 import 'package:refund_radar/features/add_banks/add_banks_page.dart';
 import 'package:refund_radar/features/home/home_page.dart';
@@ -138,6 +139,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
           path: '/onboard/sms',
           builder: (c, s) => const SmsPermissionPage()),
+      GoRoute(
+          path: '/onboard/profile',
+          builder: (c, s) => const OnboardProfilePage()),
       GoRoute(
           path: '/onboard/banks',
           builder: (c, s) => const AddBanksPage()),

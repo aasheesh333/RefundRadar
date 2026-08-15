@@ -11,6 +11,7 @@ import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/template.dart';
 import 'package:refund_radar/data/models/template_fill.dart';
+import 'package:refund_radar/core/providers/user_profile_provider.dart';
 import 'package:refund_radar/data/repositories/firestore_dispute_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/data/repositories/template_repository.dart';
@@ -144,7 +145,8 @@ class TemplatePreviewPage extends ConsumerWidget {
     AppLocalizations? l10n,
   ) {
     final locale = Localizations.localeOf(context).languageCode;
-    final fillMap = fillValuesForDispute(d);
+    final profile = ref.watch(userProfileProvider);
+    final fillMap = fillValuesForDispute(d, profile: profile);
     final rawBody = t.bodyFor(locale);
     final filledBody = Template.fill(rawBody, fillMap);
 
@@ -418,7 +420,8 @@ class TemplatePreviewPage extends ConsumerWidget {
             onPressed: () async {
               final locale =
                   Localizations.localeOf(context).languageCode;
-              final fillMap = fillValuesForDispute(d);
+              final fillMap =
+                  fillValuesForDispute(d, profile: ref.read(userProfileProvider));
               final filled =
                   Template.fill(t.bodyFor(locale), fillMap);
               final clipboardText =

@@ -11,6 +11,8 @@ import '../../core/providers/dispute_provider.dart';
 import '../../data/models/dispute.dart';
 import '../../data/models/template.dart';
 import '../../data/models/template_fill.dart';
+import '../../data/models/user_profile.dart';
+import '../../core/providers/user_profile_provider.dart';
 import '../../data/repositories/rules_engine_repository.dart';
 import '../../data/repositories/template_repository.dart';
 import '../../l10n/app_localizations.dart';
@@ -21,11 +23,19 @@ import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/utils/indian_number_formatter.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
 
-Map<String, String> templateFillValues(Dispute? dispute) =>
-    fillValuesForDispute(dispute);
+Map<String, String> templateFillValues(
+  Dispute? dispute, {
+  UserProfile? profile,
+}) =>
+    fillValuesForDispute(dispute, profile: profile);
 
-String filledTemplateBody(Template t, String localeCode, Dispute? dispute) {
-  return filledBody(t.bodyFor(localeCode), dispute);
+String filledTemplateBody(
+  Template t,
+  String localeCode,
+  Dispute? dispute, {
+  UserProfile? profile,
+}) {
+  return filledBody(t.bodyFor(localeCode), dispute, profile: profile);
 }
 
 class TemplateLibraryPage extends ConsumerStatefulWidget {
@@ -54,6 +64,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     final rulesAsync = ref.watch(rulesEngineProvider);
     final isPremium = ref.watch(isPremiumProvider);
     final locale = ref.watch(localeProvider);
+    final profile = ref.watch(userProfileProvider);
     final uid = ref.watch(userIdProvider).asData?.value;
     final disputesAsync = uid == null ? null : ref.watch(disputesProvider(uid));
     final disputes = disputesAsync?.asData?.value ?? const <Dispute>[];
@@ -68,6 +79,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
               isPremiumUser: isPremium,
               localeCode: locale.languageCode,
               disputes: disputes,
+              profile: profile,
             ),
             loading: () => const SkeletonList(itemCount: 4),
             error: (e, _) => BrandedErrorBanner(message: e.toString()),
@@ -95,6 +107,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     required bool isPremiumUser,
     required String localeCode,
     required List<Dispute> disputes,
+    required UserProfile profile,
   }) {
     final selected = _selectedDispute(disputes);
     final tc = AppThemeColors.of(context);
@@ -252,9 +265,11 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
                 localeCode: localeCode,
                 onTap: () {
                   if (locked) {
-                    _showLockedPreview(c, t, localeCode, dispute: selected);
+                    _showLockedPreview(c, t, localeCode,
+                        dispute: selected, profile: profile);
                   } else {
-                    _showTemplatePreview(c, t, localeCode, dispute: selected);
+                    _showTemplatePreview(c, t, localeCode,
+                        dispute: selected, profile: profile);
                   }
                 },
               );
@@ -295,9 +310,10 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     Template t,
     String localeCode, {
     Dispute? dispute,
+    UserProfile? profile,
   }) {
     final l10n = AppLocalizations.of(context);
-    final body = filledTemplateBody(t, localeCode, dispute);
+    final body = filledTemplateBody(t, localeCode, dispute, profile: profile);
     showDialog(
       context: context,
       builder: (c) => AlertDialog(
@@ -322,10 +338,12 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     Template t,
     String localeCode, {
     Dispute? dispute,
+    UserProfile? profile,
   }) {
     final tc = AppThemeColors.of(context);
     final l10n = AppLocalizations.of(context);
-    final body = filledTemplateBody(t, localeCode, dispute);
+    final body =
+        filledTemplateBody(t, localeCode, dispute, profile: profile);
 
     showModalBottomSheet(
       context: context,

@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:refund_radar/core/providers/user_profile_provider.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/providers/sms_detection_provider.dart';
+import 'package:refund_radar/data/models/user_profile.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
+import 'package:refund_radar/features/profile/profile_form.dart';
 import 'package:refund_radar/features/settings/settings_actions.dart';
 import '../../core/providers/app_state_provider.dart';
 import '../../core/providers/auth_provider.dart';
@@ -27,6 +30,7 @@ class SettingsPage extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
     final isPremium = ref.watch(isPremiumProvider);
+    final profile = ref.watch(userProfileProvider);
     return Scaffold(
       backgroundColor: tc.bg,
       body: SafeArea(
@@ -37,7 +41,14 @@ class SettingsPage extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                 children: [
-                  _UserCard(isPremium: isPremium, tc: tc, l10n: l10n),
+                  _UserCard(
+                    isPremium: isPremium,
+                    profile: profile,
+                    tc: tc,
+                    l10n: l10n,
+                    onEditProfile: () =>
+                        showProfileEditSheet(context, ref),
+                  ),
                   const SizedBox(height: 16),
                   _SectionCard(
                     label: l10n?.settingsSmsDetection ?? 'SMS detection',
@@ -491,94 +502,112 @@ class _PageHeader extends StatelessWidget {
 
 class _UserCard extends StatelessWidget {
   final bool isPremium;
+  final UserProfile profile;
   final AppThemeColors tc;
   final AppLocalizations? l10n;
+  final VoidCallback onEditProfile;
   const _UserCard({
     required this.isPremium,
+    required this.profile,
     required this.tc,
     required this.l10n,
+    required this.onEditProfile,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: tc.surface,
-        border: Border.all(color: tc.divider),
-        borderRadius: BorderRadius.circular(AppRadii.md),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: tc.ctaBackground.withValues(alpha: 0.12),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              'A',
-              style: TextStyle(
-                fontFamily: AppTypography.family,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
+    final subtitle = profile.email.trim().isNotEmpty
+        ? profile.email
+        : (profile.name.trim().isNotEmpty
+            ? profile.name
+            : (l10n?.profileEditSubtitle ?? 'Tap to add your details'));
+    return InkWell(
+      onTap: onEditProfile,
+      borderRadius: BorderRadius.circular(AppRadii.md),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: tc.surface,
+          border: Border.all(color: tc.divider),
+          borderRadius: BorderRadius.circular(AppRadii.md),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: tc.ctaBackground.withValues(alpha: 0.12),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.person_rounded,
+                size: 22,
                 color: tc.ctaBackground,
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n?.settingsRefundRadarUser ?? 'Refund Radar user',
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    profile.name.trim().isNotEmpty
+                        ? profile.name
+                        : (l10n?.settingsRefundRadarUser ?? 'Refund Radar user'),
+                    style: TextStyle(
+                      fontFamily: AppTypography.family,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: tc.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: tc.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: () => context.push(AppRoutes.paywallWithParams(
+                trigger: 'settings',
+                returnPath: AppRoutes.settings,
+              )),
+              borderRadius: BorderRadius.circular(AppRadii.pill),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isPremium ? tc.premiumGoldSoft : tc.accentSoft,
+                  borderRadius: BorderRadius.circular(AppRadii.pill),
+                ),
+                child: Text(
+                  isPremium
+                      ? (l10n?.settingsProBadge ?? 'Pro')
+                      : (l10n?.paywallTitle ?? 'Upgrade'),
                   style: TextStyle(
-                    fontFamily: AppTypography.family,
-                    fontSize: 14,
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: tc.textPrimary,
+                    color: isPremium ? AppColors.premiumGold : tc.ctaBackground,
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  l10n?.settingsLocalProfile ?? 'Local profile',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: tc.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          InkWell(
-            onTap: () => context.push(AppRoutes.paywallWithParams(
-              trigger: 'settings',
-              returnPath: AppRoutes.settings,
-            )),
-            borderRadius: BorderRadius.circular(AppRadii.pill),
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: isPremium ? tc.premiumGoldSoft : tc.accentSoft,
-                borderRadius: BorderRadius.circular(AppRadii.pill),
-              ),
-              child: Text(
-                isPremium
-                    ? (l10n?.settingsProBadge ?? 'Pro')
-                    : (l10n?.paywallTitle ?? 'Upgrade'),
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: isPremium ? AppColors.premiumGold : tc.ctaBackground,
                 ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 6),
+            Icon(Icons.edit_outlined, size: 16, color: tc.textTertiary),
+          ],
+        ),
       ),
     );
   }

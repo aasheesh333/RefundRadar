@@ -393,7 +393,7 @@ class _SmsFooter extends StatelessWidget {
                     final status = await Permission.sms.request();
                     if (!context.mounted) return;
                     if (status.isGranted || status.isLimited) {
-                      context.go(AppRoutes.onboardBanks);
+                      context.go(AppRoutes.onboardProfile);
                       return;
                     }
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -408,7 +408,7 @@ class _SmsFooter extends StatelessWidget {
                   } catch (_) {
                     // Plugin missing / desktop — continue onboarding.
                   }
-                  if (context.mounted) context.go(AppRoutes.onboardBanks);
+                  if (context.mounted) context.go(AppRoutes.onboardProfile);
                 },
                 style: FilledButton.styleFrom(
                   backgroundColor: tc.ctaBackground,
@@ -432,7 +432,7 @@ class _SmsFooter extends StatelessWidget {
               width: double.infinity,
               height: 48,
               child: OutlinedButton(
-                onPressed: () => context.go(AppRoutes.onboardBanks),
+                onPressed: () => context.go(AppRoutes.onboardProfile),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: tc.divider),
                   shape: RoundedRectangleBorder(

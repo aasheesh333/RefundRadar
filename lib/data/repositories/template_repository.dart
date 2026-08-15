@@ -6,13 +6,21 @@ import '../models/dispute.dart';
 import '../models/template.dart';
 import 'rules_engine_repository.dart';
 
-/// Loads the 52 template JSON assets. The `isPremium` flag on each
-/// template is the AUTHORITATIVE source of Free vs Pro partitioning;
-/// it is intentionally NOT merged with `freeTemplateIds` because that
-/// would let a Remote Config tweak repaint a Premium template as Free.
-/// (The `freeTemplateIds` allowlist is used only as a *display*
-/// shortcut via [TemplateRepository.isLocked] so a non-premium user
-/// can preview one level up from their plan; see [matchForCategory].)
+/// Loads the 165 template JSON assets. The `isPremium` flag on each
+/// template is the AUTHORITATIVE source of Free vs Pro partitioning.
+///
+/// Free-tier layout (product rule): every dispute TYPE gets exactly two
+/// free templates — the L1 (bank complaint) and the L2 (portal/NPCI)
+/// template. Everything else is Pro. Template assets carry the two free
+/// IDs per type with `"isPremium": false`; see the type→free-id table in
+/// `template_repository_test.dart` which pins this invariant.
+///
+/// Category-vs-type note: the 5 library categories group the 7 dispute
+/// types (e.g. UPI P2P / P2M / ATM / IMPS share
+/// `'UPI / IMPS / ATM'`). Category-scoped flows use [matchForCategory];
+/// dispute-flow flows (escalate composer, dispute detail, L2 picker) use
+/// the stricter per-TYPE filter [filterForType] so a UPI dispute only
+/// ever offers UPI templates, an ATM dispute only ATM ones, etc.
 class TemplateRepository {
   List<Template>? _cached;
 
@@ -73,6 +81,98 @@ class TemplateRepository {
         DisputeType.bankCharge => 'Bank charges',
         DisputeType.wrongTransfer => 'Wrong transfer',
       };
+
+  /// Whether [t] is relevant to a dispute of [type]. Stricter than the
+  /// shared library category: a UPI P2P dispute only ever sees UPI P2P +
+  /// generic-UPI templates, an ATM dispute only ATM ones, etc. ID-prefix
+  /// based (the template id encodes its target type).
+  bool matchesType(Template t, DisputeType type) {
+    final id = t.id;
+    bool prefix(String p) => id.startsWith(p);
+    // Templates shared by all UPI-flavour types (P2P/P2M) — branch
+    // one-pagers, chargebacks, UCPMP fraud, appellate + legal notices.
+    bool genericUpi() =>
+        prefix('upi_') &&
+        !prefix('upi_p2p_') &&
+        !prefix('upi_p2m_') &&
+        id != 'upi_initial_chat_friendly_l1';
+    return switch (type) {
+      DisputeType.upiP2p => prefix('upi_p2p_') || genericUpi(),
+      DisputeType.upiP2m =>
+        prefix('upi_p2m_') ||
+            genericUpi() ||
+            id == 'upi_initial_chat_friendly_l1',
+      DisputeType.atm => prefix('atm_'),
+      DisputeType.imps =>
+        prefix('imps_') || id == 'upi_imp_personally_visit_branch_l1',
+      DisputeType.fastag => prefix('fastag_'),
+      DisputeType.bankCharge => prefix('bank_charge'),
+      DisputeType.wrongTransfer => prefix('wrong_transfer'),
+    };
+  }
+
+  /// All templates relevant to [type], ordered by escalation level then by
+  /// id. Dispute-flow screens (Escalate, dispute detail, L2 picker) use
+  /// this instead of the category-wide list.
+  List<Template> filterForType(List<Template> all, DisputeType type) {
+    final out =
+        all.where((t) => matchesType(t, type)).toList()
+          ..sort((a, b) {
+            final byLevel = a.escalationLevel.compareTo(b.escalationLevel);
+            if (byLevel != 0) return byLevel;
+            return a.id.compareTo(b.id);
+          });
+    return out;
+  }
+
+  /// Prefix that makes a template "own" for a type (vs. generic UPI
+  /// helpers shared across types). Defaults prefer own templates so a
+  /// P2P dispute opens the P2P bank complaint, not a generic branch L1.
+  static String _typeOwnPrefix(DisputeType type) => switch (type) {
+        DisputeType.upiP2p => 'upi_p2p_',
+        DisputeType.upiP2m => 'upi_p2m_',
+        DisputeType.atm => 'atm_',
+        DisputeType.imps => 'imps_',
+        DisputeType.fastag => 'fastag_',
+        DisputeType.bankCharge => 'bank_charge',
+        DisputeType.wrongTransfer => 'wrong_transfer',
+      };
+
+  /// One-tap default template for a dispute: the free L1 (bank complaint),
+  /// preferring the type's own templates over generic UPI helpers, falling
+  /// back to the first free template, then to the first match.
+  /// Premium users get the same stable default so the composer never
+  /// surprises them with a random pick.
+  Template? defaultForType(List<Template> all, DisputeType type) {
+    final relevant = filterForType(all, type);
+    if (relevant.isEmpty) return null;
+    final own =
+        relevant.where((t) => t.id.startsWith(_typeOwnPrefix(type)));
+    final pool = own.isNotEmpty ? own : relevant;
+    for (final t in pool) {
+      if (t.escalationLevel == 1 && !t.isPremium) return t;
+    }
+    for (final t in relevant) {
+      if (!t.isPremium) return t;
+    }
+    return relevant.first;
+  }
+
+  /// Partition templates for [type] into (free, pro) for the escalate /
+  /// dispute-detail picker. Free bucket = the per-type free templates
+  /// (L1 + L2), Pro bucket = everything else, both ordered by level.
+  ({List<Template> free, List<Template> pro}) splitForType(
+    List<Template> all,
+    DisputeType type,
+  ) {
+    final relevant = filterForType(all, type);
+    final free = relevant.where((t) => !t.isPremium).toList();
+    final pro = relevant.where((t) => t.isPremium).toList();
+    return (free: free, pro: pro);
+  }
+
+  /// Auto-match kept for category-scoped UI (template library). Dispute
+  /// flows should use [defaultForType]/[filterForType] instead.
 
   /// ME-7: auto-match a single level-[level] template for [type] using the
   /// 3-tier fallback (unlocked for this user → free in category → any in

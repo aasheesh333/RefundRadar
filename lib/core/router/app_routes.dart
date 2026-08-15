@@ -11,6 +11,7 @@ class AppRoutes {
 
   static const onboard = '/onboard';
   static const onboardSms = '/onboard/sms';
+  static const onboardProfile = '/onboard/profile';
   static const onboardBanks = '/onboard/banks';
   static const home = '/home';
   static const disputesCreate = '/disputes/create';

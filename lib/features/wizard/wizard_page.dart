@@ -8,6 +8,8 @@ import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/template_fill.dart';
+import 'package:refund_radar/core/providers/user_profile_provider.dart';
+import 'package:refund_radar/data/models/user_profile.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/features/dispute_create/create_dispute_auth_guard.dart';
@@ -194,7 +196,8 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                         });
                       });
                     }
-                    final steps = _buildSteps(rules, liveDispute);
+                    final profile = ref.watch(userProfileProvider);
+                    final steps = _buildSteps(rules, liveDispute, profile);
                     return _StepperBody(
                       steps: steps,
                       currentLevel: _currentLevel,
@@ -248,7 +251,8 @@ class _WizardPageState extends ConsumerState<WizardPage> {
     );
   }
 
-  List<_Step> _buildSteps(RulesEngine rules, Dispute? dispute) {
+  List<_Step> _buildSteps(
+      RulesEngine rules, Dispute? dispute, UserProfile profile) {
     final l10n = AppLocalizations.of(context);
     final l2Raw =
         'Dear NPCI Team,\n\nUTR: {UTR}\nAmount: Rs. {AMOUNT}\nDate: {TXN_DATE}\nVPA: {VPA}\n\n'
@@ -285,7 +289,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
             'Visit NPCI Dispute Redressal portal. Needs UTR, amount, date, VPA, bank statement.',
         url: rules.officialLinks['upi_complaints'],
         phone: null,
-        complaintText: filledBody(l2Raw, dispute),
+        complaintText: filledBody(l2Raw, dispute, profile: profile),
         documents: [
           'UTR',
           l10n?.wizardDocAmount ?? 'Amount',
@@ -301,7 +305,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
                 'Category: Deficiency in Service. Free.',
         url: rules.officialLinks['rbi_cms'],
         phone: '14448',
-        complaintText: filledBody(l3Raw, dispute),
+        complaintText: filledBody(l3Raw, dispute, profile: profile),
         documents: [
           l10n?.wizardDocTransactionProof ?? 'Transaction proof',
           l10n?.wizardDocComplaintAck ?? 'Complaint acknowledgement',
