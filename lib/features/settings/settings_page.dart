@@ -468,13 +468,9 @@ class _PageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+      padding: const EdgeInsets.fromLTRB(20, 8, 8, 8),
       child: Row(
         children: [
-          IconButton(
-            icon: Icon(Icons.arrow_back, color: tc.textPrimary),
-            onPressed: () => Navigator.of(context).maybePop(),
-          ),
           Expanded(
             child: Text(
               l10n?.settingsTitle ?? 'Settings',

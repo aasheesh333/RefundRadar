@@ -145,7 +145,7 @@ class _Body extends ConsumerWidget {
             ),
             GestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTap: () => context.push(AppRoutes.history),
+              onTap: () => context.go(AppRoutes.history),
               child: Semantics(
                 button: true,
                 label: l10n?.homeViewAllDisputes ?? 'View all disputes',
@@ -247,30 +247,21 @@ class _PageHeader extends StatelessWidget {
                 size: 21, color: tc.textPrimary),
             onPressed: () => context.push(AppRoutes.reminders),
           ),
-          IconButton(
-            tooltip: l10n?.homeTemplatesTooltip ?? 'Templates',
-            icon: Icon(Icons.description_outlined,
-                size: 21, color: tc.textPrimary),
-            onPressed: () => context.push(AppRoutes.templates),
-          ),
           GestureDetector(
-            onTap: () => context.push(AppRoutes.settings),
+            onTap: () => context.go(AppRoutes.settings),
             child: Container(
               width: 32,
               height: 32,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: tc.surfaceAlt,
+                color: tc.ctaBackground.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.premiumGold, width: 1.5),
               ),
-              child: Text(
-                'A',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: tc.textPrimary,
-                ),
+              child: Icon(
+                Icons.person_rounded,
+                size: 18,
+                color: tc.ctaBackground,
               ),
             ),
           ),

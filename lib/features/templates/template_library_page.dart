@@ -108,13 +108,9 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
+          padding: const EdgeInsets.fromLTRB(20, 8, 16, 8),
           child: Row(
             children: [
-              IconButton(
-                icon: Icon(Icons.arrow_back, color: tc.textPrimary),
-                onPressed: () => context.pop(),
-              ),
               Expanded(
                 child: Text(
                   l10n?.templateLibraryTitle ?? 'Templates',

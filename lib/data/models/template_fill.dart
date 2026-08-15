@@ -115,6 +115,17 @@ Map<String, String> fillValuesForDispute(Dispute? dispute) {
     'HOUR_RATE': '',
     'OUT_OF_POCKET': '',
     'TIME_COST_AMOUNT': '',
+    // Multi-transaction / advanced-only tokens (not collected on the
+    // single-dispute model yet → blank so users fill them in by hand
+    // rather than seeing a leftover {TOKEN}).
+    'AMOUNT2': '',
+    'AMOUNT3': '',
+    'DATE_FINAL_LETTER': '',
+    'DATE_RTI_REPLY': '',
+    'NUM_TXNS': '',
+    'VPA_LEGITIMATE': '',
+    'VPA_PAYEE2': '',
+    'VPA_PAYEE3': '',
   };
 }
 
@@ -181,6 +192,14 @@ Map<String, String> _emptyAll() {
     'HOUR_RATE',
     'OUT_OF_POCKET',
     'TIME_COST_AMOUNT',
+    'AMOUNT2',
+    'AMOUNT3',
+    'DATE_FINAL_LETTER',
+    'DATE_RTI_REPLY',
+    'NUM_TXNS',
+    'VPA_LEGITIMATE',
+    'VPA_PAYEE2',
+    'VPA_PAYEE3',
   ];
   return {for (final k in keys) k: ''};
 }

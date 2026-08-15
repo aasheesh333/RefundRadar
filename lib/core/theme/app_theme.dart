@@ -319,7 +319,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceAltDark,
-        selectedColor: const Color(0xFF1F3A2C),
+        selectedColor: const Color(0xFF17263F),
         labelStyle: AppTypography.caption(color: AppColors.textPrimaryDark),
         secondaryLabelStyle: AppTypography.caption(color: AppColors.accent),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
@@ -353,7 +353,7 @@ class AppTheme {
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.accent,
-        foregroundColor: AppColors.primaryDark,
+        foregroundColor: const Color(0xFF0E1116),
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
       ),

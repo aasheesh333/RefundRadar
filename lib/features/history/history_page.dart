@@ -222,13 +222,9 @@ class _PageHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 8, 16, 4),
+      padding: const EdgeInsets.fromLTRB(20, 8, 16, 4),
       child: Row(
         children: [
-          IconButton(
-            icon: Icon(Icons.arrow_back, color: tc.textPrimary),
-            onPressed: () => context.pop(),
-          ),
           Expanded(
             child: Text(
               l10n?.historyTitle ?? 'History',

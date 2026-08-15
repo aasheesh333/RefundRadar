@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,12 +17,16 @@ import 'package:refund_radar/features/settings/settings_page.dart';
 import 'package:refund_radar/features/ombudsman/ombudsman_letter_page.dart';
 import 'package:refund_radar/features/escalate/escalate_page.dart';
 import 'package:refund_radar/features/history/history_page.dart';
+import 'package:refund_radar/features/shell/home_shell.dart';
 import 'package:refund_radar/features/templates/template_library_page.dart';
 import 'package:refund_radar/features/templates/template_picker_page.dart';
 import 'package:refund_radar/features/templates/template_preview_page.dart';
 
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final goRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: '/onboard',
     redirect: (context, state) {
       final onboarded = ref.read(hasSeenOnboardingProvider);
@@ -40,7 +45,39 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/onboard', builder: (c, s) => const OnboardingPage()),
-      GoRoute(path: '/home', builder: (c, s) => const HomePage()),
+      // Persistent bottom-nav shell hosting the four primary destinations.
+      // Each branch keeps its own navigator stack + scroll position.
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            HomeShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(path: '/home', builder: (c, s) => const HomePage()),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                  path: '/history', builder: (c, s) => const HistoryPage()),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                  path: '/templates',
+                  builder: (c, s) => const TemplateLibraryPage()),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                  path: '/settings',
+                  builder: (c, s) => const SettingsPage()),
+            ],
+          ),
+        ],
+      ),
       GoRoute(
           path: '/disputes/create',
           builder: (c, s) => const DisputeTypePage()),
@@ -83,11 +120,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
           path: '/reminders', builder: (c, s) => const RemindersPage()),
-      GoRoute(
-          path: '/settings', builder: (c, s) => const SettingsPage()),
-      GoRoute(
-          path: '/templates',
-          builder: (c, s) => const TemplateLibraryPage()),
       // Wave 4a — full-screen Template Picker + Preview used by
       // DisputeDetail (and reusable from Escalate) for "change template".
       GoRoute(
@@ -103,7 +135,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           templateId: s.uri.queryParameters['templateId'] ?? '',
         ),
       ),
-      GoRoute(path: '/history', builder: (c, s) => const HistoryPage()),
       GoRoute(
           path: '/onboard/sms',
           builder: (c, s) => const SmsPermissionPage()),

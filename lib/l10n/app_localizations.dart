@@ -552,6 +552,11 @@ class AppLocalizations {
     },
     // Settings page — fully i18n'd in Phase 3 follow-up.
     'settingsTitle': {'en': 'Settings', 'hi': 'सेटिंग्स'},
+    // Bottom navigation destinations.
+    'navHome': {'en': 'Home', 'hi': 'होम'},
+    'navHistory': {'en': 'History', 'hi': 'इतिहास'},
+    'navTemplates': {'en': 'Templates', 'hi': 'टेम्पलेट'},
+    'navSettings': {'en': 'Settings', 'hi': 'सेटिंग्स'},
     'settingsSmsDetection': {'en': 'SMS detection', 'hi': 'SMS पहचान'},
     'settingsAutoDetectUtr': {'en': 'Auto-detect UTR', 'hi': 'UTR ऑटो-पहचान'},
     'settingsSmsPermissionHint': {
@@ -1420,6 +1425,11 @@ class AppLocalizations {
 
   // Settings page full i18n.
   String get settingsTitle => _t('settingsTitle');
+  // Bottom navigation destinations.
+  String get navHome => _t('navHome');
+  String get navHistory => _t('navHistory');
+  String get navTemplates => _t('navTemplates');
+  String get navSettings => _t('navSettings');
   String get settingsSmsDetection => _t('settingsSmsDetection');
   String get settingsAutoDetectUtr => _t('settingsAutoDetectUtr');
   String get settingsSmsPermissionHint => _t('settingsSmsPermissionHint');

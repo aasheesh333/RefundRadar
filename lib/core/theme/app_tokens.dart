@@ -7,64 +7,69 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Brand — simple Material blue (not heavy green)
-  static const primary = Color(0xFF1565C0); // blue 800
-  static const primaryDark = Color(0xFF0D47A1); // blue 900
-  static const accent = Color(0xFF42A5F5); // blue 400
-  static const accentSoft = Color(0xFFE3F2FD); // blue 50
+  // Brand — refined royal indigo-blue. Deeper + more saturated than the old
+  // Material blue for a premium fintech feel while staying "trust blue".
+  static const primary = Color(0xFF1D4ED8); // indigo-blue 700
+  static const primaryDark = Color(0xFF1E3A8A); // indigo-blue 900
+  static const accent = Color(0xFF3B82F6); // blue 500
+  static const accentSoft = Color(0xFFEAF1FF); // very light blue tint
 
   // Status / counter
-  static const alert = Color(0xFFED6C02); // Material orange
-  static const alertSoft = Color(0xFFFFF3E0);
-  static const error = Color(0xFFD32F2F);
-  static const errorSoft = Color(0xFFFFEBEE);
-  static const success = Color(0xFF2E7D32);
+  static const alert = Color(0xFFE8590C); // warm amber-orange
+  static const alertSoft = Color(0xFFFFF1E6);
+  static const error = Color(0xFFDC2626);
+  static const errorSoft = Color(0xFFFDECEC);
+  static const success = Color(0xFF15803D);
 
-  // Surfaces — light (neutral grey, Material default-ish)
-  static const bgLight = Color(0xFFF5F5F5);
+  // Surfaces — light. Warm-neutral background (not flat grey) so white cards
+  // lift off the page; softer dividers for a calmer, modern hierarchy.
+  static const bgLight = Color(0xFFF7F8FA);
   static const surfaceLight = Color(0xFFFFFFFF);
-  static const surfaceAltLight = Color(0xFFEEEEEE);
-  static const dividerLight = Color(0xFFE0E0E0);
-  static const textPrimaryLight = Color(0xFF212121);
-  static const textSecondaryLight = Color(0xFF616161);
-  static const textTertiaryLight = Color(0xFF9E9E9E);
+  static const surfaceAltLight = Color(0xFFF1F3F7);
+  static const dividerLight = Color(0xFFE6E9EF);
+  static const textPrimaryLight = Color(0xFF141821);
+  static const textSecondaryLight = Color(0xFF5B6472);
+  static const textTertiaryLight = Color(0xFF98A0AE);
 
-  // Surfaces — dark (neutral Material dark)
-  static const bgDark = Color(0xFF121212);
-  static const surfaceDark = Color(0xFF1E1E1E);
-  static const surfaceAltDark = Color(0xFF2C2C2C);
-  static const dividerDark = Color(0xFF3A3A3A);
-  static const textPrimaryDark = Color(0xFFECECEC);
-  static const textSecondaryDark = Color(0xFFB0B0B0);
-  static const textTertiaryDark = Color(0xFF8A8A8A);
+  // Surfaces — dark. Slightly blue-cooled neutrals (not pure grey) to match
+  // the indigo brand and avoid a muddy look.
+  static const bgDark = Color(0xFF0E1116);
+  static const surfaceDark = Color(0xFF181C23);
+  static const surfaceAltDark = Color(0xFF232832);
+  static const dividerDark = Color(0xFF313846);
+  static const textPrimaryDark = Color(0xFFEDEFF3);
+  static const textSecondaryDark = Color(0xFFAEB5C0);
+  static const textTertiaryDark = Color(0xFF7C8493);
 
-  // Premium indicator
-  static const premiumGold = Color(0xFFF9A825);
-  static const premiumGoldSoft = Color(0xFFFFF8E1);
+  // Premium indicator — richer gold.
+  static const premiumGold = Color(0xFFEAA200);
+  static const premiumGoldSoft = Color(0xFFFDF4E0);
 
   // Shared
   static const shadow = Color(0x14000000);
   static const scrim = Color(0x99000000);
 }
 
-/// Soft green-tinted shadows for cards/buttons/FAB — the design-spec tokens.
+/// Neutral, softly-diffused shadows for cards/buttons/FAB. Neutral (true
+/// black-alpha) rather than brand-tinted so the elevation reads clean on both
+/// the warm-neutral light bg and the cool-neutral dark bg.
 class AppShadows {
   AppShadows._();
 
-  /// `.cd` cards: 0 1px 2px rgba(11,61,46,.04), 0 4px 12px rgba(11,61,46,.06)
+  /// Card lift: a tight contact shadow + a soft ambient one.
   static const List<BoxShadow> card = [
-    BoxShadow(color: Color(0x0A0B3D2E), blurRadius: 2, offset: Offset(0, 1)),
-    BoxShadow(color: Color(0x0F0B3D2E), blurRadius: 12, offset: Offset(0, 4)),
+    BoxShadow(color: Color(0x0D101828), blurRadius: 2, offset: Offset(0, 1)),
+    BoxShadow(color: Color(0x14101828), blurRadius: 16, offset: Offset(0, 6)),
   ];
 
-  /// `.fab` pill: 0 8px 24px rgba(11,61,46,.22)
+  /// FAB / pill: a stronger diffuse shadow tinted with the brand for a lift.
   static const List<BoxShadow> fab = [
-    BoxShadow(color: Color(0x380B3D2E), blurRadius: 24, offset: Offset(0, 8)),
+    BoxShadow(color: Color(0x331D4ED8), blurRadius: 24, offset: Offset(0, 10)),
   ];
 
-  /// `.bp` primary button: 0 4px 16px rgba(11,61,46,.12)
+  /// Primary button: subtle brand-tinted glow so CTAs feel actionable.
   static const List<BoxShadow> button = [
-    BoxShadow(color: Color(0x1F0B3D2E), blurRadius: 16, offset: Offset(0, 4)),
+    BoxShadow(color: Color(0x1F1D4ED8), blurRadius: 16, offset: Offset(0, 6)),
   ];
 }
 

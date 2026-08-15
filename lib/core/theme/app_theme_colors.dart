@@ -28,18 +28,18 @@ class AppThemeColors {
 
   // Soft status surfaces need dark variants so pastel chips don't glow.
   Color get accentSoft =>
-      isDark ? const Color(0xFF1A3A5C) : AppColors.accentSoft;
+      isDark ? const Color(0xFF17263F) : AppColors.accentSoft;
   Color get alertSoft =>
-      isDark ? const Color(0xFF3E2A12) : AppColors.alertSoft;
+      isDark ? const Color(0xFF3A2411) : AppColors.alertSoft;
   Color get errorSoft =>
-      isDark ? const Color(0xFF3E1A1A) : AppColors.errorSoft;
+      isDark ? const Color(0xFF3A1717) : AppColors.errorSoft;
   Color get premiumGoldSoft =>
-      isDark ? const Color(0xFF3A3018) : AppColors.premiumGoldSoft;
+      isDark ? const Color(0xFF352B12) : AppColors.premiumGoldSoft;
 
   /// Primary action fill: accent in dark (matches filledButtonTheme), primary in light.
   Color get ctaBackground => isDark ? AppColors.accent : AppColors.primary;
 
   /// Foreground on [ctaBackground].
   Color get ctaForeground =>
-      isDark ? AppColors.primaryDark : const Color(0xFFFFFFFF);
+      isDark ? const Color(0xFF0E1116) : const Color(0xFFFFFFFF);
 }

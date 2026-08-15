@@ -4,9 +4,9 @@ import '../../l10n/app_localizations.dart';
 import '../../shared/utils/indian_number_formatter.dart';
 
 /// Hero "You're owed" gradient card matching mockup Screen 4.
-/// Dark green gradient background, amber-heavy counter moved to WHITE per
-/// mockup (the accent lives in the daily-growth pill), overline uppercase
-/// label + pulsing accent dot, subtitle + green "↑ ₹{perDay}/day" pill.
+/// Indigo-blue brand gradient background, the big counter in WHITE (the
+/// accent lives in the daily-growth pill), overline uppercase label with a
+/// pulsing accent dot, subtitle + "↑ ₹{perDay}/day" pill.
 class OwedCounterCard extends StatefulWidget {
   final double totalOwed;
   final int disputeCount;
@@ -81,6 +81,7 @@ class _OwedCounterCardState extends State<OwedCounterCard>
           colors: [AppColors.primary, AppColors.primaryDark],
         ),
         borderRadius: BorderRadius.all(Radius.circular(AppRadii.lg)),
+        boxShadow: AppShadows.button,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +156,7 @@ class _OwedCounterCardState extends State<OwedCounterCard>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: const Color(0x2616C784),
+                    color: const Color(0x33FFFFFF),
                     borderRadius: BorderRadius.circular(AppRadii.pill),
                   ),
                   child: Text(
@@ -163,7 +164,7 @@ class _OwedCounterCardState extends State<OwedCounterCard>
                     style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.accent,
+                      color: Colors.white,
                     ),
                   ),
                 ),
