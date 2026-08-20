@@ -20,13 +20,11 @@ class ProfileForm extends StatefulWidget {
   final UserProfile initial;
   final ValueChanged<UserProfile>? onChanged;
   final bool nameRequired;
-  final bool showIcons; // Show emoji/icons for accessibility
   const ProfileForm({
     super.key,
     required this.initial,
     this.onChanged,
     this.nameRequired = false,
-    this.showIcons = false,
   });
 
   @override
@@ -72,18 +70,6 @@ class ProfileFormState extends State<ProfileForm> {
         accountNo: _accountCtrl.text.trim(),
       );
 
-  /// Emoji/icon map for field labels
-  Map<String, String> _getIconMap() {
-    return {
-      'FULL NAME': '👤',
-      'MOBILE NUMBER': '📱',
-      'EMAIL ADDRESS': '✉️',
-      'BANK ACCOUNT (OPTIONAL)': '🏦',
-      'CITY / PLACE (OPTIONAL)': '📍',
-      'ADDRESS (OPTIONAL)': '🏠',
-    };
-  }
-
   bool get isValid {
     if (widget.nameRequired && current.name.isEmpty) return false;
     final email = current.email;
@@ -104,15 +90,10 @@ class ProfileFormState extends State<ProfileForm> {
     int? maxLen,
     List<TextInputFormatter>? formatters,
   }) {
-    // Add emoji icon if showIcons is true
-    final icons = _getIconMap();
-    final iconText = showIcons ? (icons[label] ?? '') : '';
-    final displayLabel = iconText.isNotEmpty ? '$iconText $label' : label;
-    
     return Padding(
-      padding: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.only(top: 10),
       child: FormFieldBox(
-        label: displayLabel,
+        label: label,
         helper: helper,
         child: TextField(
           controller: ctrl,
@@ -122,7 +103,7 @@ class ProfileFormState extends State<ProfileForm> {
           maxLines: label.contains('ADDRESS') ? 2 : 1,
           style: TextStyle(
             fontFamily: AppTypography.family,
-            fontSize: 17, // Larger font for readability
+            fontSize: 15,
             fontWeight: FontWeight.w500,
             color: tc.textPrimary,
           ),

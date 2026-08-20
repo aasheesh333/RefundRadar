@@ -144,15 +144,6 @@ Map<String, String> fillValuesForDispute(
     'VPA_LEGITIMATE': '',
     'VPA_PAYEE2': '',
     'VPA_PAYEE3': '',
-    // New fields for advanced templates
-    'FD_RECEIPT_NO': '',
-    'LOCKER_NO': '',
-    'NOC_DATE': '',
-    'LOAN_AGREEMENT_REF': '',
-    'AGREEMENT_DATE': '',
-    'FD_NUMBER': '',
-    'APPEAL_NO': '',
-    'CASE_NO': '',
   };
 }
 
