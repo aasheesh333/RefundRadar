@@ -26,39 +26,57 @@ final lastAuthErrorProvider = StateProvider<String?>((ref) => null);
 /// uid via [RevenueCatService.syncWithFirebaseUid] — fire-and-forget so
 /// startup / re-auth never block on RC identity.
 Future<User?> ensureAnonymousUser(FirebaseAuth auth, {Ref? ref}) async {
-  try {
-    final user = await Future(() async {
-      var user = auth.currentUser;
-      if (user == null) {
-        final cred = await auth.signInAnonymously();
-        user = cred.user;
-      }
-      // Force a token so subsequent Firestore requests carry request.auth.
-      await user?.getIdToken(true);
-      // Success — clear any stale auth error so the banner doesn't keep
-      // surfacing a fixed-then-retried condition.
-      ref?.read(lastAuthErrorProvider.notifier).state = null;
-      return user;
-    }).timeout(const Duration(seconds: 12));
-
-    final uid = user?.uid;
-    if (uid != null && ref != null) {
-      unawaited(
-        ref.read(revenueCatServiceProvider).syncWithFirebaseUid(uid).catchError(
-          (Object e) {
-            debugPrint('RevenueCat uid sync skipped: $e');
-          },
-        ),
-      );
+  // Step 1 — obtain an anonymous user. signInAnonymously() itself returns a
+  // valid ID token, so the forced refresh below is best-effort, not the
+  // gate that decides whether the user "exists" for the UI.
+  User? user = auth.currentUser;
+  if (user == null) {
+    try {
+      final cred = await auth
+          .signInAnonymously()
+          .timeout(const Duration(seconds: 12));
+      user = cred.user;
+    } catch (e, st) {
+      debugPrint('ensureAnonymousUser: signInAnonymously failed: $e\n$st');
+      ref?.read(lastAuthErrorProvider.notifier).state = e.toString();
+      return null;
     }
-    return user;
-  } catch (e, st) {
-    debugPrint('ensureAnonymousUser failed: $e\n$st');
-    // Preserve the failure reason so Home can show WHY auth failed (e.g.
-    // `auth/operation-not-allowed` = Anonymous disabled in Console).
-    ref?.read(lastAuthErrorProvider.notifier).state = e.toString();
-    return null;
   }
+
+  // Step 2 — best-effort token refresh. The forced refresh ensures the
+  // refreshed JWT is available to Firestore calls so the first read does
+  // not race auth and return permission-denied. BUT if the refresh hangs
+  // (slow/hot path to securetoken.googleapis.com), we must NOT throw away
+  // the already-signed-in user — they still have a short-lived token from
+  // signInAnonymously(). Fire the force-refresh in the background; if it
+  // fails the existing Firestore read retry path will recover.
+  if (user != null) {
+    unawaited(
+      user
+          .getIdToken(true)
+          .timeout(const Duration(seconds: 6))
+          .catchError((Object e) {
+        debugPrint('ensureAnonymousUser: getIdToken(true) skipped: $e');
+      }),
+    );
+  }
+
+  // Success — clear any stale auth error so the banner doesn't keep
+  // surfacing a fixed-then-retried condition.
+  ref?.read(lastAuthErrorProvider.notifier).state = null;
+
+  final uid = user?.uid;
+  if (uid != null && ref != null) {
+    unawaited(
+      ref
+          .read(revenueCatServiceProvider)
+          .syncWithFirebaseUid(uid)
+          .catchError((Object e) {
+        debugPrint('RevenueCat uid sync skipped: $e');
+      }),
+    );
+  }
+  return user;
 }
 
 /// Live uid stream. Boots with an ensured anonymous session, then tracks
@@ -91,15 +109,13 @@ final userIdProvider = StreamProvider<String?>((ref) async* {
 });
 
 /// Explicit re-auth helper for Retry buttons on permission-denied screens.
+/// Does NOT signOut first — that would discard a successfully-obtained
+/// anonymous user and force a fresh signInAnonymously() round-trip that
+/// may itself be slow/failing. Instead just re-runs ensureAnonymousUser,
+/// which short-circuits to the cached user if one exists.
 final reauthProvider = Provider<Future<String?> Function()>((ref) {
   return () async {
     final auth = ref.read(firebaseAuthProvider);
-    // Sign out stale session then re-anon — clears a bad/expired token.
-    try {
-      if (auth.currentUser != null) {
-        await auth.signOut();
-      }
-    } catch (_) {/* ignore */}
     final user = await ensureAnonymousUser(auth, ref: ref);
     return user?.uid;
   };
