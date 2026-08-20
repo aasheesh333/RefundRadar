@@ -12,33 +12,33 @@ class AppTheme {
   // (_rot helper removed — unused.)
 
   static ColorScheme get _lightScheme => ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
+        seedColor: const Color(0xFF6366F1), // Modern indigo (Material 3 vibrant)
         brightness: Brightness.light,
-        primary: AppColors.primary,
+        primary: const Color(0xFF4F46E5), // Stronger indigo
         onPrimary: Colors.white,
-        secondary: AppColors.accent,
-        onSecondary: AppColors.primaryDark,
-        surface: AppColors.surfaceLight,
-        onSurface: AppColors.textPrimaryLight,
-        error: AppColors.error,
+        secondary: const Color(0xFF10B981), // Emerald green accent
+        onSecondary: const Color(0xFF064E3B),
+        surface: const Color(0xFFF8FAFC), // Softer surface
+        onSurface: const Color(0xFF1E293B),
+        error: const Color(0xFFF43F5E), // Modern red
         onError: Colors.white,
-        outline: AppColors.dividerLight,
-        outlineVariant: AppColors.dividerLight,
+        outline: const Color(0xFFE2E8F0),
+        outlineVariant: const Color(0xFFCBD5E1),
       );
 
   static ColorScheme get _darkScheme => ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
+        seedColor: const Color(0xFF6366F1),
         brightness: Brightness.dark,
-        primary: AppColors.accent,
-        onPrimary: Colors.black,
-        secondary: AppColors.accent,
-        onSecondary: Colors.black,
-        surface: AppColors.surfaceDark,
-        onSurface: AppColors.textPrimaryDark,
-        error: AppColors.error,
-        onError: Colors.white,
-        outline: AppColors.dividerDark,
-        outlineVariant: AppColors.dividerDark,
+        primary: const Color(0xFF818CF8), // Lighter indigo for dark mode
+        onPrimary: const Color(0xFF1E1B4B),
+        secondary: const Color(0xFF34D399), // Lighter green
+        onSecondary: const Color(0xFF064E3B),
+        surface: const Color(0xFF0F172A), // Deep navy surface
+        onSurface: const Color(0xFFF1F5F9),
+        error: const Color(0xFFFCA5A5),
+        onError: const Color(0xFF450A0A),
+        outline: const Color(0xFF334155),
+        outlineVariant: const Color(0xFF475569),
       );
 
   // ---------- Theme data ----------

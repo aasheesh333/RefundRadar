@@ -110,19 +110,29 @@ Map<String, String> fillValuesForDispute(
     // Wrong transfer beneficiary
     'BENEFICIARY_ACCOUNT_NO': dispute.beneficiaryAccountNo ?? '',
     'BENEFICIARY_IFSC': dispute.beneficiaryIfsc ?? '',
-    // Legal / advanced blanks
+    // Legal / advanced blanks (now collected at dispute creation)
     'OMBUDSMAN_REF': dispute.ticketNumbers['ombudsman'] ??
         dispute.ticketNumbers['l3'] ??
         '',
     'OMBUDSMAN_ORDER_DATE': '',
-    'ADVOCATE_NAME': '',
-    'PIO_OFFICE': '',
-    'LOCAL_POLICE_STATION': '',
-    'HARASSMENT_CLAIM': '',
-    'HOURS_LOST': '',
+    'ADVOCATE_NAME': dispute.advocateName ?? '',
+    'PIO_OFFICE': dispute.pioOffice ?? '',
+    'LOCAL_POLICE_STATION': dispute.localPoliceStation ?? '',
+    'HARASSMENT_CLAIM': dispute.harassmentClaimAmount ?? '',
+    'HOURS_LOST': dispute.hoursLost ?? '',
     'HOUR_RATE': '',
     'OUT_OF_POCKET': '',
     'TIME_COST_AMOUNT': '',
+    // Advanced: FD, Locker, NOC, Loan Agreement
+    'FD_RECEIPT_NO': dispute.fdReceiptNo ?? '',
+    'LOCKER_NO': dispute.lockerNo ?? '',
+    'NOC_DATE': dispute.nocDate != null ? _fmtDate(dispute.nocDate!) : '',
+    'LOAN_AGREEMENT_REF': dispute.loanAgreementRef ?? '',
+    'AGREEMENT_DATE': dispute.agreementDate != null ? _fmtDate(dispute.agreementDate!) : '',
+    'FD_NUMBER': dispute.fdNumber ?? '',
+    // Additional legal doc fields
+    'APPEAL_NO': dispute.appealNo ?? '',
+    'CASE_NO': dispute.caseNo ?? '',
     // Multi-transaction / advanced-only tokens (not collected on the
     // single-dispute model yet → blank so users fill them in by hand
     // rather than seeing a leftover {TOKEN}).
@@ -134,6 +144,15 @@ Map<String, String> fillValuesForDispute(
     'VPA_LEGITIMATE': '',
     'VPA_PAYEE2': '',
     'VPA_PAYEE3': '',
+    // New fields for advanced templates
+    'FD_RECEIPT_NO': '',
+    'LOCKER_NO': '',
+    'NOC_DATE': '',
+    'LOAN_AGREEMENT_REF': '',
+    'AGREEMENT_DATE': '',
+    'FD_NUMBER': '',
+    'APPEAL_NO': '',
+    'CASE_NO': '',
   };
 }
 
@@ -223,6 +242,15 @@ Map<String, String> _emptyAll() {
     'VPA_LEGITIMATE',
     'VPA_PAYEE2',
     'VPA_PAYEE3',
+    // New fields for advanced templates
+    'FD_RECEIPT_NO',
+    'LOCKER_NO',
+    'NOC_DATE',
+    'LOAN_AGREEMENT_REF',
+    'AGREEMENT_DATE',
+    'FD_NUMBER',
+    'APPEAL_NO',
+    'CASE_NO',
   ];
   return {for (final k in keys) k: ''};
 }

@@ -54,7 +54,7 @@ class Dispute {
   final String? description;
   final List<ActivityLogEntry> activityLog;
 
-  // -- Category-specific data (Wave 2) ------------------------------------
+  // -- Category-specific data (Wave 2 - Extended) ---------------------------
   // Captured at dispute-create time so escalation-email merge tokens are
   // pre-filled and the user only has to tap Send. All optional.
   final String? vpa;
@@ -65,6 +65,22 @@ class Dispute {
   final String? cardLast4;
   final String? beneficiaryAccountNo;
   final String? beneficiaryIfsc;
+  // Advanced/Legal-specific fields (for advanced/legal templates)
+  final String? fdReceiptNo;
+  final String? lockerNo;
+  final DateTime? nocDate;
+  final String? tagId;
+  final String? loanAgreementRef;
+  final String? advocateName;
+  final String? pioOffice;
+  final String? localPoliceStation;
+  final String? harassmentClaimAmount;
+  final String? hoursLost;
+  // Additional legal doc fields (appeals, court cases)
+  final String? appealNo;
+  final String? caseNo;
+  final DateTime? agreementDate;
+  final String? fdNumber;
 
   const Dispute({
     required this.id,
@@ -92,6 +108,20 @@ class Dispute {
     this.cardLast4,
     this.beneficiaryAccountNo,
     this.beneficiaryIfsc,
+    this.fdReceiptNo,
+    this.lockerNo,
+    this.nocDate,
+    this.tagId,
+    this.loanAgreementRef,
+    this.advocateName,
+    this.pioOffice,
+    this.localPoliceStation,
+    this.harassmentClaimAmount,
+    this.hoursLost,
+    this.appealNo,
+    this.caseNo,
+    this.agreementDate,
+    this.fdNumber,
   });
 
   static const Object _unset = Object();
@@ -122,6 +152,20 @@ class Dispute {
     Object? cardLast4 = _unset,
     Object? beneficiaryAccountNo = _unset,
     Object? beneficiaryIfsc = _unset,
+    Object? fdReceiptNo = _unset,
+    Object? lockerNo = _unset,
+    Object? nocDate = _unset,
+    Object? tagId = _unset,
+    Object? loanAgreementRef = _unset,
+    Object? advocateName = _unset,
+    Object? pioOffice = _unset,
+    Object? localPoliceStation = _unset,
+    Object? harassmentClaimAmount = _unset,
+    Object? hoursLost = _unset,
+    Object? appealNo = _unset,
+    Object? caseNo = _unset,
+    Object? agreementDate = _unset,
+    Object? fdNumber = _unset,
   }) =>
       Dispute(
         id: id ?? this.id,
@@ -169,6 +213,46 @@ class Dispute {
         beneficiaryIfsc: identical(beneficiaryIfsc, _unset)
             ? this.beneficiaryIfsc
             : beneficiaryIfsc as String?,
+        fdReceiptNo: identical(fdReceiptNo, _unset)
+            ? this.fdReceiptNo
+            : fdReceiptNo as String?,
+        lockerNo: identical(lockerNo, _unset)
+            ? this.lockerNo
+            : lockerNo as String?,
+        nocDate: identical(nocDate, _unset)
+            ? this.nocDate
+            : nocDate as DateTime?,
+        tagId: identical(tagId, _unset) ? this.tagId : tagId as String?,
+        loanAgreementRef: identical(loanAgreementRef, _unset)
+            ? this.loanAgreementRef
+            : loanAgreementRef as String?,
+        advocateName: identical(advocateName, _unset)
+            ? this.advocateName
+            : advocateName as String?,
+        pioOffice: identical(pioOffice, _unset)
+            ? this.pioOffice
+            : pioOffice as String?,
+        localPoliceStation: identical(localPoliceStation, _unset)
+            ? this.localPoliceStation
+            : localPoliceStation as String?,
+        harassmentClaimAmount: identical(harassmentClaimAmount, _unset)
+            ? this.harassmentClaimAmount
+            : harassmentClaimAmount as String?,
+        hoursLost: identical(hoursLost, _unset)
+            ? this.hoursLost
+            : hoursLost as String?,
+        appealNo: identical(appealNo, _unset)
+            ? this.appealNo
+            : appealNo as String?,
+        caseNo: identical(caseNo, _unset)
+            ? this.caseNo
+            : caseNo as String?,
+        agreementDate: identical(agreementDate, _unset)
+            ? this.agreementDate
+            : agreementDate as DateTime?,
+        fdNumber: identical(fdNumber, _unset)
+            ? this.fdNumber
+            : fdNumber as String?,
       );
 
   DisputeStatus reopenTarget() {
@@ -230,6 +314,20 @@ class Dispute {
         'cardLast4': cardLast4,
         'beneficiaryAccountNo': beneficiaryAccountNo,
         'beneficiaryIfsc': beneficiaryIfsc,
+        'fdReceiptNo': fdReceiptNo,
+        'lockerNo': lockerNo,
+        'nocDate': nocDate == null ? null : toUtcIso(nocDate!),
+        'tagId': tagId,
+        'loanAgreementRef': loanAgreementRef,
+        'advocateName': advocateName,
+        'pioOffice': pioOffice,
+        'localPoliceStation': localPoliceStation,
+        'harassmentClaimAmount': harassmentClaimAmount,
+        'hoursLost': hoursLost,
+        'appealNo': appealNo,
+        'caseNo': caseNo,
+        'agreementDate': agreementDate == null ? null : toUtcIso(agreementDate!),
+        'fdNumber': fdNumber,
       };
 
   factory Dispute.fromJson(Map<String, dynamic> json) => Dispute(
@@ -238,12 +336,6 @@ class Dispute {
         type: DisputeType.fromId(json['type'] ?? 'upi_p2p'),
         status: DisputeStatus.fromValue(json['status'] ?? 'draft'),
         amount: (json['amount'] as num? ?? 0).toDouble(),
-        // parseDate handles both UTC (Z) and legacy offset-less local
-        // strings. Fallback to now() only on truly unparseable input so
-        // the model stays non-nullable; the UTC write path prevents future
-        // corruption, and a corrupt legacy txnDate no longer silently
-        // zeros compensation (it falls back to "today" which yields ₹0 —
-        // surfaced as a ₹0 estimate the user will notice and re-enter).
         txnDate: parseDate(json['txnDate'] as String?) ?? DateTime.now(),
         txnId: json['txnId'] ?? '',
         entityName: json['entityName'],
@@ -274,5 +366,19 @@ class Dispute {
         cardLast4: json['cardLast4'] as String?,
         beneficiaryAccountNo: json['beneficiaryAccountNo'] as String?,
         beneficiaryIfsc: json['beneficiaryIfsc'] as String?,
+        fdReceiptNo: json['fdReceiptNo'] as String?,
+        lockerNo: json['lockerNo'] as String?,
+        nocDate: parseDate(json['nocDate'] as String?),
+        tagId: json['tagId'] as String?,
+        loanAgreementRef: json['loanAgreementRef'] as String?,
+        advocateName: json['advocateName'] as String?,
+        pioOffice: json['pioOffice'] as String?,
+        localPoliceStation: json['localPoliceStation'] as String?,
+        harassmentClaimAmount: json['harassmentClaimAmount'] as String?,
+        hoursLost: json['hoursLost'] as String?,
+        appealNo: json['appealNo'] as String?,
+        caseNo: json['caseNo'] as String?,
+        agreementDate: parseDate(json['agreementDate'] as String?),
+        fdNumber: json['fdNumber'] as String?,
       );
 }

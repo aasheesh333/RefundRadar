@@ -78,6 +78,20 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   final _cardLast4Ctrl = TextEditingController();
   final _beneficiaryAcctCtrl = TextEditingController();
   final _beneficiaryIfscCtrl = TextEditingController();
+  final _fdReceiptNoCtrl = TextEditingController();
+  final _lockerNoCtrl = TextEditingController();
+  final _nocDateCtrl = TextEditingController();
+  final _tagIdCtrl = TextEditingController();
+  final _loanAgreementRefCtrl = TextEditingController();
+  final _advocateNameCtrl = TextEditingController();
+  final _pioOfficeCtrl = TextEditingController();
+  final _localPoliceStationCtrl = TextEditingController();
+  final _harassmentClaimCtrl = TextEditingController();
+  final _hoursLostCtrl = TextEditingController();
+  final _appealNoCtrl = TextEditingController();
+  final _caseNoCtrl = TextEditingController();
+  final _agreementDateCtrl = TextEditingController();
+  final _fdNumberCtrl = TextEditingController();
   final _profileKey = GlobalKey<ProfileFormState>();
   DateTime? _date;
   String _bankName = '';
@@ -110,6 +124,20 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     _cardLast4Ctrl.dispose();
     _beneficiaryAcctCtrl.dispose();
     _beneficiaryIfscCtrl.dispose();
+    _fdReceiptNoCtrl.dispose();
+    _lockerNoCtrl.dispose();
+    _nocDateCtrl.dispose();
+    _tagIdCtrl.dispose();
+    _loanAgreementRefCtrl.dispose();
+    _advocateNameCtrl.dispose();
+    _pioOfficeCtrl.dispose();
+    _localPoliceStationCtrl.dispose();
+    _harassmentClaimCtrl.dispose();
+    _hoursLostCtrl.dispose();
+    _appealNoCtrl.dispose();
+    _caseNoCtrl.dispose();
+    _agreementDateCtrl.dispose();
+    _fdNumberCtrl.dispose();
     super.dispose();
   }
 
@@ -430,6 +458,20 @@ separatorBuilder: (_, _) => const Divider(height: 1),
         cardLast4: nullifyEmpty(_cardLast4Ctrl.text),
         beneficiaryAccountNo: nullifyEmpty(_beneficiaryAcctCtrl.text),
         beneficiaryIfsc: nullifyEmpty(_beneficiaryIfscCtrl.text),
+        fdReceiptNo: nullifyEmpty(_fdReceiptNoCtrl.text),
+        lockerNo: nullifyEmpty(_lockerNoCtrl.text),
+        nocDate: null, // Can be added later if needed
+        tagId: nullifyEmpty(_tagIdCtrl.text),
+        loanAgreementRef: nullifyEmpty(_loanAgreementRefCtrl.text),
+        advocateName: nullifyEmpty(_advocateNameCtrl.text),
+        pioOffice: nullifyEmpty(_pioOfficeCtrl.text),
+        localPoliceStation: nullifyEmpty(_localPoliceStationCtrl.text),
+        harassmentClaimAmount: nullifyEmpty(_harassmentClaimCtrl.text),
+        hoursLost: nullifyEmpty(_hoursLostCtrl.text),
+        appealNo: nullifyEmpty(_appealNoCtrl.text),
+        caseNo: nullifyEmpty(_caseNoCtrl.text),
+        agreementDate: null, // Can be added via date picker later
+        fdNumber: nullifyEmpty(_fdNumberCtrl.text),
       );
       final repo = ref.read(disputeRepositoryProvider);
       Dispute saved;
@@ -721,17 +763,15 @@ separatorBuilder: (_, _) => const Divider(height: 1),
                               ),
                             ),
                           ),
-                          ..._buildCategorySpecificFields(type, tc, l10n),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _ProfileDetailsCard(
-                      profile: profile,
-                      tc: tc,
-                      l10n: l10n,
-                      formKey: _profileKey,
-                    ),
+                          ...        _buildCategorySpecificFields(type, tc, l10n),
+          const SizedBox(height: 24),
+          _ProfileDetailsCard(
+            profile: profile,
+            tc: tc,
+            l10n: l10n,
+            formKey: _profileKey,
+            showIcons: true, // Show emojis/icons for clarity
+          ),
                     const SizedBox(height: 12),
                     _buildInfoBanner(type),
                   ],
@@ -864,6 +904,73 @@ separatorBuilder: (_, _) => const Divider(height: 1),
           ),
         ];
       case DisputeType.bankCharge:
+        return [
+          field(
+            'FD Receipt No. (Optional)',
+            _fdReceiptNoCtrl,
+            helper: 'From FD certificate or bank statement',
+          ),
+          field(
+            'FD Number (Optional)',
+            _fdNumberCtrl,
+            helper: 'Fixed Deposit account number',
+          ),
+          field(
+            'Locker No. (Optional)',
+            _lockerNoCtrl,
+            helper: 'Bank locker number if applicable',
+          ),
+          field(
+            'Tag ID / FASTag Number (Optional)',
+            _tagIdCtrl,
+            helper: 'Your FASTag ID from tag card',
+          ),
+          field(
+            'Loan Agreement Ref. (Optional)',
+            _loanAgreementRefCtrl,
+            helper: 'Loan agreement reference number',
+          ),
+          field(
+            'Appeal No. (Optional)',
+            _appealNoCtrl,
+            helper: 'If filing appeal against prior order',
+          ),
+          field(
+            'Case No. (Optional)',
+            _caseNoCtrl,
+            helper: 'Consumer court/case registration number',
+          ),
+        ];
+      case DisputeType.wrongTransfer:
+        // Advanced fields for wrong transfer cases
+        return [
+          field(
+            'Advocate Name (Optional)',
+            _advocateNameCtrl,
+            helper: 'If filing through lawyer',
+          ),
+          field(
+            'PIO Office (Optional)',
+            _pioOfficeCtrl,
+            helper: 'Public Information Officer office name',
+          ),
+          field(
+            'Local Police Station (Optional)',
+            _localPoliceStationCtrl,
+            helper: 'For cybercell complaint',
+          ),
+          field(
+            'Harassment Claim Amount (₹) (Optional)',
+            _harassmentClaimCtrl,
+            helper: 'Amount claimed for mental harassment',
+          ),
+          field(
+            'Hours Lost (Optional)',
+            _hoursLostCtrl,
+            helper: 'Time spent pursuing this dispute',
+          ),
+        ];
+      default:
         return [];
     }
   }
@@ -1490,11 +1597,13 @@ class _ProfileDetailsCard extends StatefulWidget {
   final AppThemeColors tc;
   final AppLocalizations? l10n;
   final GlobalKey<ProfileFormState> formKey;
+  final bool showIcons; // Show emoji/icons for accessibility
   const _ProfileDetailsCard({
     required this.profile,
     required this.tc,
     required this.l10n,
     required this.formKey,
+    this.showIcons = false,
   });
 
   @override
