@@ -51,14 +51,7 @@ Future<User?> ensureAnonymousUser(FirebaseAuth auth, {Ref? ref}) async {
   // signInAnonymously(). Fire the force-refresh in the background; if it
   // fails the existing Firestore read retry path will recover.
   if (user != null) {
-    unawaited(
-      user
-          .getIdToken(true)
-          .timeout(const Duration(seconds: 6))
-          .catchError((Object e) {
-        debugPrint('ensureAnonymousUser: getIdToken(true) skipped: $e');
-      }),
-    );
+    unawaited(_warmToken(auth));
   }
 
   // Success — clear any stale auth error so the banner doesn't keep
@@ -120,3 +113,20 @@ final reauthProvider = Provider<Future<String?> Function()>((ref) {
     return user?.uid;
   };
 });
+
+/// Background-only token warmer. Best-effort force-refresh of the ID
+/// token; failures (timeout / network) are swallowed. We never want a
+/// token refresh hang to discard an already-signed-in anonymous user, so
+/// any error here is purely informational and must not surface to the UI.
+/// Defined as a top-level helper (instead of an inline .catchError) so
+/// the analyzer's `body_might_complete_normally_catch_error` lint stays
+/// happy — try/catch inside an `async` function always returns void cleanly.
+Future<void> _warmToken(FirebaseAuth auth) async {
+  final user = auth.currentUser;
+  if (user == null) return;
+  try {
+    await user.getIdToken(true).timeout(const Duration(seconds: 6));
+  } catch (e) {
+    debugPrint('_warmToken: getIdToken(true) skipped: $e');
+  }
+}
