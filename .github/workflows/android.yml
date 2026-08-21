@@ -94,6 +94,7 @@ jobs:
           ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
           ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
           ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           VERSION_CODE: ${{ secrets.VERSION_CODE }}
           VERSION_NAME: ${{ secrets.VERSION_NAME }}
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -168,6 +169,7 @@ jobs:
           ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
           ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
           ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           VERSION_CODE: ${{ secrets.VERSION_CODE }}
           VERSION_NAME: ${{ secrets.VERSION_NAME }}
         run: |
@@ -201,6 +203,7 @@ jobs:
             --dart-define=ADMOB_BANNER_ID="$ADMOB_BANNER_ID" \
             --dart-define=ADMOB_INTERSTITIAL_ID="$ADMOB_INTERSTITIAL_ID" \
             --dart-define=ADMOB_REWARDED_ID="$ADMOB_REWARDED_ID" \
+            --dart-define=GEMINI_API_KEY="$GEMINI_API_KEY" \
             --android-project-arg=admobAppId="$ADMOB_APP_ID" \
             --dart-define=VERSION_NAME="$VERSION_NAME" \
             --dart-define=VERSION_CODE="$VERSION_CODE"
@@ -307,6 +310,7 @@ jobs:
           ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
           ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
           ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           VERSION_CODE: ${{ secrets.VERSION_CODE }}
           VERSION_NAME: ${{ secrets.VERSION_NAME }}
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -360,6 +364,7 @@ jobs:
           ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
           ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
           ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           VERSION_CODE: ${{ secrets.VERSION_CODE }}
           VERSION_NAME: ${{ secrets.VERSION_NAME }}
         run: |
@@ -389,6 +394,7 @@ jobs:
             --dart-define=ADMOB_BANNER_ID="$ADMOB_BANNER_ID" \
             --dart-define=ADMOB_INTERSTITIAL_ID="$ADMOB_INTERSTITIAL_ID" \
             --dart-define=ADMOB_REWARDED_ID="$ADMOB_REWARDED_ID" \
+            --dart-define=GEMINI_API_KEY="$GEMINI_API_KEY" \
             --android-project-arg=admobAppId="$ADMOB_APP_ID" \
             --dart-define=VERSION_NAME="$VERSION_NAME" \
             --dart-define=VERSION_CODE="$VERSION_CODE"

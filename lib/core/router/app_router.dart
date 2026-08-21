@@ -12,7 +12,6 @@ import 'package:refund_radar/features/dispute_create/dispute_type_page.dart';
 import 'package:refund_radar/features/dispute_create/dispute_form_page.dart';
 import 'package:refund_radar/features/dispute_detail/dispute_detail_page.dart';
 import 'package:refund_radar/features/wizard/wizard_page.dart';
-import 'package:refund_radar/features/paywall/paywall_page.dart';
 import 'package:refund_radar/features/reminders/reminders_page.dart';
 import 'package:refund_radar/features/settings/settings_page.dart';
 import 'package:refund_radar/features/ombudsman/ombudsman_letter_page.dart';
@@ -122,18 +121,6 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (c, s) => sharedAxisYPage(
           key: s.pageKey,
           child: EscalatePage(disputeId: s.pathParameters['id']!),
-        ),
-      ),
-      GoRoute(
-        path: '/paywall',
-        pageBuilder: (c, s) => sharedAxisYPage(
-          key: s.pageKey,
-          child: PaywallPage(
-            returnPath: s.uri.queryParameters['return'] ?? '/home',
-            trigger: s.uri.queryParameters['trigger'] ?? 'generic',
-            templateId: s.uri.queryParameters['templateId'],
-            templateTitle: s.uri.queryParameters['templateTitle'],
-          ),
         ),
       ),
       GoRoute(

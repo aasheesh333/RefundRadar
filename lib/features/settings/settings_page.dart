@@ -29,7 +29,6 @@ class SettingsPage extends ConsumerWidget {
     final tc = AppThemeColors.of(context);
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
-    final isPremium = ref.watch(isPremiumProvider);
     final profile = ref.watch(userProfileProvider);
     return Scaffold(
       backgroundColor: tc.bg,
@@ -42,7 +41,6 @@ class SettingsPage extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
                 children: [
                   _UserCard(
-                    isPremium: isPremium,
                     profile: profile,
                     tc: tc,
                     l10n: l10n,
@@ -501,13 +499,11 @@ class _PageHeader extends StatelessWidget {
 }
 
 class _UserCard extends StatelessWidget {
-  final bool isPremium;
   final UserProfile profile;
   final AppThemeColors tc;
   final AppLocalizations? l10n;
   final VoidCallback onEditProfile;
   const _UserCard({
-    required this.isPremium,
     required this.profile,
     required this.tc,
     required this.l10n,
@@ -579,32 +575,6 @@ class _UserCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            InkWell(
-              onTap: () => context.push(AppRoutes.paywallWithParams(
-                trigger: 'settings',
-                returnPath: AppRoutes.settings,
-              )),
-              borderRadius: BorderRadius.circular(AppRadii.pill),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: isPremium ? tc.premiumGoldSoft : tc.accentSoft,
-                  borderRadius: BorderRadius.circular(AppRadii.pill),
-                ),
-                child: Text(
-                  isPremium
-                      ? (l10n?.settingsProBadge ?? 'Pro')
-                      : (l10n?.paywallTitle ?? 'Upgrade'),
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: isPremium ? AppColors.premiumGold : tc.ctaBackground,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
             Icon(Icons.edit_outlined, size: 16, color: tc.textTertiary),
           ],
         ),

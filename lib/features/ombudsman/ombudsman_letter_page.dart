@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
-import 'package:refund_radar/core/providers/premium_provider.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
@@ -11,11 +10,14 @@ import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
+import 'package:refund_radar/services/ads_service.dart';
+import 'package:refund_radar/services/ai_letter_service.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 String ombudsmanLetterPaywallLocation(String disputeId) =>
     AppRoutes.paywallWithParams(
@@ -36,15 +38,112 @@ class OmbudsmanLetterPage extends ConsumerStatefulWidget {
 
 class _OmbudsmanLetterPageState extends ConsumerState<OmbudsmanLetterPage> {
   String _letter = '';
-  bool _paywallRedirectScheduled = false;
+  bool _aiBusy = false;
 
-  void _redirectFreeUserToPaywall() {
-    if (_paywallRedirectScheduled) return;
-    _paywallRedirectScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+  static const String _aiDisclaimerFooter =
+      'Draft with AI assistance — verify facts before sending. Not legal advice.';
+
+  Future<void> _generateWithAi(Dispute dispute) async {
+    final ai = ref.read(aiLetterServiceProvider);
+    final messenger = ScaffoldMessenger.of(context);
+    if (!ai.isAvailable) {
+      messenger.showSnackBar(const SnackBar(
+        content: Text('AI drafting is offline in this build'),
+      ));
+      return;
+    }
+    final quota = await ai.quota();
+    if (!quota.canGenerate) {
+      final wait = quota.secondsUntilNextAllowed > 0
+          ? quota.secondsUntilNextAllowed
+          : 0;
+      messenger.showSnackBar(SnackBar(
+        content: Text(
+          'Wait ${wait}s more (10 letters/day, 2min gap)',
+        ),
+      ));
+      return;
+    }
+
+    if (!mounted) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('AI drafting'),
+        content: const Text(
+          'An easy ad supports this. Watch a short ad to generate?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Watch ad'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final ads = ref.read(adsServiceProvider);
+    final firstAdDone =
+        prefs.getBool(AiLetterService.adGateFirstDoneKey) ?? false;
+    if (!firstAdDone) {
+      final earned = await ads.showRewarded();
+      if (!earned) {
+        if (!mounted) return;
+        await showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            content: const Text('Watch the full video to get your letter'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+      await prefs.setBool(AiLetterService.adGateFirstDoneKey, true);
+    } else {
+      // Best-effort; proceed regardless of outcome.
+      await ads.showInterstitial();
+    }
+
+    if (!mounted) return;
+    setState(() => _aiBusy = true);
+    try {
+      final result = await ai.generate(
+        dispute,
+        merchantOrBankName: dispute.entityName ?? 'Bank',
+      );
       if (!mounted) return;
-      context.go(ombudsmanLetterPaywallLocation(widget.disputeId));
-    });
+      switch (result) {
+        case Ok(:final letterText):
+          setState(() => _letter = '$letterText\n\n$_aiDisclaimerFooter');
+        case RateLimited(:final retryAfter):
+          messenger.showSnackBar(SnackBar(
+            content: Text(
+              'Wait ${retryAfter.inSeconds}s more (10 letters/day, 2min gap)',
+            ),
+          ));
+        case Unavailable():
+          messenger.showSnackBar(const SnackBar(
+            content: Text('AI drafting is offline in this build'),
+          ));
+        case Failed(:final message):
+          messenger.showSnackBar(SnackBar(
+            content: Text(friendlyError(message)),
+          ));
+      }
+    } finally {
+      if (mounted) setState(() => _aiBusy = false);
+    }
   }
 
   void _generateLetter(Dispute dispute) {
@@ -81,16 +180,6 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
 
   @override
   Widget build(BuildContext context) {
-    final premiumStatus = ref.watch(premiumStatusProvider);
-    final isPremium = premiumStatus.valueOrNull ?? false;
-    if (premiumStatus.isLoading) {
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (shouldGateOmbudsmanLetter(isPremium)) {
-      _redirectFreeUserToPaywall();
-      return const Scaffold(body: SizedBox.shrink());
-    }
-
     final rulesAsync = ref.watch(rulesEngineProvider);
     final uidAsync = ref.watch(userIdProvider);
     final tc = AppThemeColors.of(context);
@@ -125,9 +214,7 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
                         ),
                         const SizedBox(height: 1),
                         Text(
-                          AppLocalizations.of(context)
-                                  ?.ombudsmanPremiumFeature ??
-                              'Premium feature',
+                          'AI-assisted drafting',
                           style: TextStyle(
                             fontFamily: AppTypography.family,
                             fontSize: 12,
@@ -187,33 +274,74 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
                             padding:
                                 const EdgeInsets.fromLTRB(16, 8, 16, 32),
                             children: [
-                              _PremiumHero(tc: tc, l10n: l10n),
+                              _PremiumHero(tc: tc),
                               const SizedBox(height: 16),
                               if (_letter.isEmpty)
                                 Center(
-                                  child: FilledButton.icon(
-                                    onPressed: () =>
-                                        _generateLetter(liveDispute),
-                                    icon: const Icon(Icons.auto_fix_high,
-                                        size: 18),
-                                    label: Text(
-                                      AppLocalizations.of(context)
-                                              ?.ombudsmanGenerate ??
-                                          'Generate letter',
-                                      style: TextStyle(
-                                        fontFamily: AppTypography.family,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      FilledButton.icon(
+                                        onPressed: _aiBusy
+                                            ? null
+                                            : () => _generateWithAi(
+                                                liveDispute),
+                                        icon: _aiBusy
+                                            ? const SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                ),
+                                              )
+                                            : const Icon(Icons.auto_awesome,
+                                                size: 18),
+                                        label: Text(
+                                          'Generate with AI',
+                                          style: TextStyle(
+                                            fontFamily: AppTypography.family,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor: tc.ctaBackground,
+                                          foregroundColor: tc.ctaForeground,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                    AppRadii.md),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: tc.ctaBackground,
-                                      foregroundColor: tc.ctaForeground,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            AppRadii.md),
+                                      const SizedBox(height: 10),
+                                      OutlinedButton.icon(
+                                        onPressed: () =>
+                                            _generateLetter(liveDispute),
+                                        icon: const Icon(Icons.auto_fix_high,
+                                            size: 18),
+                                        label: Text(
+                                          AppLocalizations.of(context)
+                                                  ?.ombudsmanGenerate ??
+                                              'Generate letter',
+                                          style: TextStyle(
+                                            fontFamily: AppTypography.family,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          side: BorderSide(
+                                              color: tc.divider),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(
+                                                    AppRadii.md),
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
                                 )
                               else ...[
@@ -383,8 +511,8 @@ Documents: transaction proof, complaint acknowledgement, bank reply (if any).
 
 class _PremiumHero extends StatelessWidget {
   final AppThemeColors tc;
-  final AppLocalizations? l10n;
-  const _PremiumHero({required this.tc, required this.l10n});
+
+  const _PremiumHero({required this.tc});
 
   @override
   Widget build(BuildContext context) {
@@ -414,7 +542,7 @@ class _PremiumHero extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  l10n?.ombudsmanPremiumFeature ?? 'Premium feature',
+                  'Ombudsman complaint draft',
                   style: TextStyle(
                     fontFamily: AppTypography.family,
                     fontSize: 13,
@@ -424,8 +552,7 @@ class _PremiumHero extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  l10n?.ombudsmanPremiumBlurb ??
-                      'Generate a pre-filled Template C complaint summary that you can paste into cms.rbi.org.in.',
+                  'Generate a complaint summary — with the template or with AI — that you can paste into cms.rbi.org.in.',
                   style: TextStyle(
                     fontFamily: AppTypography.family,
                     fontSize: 12,

@@ -7,6 +7,10 @@ import 'package:refund_radar/core/providers/utr_detection_provider.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/data/models/dispute_draft.dart';
+import 'package:refund_radar/data/repositories/draft_repository.dart';
+import 'package:refund_radar/features/dispute_create/dispute_form_page.dart';
+import 'package:refund_radar/features/home/widgets/drafts_section.dart';
 import 'package:refund_radar/data/models/utr_detection.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
@@ -102,13 +106,30 @@ class _Body extends ConsumerWidget {
   final List<Dispute> disputes;
   const _Body({required this.disputes});
 
+  /// Resume a draft: the create form route only takes query params, so
+  /// push directly with a MaterialPageRoute to hand over the full draft.
+  static void _openDraft(BuildContext context, DisputeDraft draft) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => DisputeFormPage(
+          type: draft.typeId ?? 'upi_p2p',
+          resumeDraft: draft,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final tc = AppThemeColors.of(context);
     final detections = ref.watch(utrDetectionsProvider);
-    final isPremium = ref.watch(isPremiumProvider);
-    if (disputes.isEmpty && detections.isEmpty) return const _EmptyState();
+    // Drafts alone must not fall through to the empty state — otherwise a
+    // user whose only item is a draft could never reach it.
+    final drafts = ref.watch(draftsProvider).asData?.value ?? const [];
+    if (disputes.isEmpty && detections.isEmpty && drafts.isEmpty) {
+      return const _EmptyState();
+    }
     final disputedSum = disputes.fold<double>(0, (sum, d) => sum + d.amount);
     final penaltySum = disputes.fold<double>(
         0, (sum, d) => sum + CompensationCalculator.compute(d).compensationDue);
@@ -130,13 +151,9 @@ class _Body extends ConsumerWidget {
         perDay: perDay,
         breakdown: breakdown,
       ),
+      // Renders nothing when there are no drafts.
+      DraftsSection(onTap: (draft) => _openDraft(context, draft)),
     ];
-
-    if (!isPremium) {
-      children
-        ..add(const SizedBox(height: 14))
-        ..add(const _HomeProUpsellCard());
-    }
 
     if (detections.isNotEmpty) {
       children
@@ -546,95 +563,5 @@ class _Loading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SkeletonList(itemCount: 4, itemHeight: 110);
-  }
-}
-
-class _HomeProUpsellCard extends StatelessWidget {
-  const _HomeProUpsellCard();
-  @override
-  Widget build(BuildContext context) {
-    final tc = AppThemeColors.of(context);
-    final l10n = AppLocalizations.of(context);
-    return GestureDetector(
-      onTap: () => context.push(
-        AppRoutes.paywallWithParams(
-          trigger: 'home_banner',
-          returnPath: AppRoutes.home,
-        ),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: tc.surface,
-          border: Border.all(color: AppColors.premiumGold, width: 1),
-          borderRadius: BorderRadius.circular(AppRadii.lg),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: tc.premiumGoldSoft,
-                borderRadius: BorderRadius.circular(AppRadii.sm),
-              ),
-              child: const Icon(
-                Icons.workspace_premium,
-                color: AppColors.premiumGold,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n?.homeUpsellTitle ??
-                        'Recover every rupee with Pro',
-                    style: TextStyle(
-                      fontFamily: AppTypography.family,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: tc.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    l10n?.homeUpsellBody ??
-                        'Unlimited disputes, 50+ templates, Ombudsman generator.',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: tc.textSecondary,
-                      height: 1.4,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.premiumGold,
-                borderRadius: BorderRadius.circular(AppRadii.md),
-              ),
-              child: Text(
-                l10n?.homeUpsellCta ?? 'Upgrade',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primaryDark,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

@@ -43,18 +43,10 @@ Future<void> markOnboardingComplete([dynamic ref]) async {
   await sp.setBool(_kPrefOnboarded, true);
 }
 
-/// `true` when the user has an active premium subscription (RevenueCat).
-///
-/// **Task 8.3** moved this from a plain `StateProvider<bool>` declared
-/// here to a derived `Provider<bool>` in [`premium_provider.dart`] that
-/// reads from `premiumStatusProvider` (an `AsyncValue<bool>`). All existing
-/// `ref.watch(isPremiumProvider)` sites keep working as before — `loading`
-/// and `error` collapse to `false` (free), so paywall gates remain
-/// fail-safe during RevenueCat's brief startup fetch.
-///
-/// Re-exported at the top of this file (must come before declarations)
-/// for the convenience of files that already
-/// `import 'app_state_provider.dart'`.
+/// `isPremiumProvider` now lives in [`premium_provider.dart`] and **always
+/// returns `true`** — premium has been removed; every feature is free for
+/// everyone (AdMob is the only monetisation). Kept + re-exported (must
+/// come before declarations) so all existing call sites compile unchanged.
 
 /// Notification preference toggles (persisted). Defaults: deadline+daily on.
 final notifDeadlineProvider = StateProvider<bool>((ref) => true);
@@ -157,11 +149,8 @@ Future<({bool isPremium, int installedHours})> readFcmInputs(
 /// calls this after RevenueCat finishes configuring).
 Future<void> hydratePersistedAppState(dynamic ref) async {
   final sp = await SharedPreferences.getInstance();
-  // Task 8.3 — seed the authoritative AsyncValue<bool> with the persisted
-  // premium state (or `false` on first install). This unblocks any UI
-  // showing a loading spinner while RevenueCat syncs, and consumer gates
-  // collapse loading → false (free) so paywalls stay fail-safe.
-  setPremiumStatus(ref, sp.getBool(_kPrefPremium) ?? false);
+  // Premium was removed (everything is free) — always seed status as true.
+  setPremiumStatus(ref, true);
   ref.read(hasSeenOnboardingProvider.notifier).state =
       sp.getBool(_kPrefOnboarded) ?? false;
   ref.read(notifDeadlineProvider.notifier).state =

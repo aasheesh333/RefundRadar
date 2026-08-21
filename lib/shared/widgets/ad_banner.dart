@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:refund_radar/core/providers/app_state_provider.dart';
 
 /// AdMob banner unit ID.
 ///
@@ -14,12 +13,12 @@ const String kAdMobBannerUnitId = String.fromEnvironment(
   defaultValue: 'ca-app-pub-3940256099942544/6300978111',
 );
 
-/// Inline adaptive banner for free users.
+/// Inline adaptive banner for all users — premium was removed and AdMob
+/// is now the only monetisation, so everyone sees this banner.
 ///
-/// Renders nothing (zero-height) while the ad is loading or if it fails,
-/// and is completely omitted for premium users (ad-free is part of the
-/// premium value prop; see paywall copy). Mounted at the bottom of the
-/// Home screen via the Scaffold's bottomNavigationBar slot.
+/// Renders nothing (zero-height) while the ad is loading or if it fails.
+/// Mounted at the bottom of the Home screen via the Scaffold's
+/// bottomNavigationBar slot.
 class AdBanner extends ConsumerStatefulWidget {
   const AdBanner({super.key});
 
@@ -35,7 +34,6 @@ class _AdBannerState extends ConsumerState<AdBanner> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_ad != null) return;
-    if (ref.read(isPremiumProvider)) return; // premium = ad-free
     _load();
   }
 
@@ -70,8 +68,7 @@ class _AdBannerState extends ConsumerState<AdBanner> {
 
   @override
   Widget build(BuildContext context) {
-    // Double-gate on premium in case entitlement flips while mounted.
-    if (ref.watch(isPremiumProvider)) return const SizedBox.shrink();
+    // Premium was removed — ads are the only monetisation, shown to all.
     final ad = _ad;
     if (!_loaded || ad == null) return const SizedBox.shrink();
     return SizedBox(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +16,8 @@ import 'package:refund_radar/core/theme/app_tokens.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/data/models/activity_log_entry.dart';
 import 'package:refund_radar/data/models/dispute.dart';
+import 'package:refund_radar/data/models/dispute_draft.dart';
+import 'package:refund_radar/data/repositories/draft_repository.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
@@ -25,6 +29,7 @@ import 'package:refund_radar/data/constants/bank_catalog.dart';
 import 'package:refund_radar/features/add_banks/add_banks_page.dart';
 import 'package:refund_radar/features/dispute_create/create_dispute_auth_guard.dart';
 import 'package:refund_radar/features/dispute_create/fallback_banks.dart';
+import 'package:refund_radar/shared/utils/validators.dart';
 import 'package:refund_radar/shared/widgets/app_back_button.dart';
 import 'package:refund_radar/shared/widgets/form_field_box.dart';
 import 'package:refund_radar/shared/widgets/bank_picker_tile.dart';
@@ -55,12 +60,17 @@ class DisputeFormPage extends ConsumerStatefulWidget {
   final String? prefilledUtr;
   final double? prefilledAmount;
   final String? prefilledSender;
+
+  /// When resuming an existing draft from Home, its id is reused so
+  /// autosave updates the same entry instead of creating a new one.
+  final DisputeDraft? resumeDraft;
   const DisputeFormPage({
     super.key,
     required this.type,
     this.prefilledUtr,
     this.prefilledAmount,
     this.prefilledSender,
+    this.resumeDraft,
   });
   @override
   ConsumerState<DisputeFormPage> createState() => _DisputeFormPageState();
@@ -85,20 +95,98 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   bool _utrFound = false;
   bool _saving = false;
 
+  // Draft autosave: one stable id per form-mount (reused when resuming),
+  // debounced writes so typing doesn't hit SharedPreferences per keystroke.
+  late final String _draftId;
+  Timer? _draftDebounce;
+
   @override
   void initState() {
     super.initState();
-    if (widget.prefilledUtr != null && widget.prefilledUtr!.isNotEmpty) {
-      _utrCtrl.text = widget.prefilledUtr!;
-      _utrFound = true;
+    final resume = widget.resumeDraft;
+    _draftId = resume?.id ??
+        'draft_${DateTime.now().microsecondsSinceEpoch}';
+    if (resume != null) {
+      if (resume.utr != null && resume.utr!.isNotEmpty) {
+        _utrCtrl.text = resume.utr!;
+        _utrFound = true;
+      }
+      if (resume.amount != null) {
+        _amountCtrl.text = resume.amount!.toStringAsFixed(0);
+      }
+      _descCtrl.text = resume.description ?? '';
+      _date = resume.incidentDate;
+      _bankName = resume.entityName ?? '';
+      _selectedEntityId = resume.bankId ?? '';
+    } else {
+      if (widget.prefilledUtr != null && widget.prefilledUtr!.isNotEmpty) {
+        _utrCtrl.text = widget.prefilledUtr!;
+        _utrFound = true;
+      }
+      if (widget.prefilledAmount != null) {
+        _amountCtrl.text = widget.prefilledAmount!.toStringAsFixed(0);
+      }
     }
-    if (widget.prefilledAmount != null) {
-      _amountCtrl.text = widget.prefilledAmount!.toStringAsFixed(0);
+    for (final c in [
+      _amountCtrl,
+      _utrCtrl,
+      _descCtrl,
+      _vpaCtrl,
+      _vpaPayeeCtrl,
+      _vehicleNoCtrl,
+      _plazaCtrl,
+      _atmIdCtrl,
+      _cardLast4Ctrl,
+      _beneficiaryAcctCtrl,
+      _beneficiaryIfscCtrl,
+    ]) {
+      c.addListener(_scheduleDraftSave);
+    }
+  }
+
+  void _scheduleDraftSave() {
+    _draftDebounce?.cancel();
+    _draftDebounce = Timer(
+      const Duration(milliseconds: 1500),
+      _autosaveDraft,
+    );
+  }
+
+  /// Silently upserts the in-progress form as a [DisputeDraft]. Never
+  /// surfaces errors or interrupts the UI — drafts are best-effort.
+  Future<void> _autosaveDraft() async {
+    if (!mounted || _saving) return;
+    final entity = _bankName.trim();
+    final utr = _utrCtrl.text.trim();
+    // Skip empty forms: nothing meaningful to resume from.
+    if (entity.isEmpty && utr.isEmpty) return;
+    String? nullifyEmpty(String s) {
+      final t = s.trim();
+      return t.isEmpty ? null : t;
+    }
+
+    try {
+      await ref.read(draftRepositoryProvider).save(
+            DisputeDraft(
+              id: _draftId,
+              typeId: widget.type,
+              bankId: nullifyEmpty(_selectedEntityId),
+              entityName: nullifyEmpty(entity),
+              utr: nullifyEmpty(utr),
+              amount: double.tryParse(_amountCtrl.text.trim()),
+              incidentDate: _date,
+              description: nullifyEmpty(_descCtrl.text),
+              savedAt: DateTime.now(),
+            ),
+          );
+    } catch (e) {
+      debugPrint('best-effort step failed: $e');
     }
   }
 
   @override
   void dispose() {
+    _draftDebounce?.cancel();
     _amountCtrl.dispose();
     _utrCtrl.dispose();
     _descCtrl.dispose();
@@ -252,18 +340,21 @@ separatorBuilder: (_, _) => const Divider(height: 1),
     final previousProfile = ref.read(userProfileProvider);
 
     try {
-      final amount = double.tryParse(_amountCtrl.text) ?? 0;
-      if (amount <= 0) {
+      final amountError = validateAmount(_amountCtrl.text);
+      if (amountError != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context)?.formEnterAmount ??
-                  'Enter the debited amount',
+              _amountCtrl.text.trim().isEmpty
+                  ? (AppLocalizations.of(context)?.formEnterAmount ??
+                      'Enter the debited amount')
+                  : amountError,
             ),
           ),
         );
         return;
       }
+      final amount = double.tryParse(_amountCtrl.text) ?? 0;
       if (amount > 500000) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -295,6 +386,34 @@ separatorBuilder: (_, _) => const Divider(height: 1),
           ),
         );
         return;
+      }
+      final utrError = validateUtrRrn(_utrCtrl.text);
+      if (utrError != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(utrError)),
+        );
+        return;
+      }
+      final cardLast4Error = validateAccountLast4(_cardLast4Ctrl.text);
+      if (cardLast4Error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(cardLast4Error)),
+        );
+        return;
+      }
+      if (_descCtrl.text.trim().isNotEmpty) {
+        final descError = validateFreeText(
+          _descCtrl.text,
+          min: 10,
+          max: 500,
+          label: 'Description',
+        );
+        if (descError != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(descError)),
+          );
+          return;
+        }
       }
       if (_date == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -490,6 +609,12 @@ separatorBuilder: (_, _) => const Divider(height: 1),
       } catch (e) {
         debugPrint('best-effort step failed: $e');
       }
+      // Dispute persisted — consume the draft so Home's drafts list drops it.
+      try {
+        await ref.read(draftRepositoryProvider).delete(_draftId);
+      } catch (e) {
+        debugPrint('best-effort step failed: $e');
+      }
       if (mounted) context.go(AppRoutes.home);
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -669,7 +794,10 @@ separatorBuilder: (_, _) => const Divider(height: 1),
                                   firstDate: DateTime(2020),
                                   lastDate: DateTime.now(),
                                 );
-                                if (mounted) setState(() => _date = picked);
+                                 if (mounted) {
+                                   setState(() => _date = picked);
+                                   _scheduleDraftSave();
+                                 }
                               },
                               child: Row(
                                 children: [
@@ -1068,6 +1196,7 @@ separatorBuilder: (_, _) => const Divider(height: 1),
         _bankName = picked!.name;
         _selectedEntityId = picked!.id;
       });
+      _scheduleDraftSave();
     }
   }
 
@@ -1175,11 +1304,12 @@ separatorBuilder: (_, _) => const Divider(height: 1),
                             tc,
                           ),
                           for (final b in yourBanks)
-                            _bankTile(sheetContext, b, tc, () {
+                             _bankTile(sheetContext, b, tc, () {
                               setState(() {
                                 _bankName = b.name;
                                 _selectedEntityId = b.id;
                               });
+                              _scheduleDraftSave();
                               Navigator.pop(context);
                             }),
                           const SizedBox(height: 8),
@@ -1198,6 +1328,7 @@ separatorBuilder: (_, _) => const Divider(height: 1),
                               _bankName = b.name;
                               _selectedEntityId = b.id;
                             });
+                            _scheduleDraftSave();
                             Navigator.pop(context);
                           }),
                         if (other != null)
@@ -1206,6 +1337,7 @@ separatorBuilder: (_, _) => const Divider(height: 1),
                               _bankName = other.name;
                               _selectedEntityId = other.id;
                             });
+                            _scheduleDraftSave();
                             Navigator.pop(context);
                           }),
                       ],

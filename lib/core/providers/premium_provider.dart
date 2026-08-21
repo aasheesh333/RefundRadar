@@ -28,15 +28,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// behaviour required by spec §5.5: "Paywall gates treat an unhydrated state
 /// as 'not premium' (fail-safe). This prevents a brief flash of premium gates
 /// for a lapsed user while RevenueCat configures."
+/// Premium has been removed from the app — every feature is free for
+/// everyone (AdMob is the only monetisation). This provider now starts as
+/// `AsyncValue.data(true)` so widgets reading it (e.g. the ombudsman
+/// letter page) are unlocked from the first frame.
 final premiumStatusProvider =
-    StateProvider<AsyncValue<bool>>((ref) => const AsyncValue.loading());
+    StateProvider<AsyncValue<bool>>((ref) => const AsyncValue.data(true));
 
-/// Derived boolean premium flag — `true` only when `premiumStatusProvider`
-/// has resolved to `AsyncValue.data(true)`. Loading and error both yield
-/// `false` (free). Read this from gates/UI that need a plain `bool`.
-final isPremiumProvider = Provider<bool>(
-  (ref) => ref.watch(premiumStatusProvider).valueOrNull ?? false,
-);
+/// Derived boolean premium flag. Premium has been removed — everything is
+/// free — so this **always returns `true`**. Kept (name + `Provider<bool>`
+/// shape) so all existing `ref.watch(isPremiumProvider)` gates compile and
+/// now resolve unlocked.
+final isPremiumProvider = Provider<bool>((ref) => true);
 
 /// Set the current premium status from RevenueCat customer-info updates.
 ///

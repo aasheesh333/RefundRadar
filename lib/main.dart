@@ -18,7 +18,6 @@ import 'package:refund_radar/data/models/utr_detection.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/notification_service.dart';
-import 'package:refund_radar/services/revenue_cat_service.dart';
 import 'package:refund_radar/services/onesignal_service.dart';
 import 'package:refund_radar/shared/utils/working_day_calendar.dart';
 import 'package:refund_radar/firebase_options.dart';
@@ -28,7 +27,7 @@ import 'package:refund_radar/firebase_options.dart';
 /// app crash on startup. Set to `true` by `_initFirebase` on success.
 bool _crashlyticsEnabled = false;
 
-/// Per-service boot timeout. Any single hang (RevenueCat, OneSignal,
+/// Per-service boot timeout. Any single hang (OneSignal, AdMob,
 /// timezone) must not delay the first frame beyond this. Network SDKs
 /// run *after* runApp; this bounds their cold-start so a stuck SDK can't
 /// wedge the app's background boot.
@@ -126,16 +125,6 @@ Future<void> _bootBackgroundServices(ProviderContainer container) async {
     debugPrint('NotificationService.init failed (non-fatal): $e\n$st');
   }
 
-  // RevenueCat configure (network). Mirrors premium flag into isPremium.
-  try {
-    await container
-        .read(revenueCatServiceProvider)
-        .configure()
-        .timeout(_bootServiceTimeout);
-  } catch (e, st) {
-    debugPrint('RevenueCat.configure failed (non-fatal): $e\n$st');
-  }
-
   // OneSignal (network). Coexists with FCM (OneSignal = segmentation layer;
   // FCM stays primary for push delivery per spec §3 + §6.6). No-op when
   // `--dart-define=ONESIGNAL_APP_ID` is absent (debug builds).
@@ -216,7 +205,7 @@ void main() {
     } catch (e, st) {
       debugPrint('hydratePersistedAppState failed (non-fatal): $e\n$st');
     }
-    // runApp IMMEDIATELY. The network SDK boots (RevenueCat, OneSignal,
+    // runApp IMMEDIATELY. The network SDK boots (OneSignal, AdMob,
     // notifications, FCM) run concurrently post-frame via
     // _bootBackgroundServices so a hung SDK never delays the first frame.
     runApp(UncontrolledProviderScope(
