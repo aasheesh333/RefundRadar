@@ -124,7 +124,14 @@ class AiLetterService {
       final res = await http
           .post(
             uri,
-            headers: const {'Content-Type': 'application/json'},
+            headers: const {
+              'Content-Type': 'application/json',
+              // Required by the Android-apps key restriction set in Google
+              // Cloud console (package + release SHA-1 of our signing key).
+              'X-Android-Package': 'com.dhanuk.refundradar',
+              'X-Android-Cert':
+                  '65E76FB3510E9B3A788CCADFACB8A68F40EC8AFF',
+            },
             body: body,
           )
           .timeout(const Duration(seconds: 30));
