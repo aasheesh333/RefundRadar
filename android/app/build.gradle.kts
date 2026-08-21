@@ -32,7 +32,7 @@ android {
 
     defaultConfig {
         applicationId = "com.dhanuk.refundradar"
-        minSdk = maxOf(flutter.minSdkVersion, 23) // google_mobile_ads needs ≥23
+        minSdk = maxOf(flutter.minSdkVersion, 24) // google_mobile_ads needs ≥24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
