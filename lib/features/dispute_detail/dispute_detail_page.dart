@@ -586,27 +586,65 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
       decoration: BoxDecoration(
         color: tc.surface,
         borderRadius: BorderRadius.circular(AppRadii.lg),
         border: Border.all(color: tc.divider),
+        boxShadow: AppShadows.card,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            CompensationCalculator.formatIndian(dispute.amount),
-            style: TextStyle(
-              fontFamily: AppTypography.family,
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: tc.textPrimary,
-              letterSpacing: -0.5,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // brand icon tile — gives the hero visual weight + identity
+              Container(
+                width: 52,
+                height: 52,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: dispute.type.softColorFor(tc),
+                  borderRadius: BorderRadius.circular(AppRadii.md),
+                ),
+                child: Icon(dispute.type.icon,
+                    size: 28, color: dispute.type.iconColor),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n?.detailDisputedAmountLabel ?? 'Disputed amount',
+                      style: TextStyle(
+                        fontFamily: AppTypography.family,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                        color: tc.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      CompensationCalculator.formatIndian(dispute.amount),
+                      style: TextStyle(
+                        fontFamily: AppTypography.family,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                        color: tc.textPrimary,
+                        letterSpacing: -0.5,
+                        height: 1.0,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 6,
@@ -680,21 +718,23 @@ class _QuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Row(
       children: [
         Expanded(
+          flex: 2,
           child: FilledButton.icon(
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.alert,
               foregroundColor: Colors.white,
-              minimumSize: const Size(0, 46),
+              minimumSize: const Size(0, 48),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadii.md),
               ),
             ),
             onPressed: () =>
                 context.push(AppRoutes.wizard(dispute.id)),
-            icon: const Icon(Icons.flag_outlined, size: 16),
+            icon: const Icon(Icons.flag_rounded, size: 18),
             label: Text(
               deadlineMissed
                   ? (l10n?.detailEscalateNow ?? 'Escalate now')
@@ -709,15 +749,15 @@ class _QuickActions extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         _IconBtn(
-          emoji: '📧',
+          icon: Icons.mail_rounded,
           tooltip: l10n?.escalateEmailPreview ?? 'Email',
           onTap: () =>
               context.push(AppRoutes.escalate(dispute.id)),
         ),
         const SizedBox(width: 8),
         _IconBtn(
-          emoji: '📝',
-          tooltip: l10n?.escalatePickTemplate ?? 'Templates',
+          icon: Icons.gavel_rounded,
+          tooltip: l10n?.escalatePickTemplate ?? 'Ombudsman',
           onTap: () {
             final isPremium = ProviderScope.containerOf(context)
                 .read(isPremiumProvider);
@@ -746,11 +786,11 @@ class _QuickActions extends StatelessWidget {
 }
 
 class _IconBtn extends StatelessWidget {
-  final String emoji;
+  final IconData icon;
   final String tooltip;
   final VoidCallback onTap;
   const _IconBtn({
-    required this.emoji,
+    required this.icon,
     required this.tooltip,
     required this.onTap,
   });
@@ -767,14 +807,14 @@ class _IconBtn extends StatelessWidget {
         child: Tooltip(
           message: tooltip,
           child: Container(
-            width: 46,
-            height: 46,
+            width: 48,
+            height: 48,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               border: Border.all(color: tc.divider),
               borderRadius: BorderRadius.circular(AppRadii.md),
             ),
-            child: Text(emoji, style: const TextStyle(fontSize: 18)),
+            child: Icon(icon, size: 20, color: tc.ctaBackground),
           ),
         ),
       ),
