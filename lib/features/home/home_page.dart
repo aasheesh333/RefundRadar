@@ -22,7 +22,6 @@ import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/utils/indian_number_formatter.dart';
 import 'package:refund_radar/core/router/app_routes.dart';
-import 'package:refund_radar/core/providers/app_state_provider.dart';
 
 List<Dispute> activeHomeDisputes(List<Dispute> disputes) => disputes
     .where((d) =>
