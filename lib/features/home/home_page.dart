@@ -34,6 +34,20 @@ class HomePage extends ConsumerWidget {
     final tc = AppThemeColors.of(context);
     return Scaffold(
       backgroundColor: tc.bg,
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'home_add_dispute',
+        backgroundColor: tc.ctaBackground,
+        foregroundColor: tc.ctaForeground,
+        icon: const Icon(Icons.add, size: 20),
+        label: Text(
+          AppLocalizations.of(context)?.homeAddDispute ?? 'Add dispute',
+          style: TextStyle(
+            fontFamily: AppTypography.family,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        onPressed: () => context.push(AppRoutes.disputesCreate),
+      ),
       body: SafeArea(
         child: uidAsync.when(
           data: (uid) {
