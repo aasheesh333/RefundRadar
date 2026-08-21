@@ -40,29 +40,32 @@ class StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(AppRadii.pill),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (prefix != null) ...[
-            Text(prefix!, style: const TextStyle(fontSize: 11)),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            label,
-            style: TextStyle(
-              fontFamily: AppTypography.family,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: fg,
+    return Semantics(
+      label: label,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (prefix != null) ...[
+              Text(prefix!, style: const TextStyle(fontSize: 11)),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: fg,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

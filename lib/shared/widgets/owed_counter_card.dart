@@ -71,7 +71,13 @@ class _OwedCounterCardState extends State<OwedCounterCard>
   Widget build(BuildContext context) {
     const begin = Alignment.topLeft;
     const end = Alignment.bottomRight;
-    return Container(
+    final owedLabel =
+        AppLocalizations.of(context)?.homeYoureOwed ?? "You're owed";
+    return Semantics(
+      label:
+          '$owedLabel ${_formatIndian(widget.totalOwed)} across ${widget.disputeCount} disputes',
+      child: ExcludeSemantics(
+        child: Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: const BoxDecoration(
@@ -174,15 +180,17 @@ class _OwedCounterCardState extends State<OwedCounterCard>
             Padding(
               padding: const EdgeInsets.only(top: 2),
               child: Text(
-                widget.breakdown!,
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xB3FFFFFF),
-                ),
-              ),
-            ),
+                 widget.breakdown!,
+                 style: const TextStyle(
+                   fontSize: 11,
+                   fontWeight: FontWeight.w500,
+                   color: Color(0xB3FFFFFF),
+                 ),
+               ),
+             ),
         ],
+      ),
+    ),
       ),
     );
   }

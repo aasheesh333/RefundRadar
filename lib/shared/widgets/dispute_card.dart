@@ -6,6 +6,7 @@ import '../../data/models/dispute.dart';
 import '../../l10n/app_localizations.dart';
 import '../../services/compensation_calculator.dart';
 import 'status_pill.dart';
+import 'pressable_scale.dart';
 
 /// Dispute list card matching mockup Screen 4.
 /// Layout: soft-tinted emoji tile | title + amount | subtitle |
@@ -35,7 +36,14 @@ class DisputeCard extends StatelessWidget {
     final borderColor =
         deadlineMissed ? tc.errorSoft : tc.divider;
 
-    return InkWell(
+    final semanticLabel = _semanticLabel(l10n, daysLeft, deadlineMissed);
+
+    return Semantics(
+      container: true,
+      button: true,
+      label: semanticLabel,
+      child: PressableScale(
+        child: InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadii.lg),
       child: Container(
@@ -99,14 +107,10 @@ class DisputeCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    _subtitle(),
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: tc.textSecondary,
-                    ),
+                   const SizedBox(height: 3),
+                   Text(
+                     _subtitle(),
+                     style: AppTypography.micro(color: tc.textSecondary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -150,17 +154,13 @@ class DisputeCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          daysLeft > 0
-                              ? (l10n?.cardDaysLeft(daysLeft) ??
-                                  '$daysLeft days left')
-                              : (l10n?.cardExpired ?? 'Expired'),
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            color: tc.textSecondary,
-                          ),
-                        ),
+                         Text(
+                           daysLeft > 0
+                               ? (l10n?.cardDaysLeft(daysLeft) ??
+                                   '$daysLeft days left')
+                               : (l10n?.cardExpired ?? 'Expired'),
+                           style: AppTypography.micro(color: tc.textSecondary),
+                         ),
                       ],
                     ),
                   ],
@@ -181,18 +181,16 @@ class DisputeCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Text(
-                        deadlineMissed
-                            ? (l10n?.cardEscalateCta ?? 'Escalate →')
-                            : (l10n?.cardViewCta ?? 'View →'),
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: tc.isDark
-                              ? AppColors.accent
-                              : AppColors.primary,
-                        ),
-                      ),
+                       Text(
+                         deadlineMissed
+                             ? (l10n?.cardEscalateCta ?? 'Escalate →')
+                             : (l10n?.cardViewCta ?? 'View →'),
+                         style: AppTypography.micro(
+                           color: tc.isDark
+                               ? AppColors.accent
+                               : AppColors.primary,
+                         ),
+                       ),
                     ],
                   ),
                 ],
@@ -204,7 +202,31 @@ class DisputeCard extends StatelessWidget {
           ],
         ),
       ),
+        ),
+      ),
     );
+  }
+
+  /// Plain-language description for screen readers. Reads the whole card as
+  /// one announcement so non-literate TalkBack users get the full picture:
+  /// "{type}, ₹{amount}, {entity}, {N days left / deadline missed}".
+  String _semanticLabel(
+      AppLocalizations? l10n, int daysLeft, bool deadlineMissed) {
+    final parts = <String>[
+      dispute.type.localizedName(l10n),
+      CompensationCalculator.formatIndian(dispute.amount),
+    ];
+    if (dispute.entityName != null && dispute.entityName!.isNotEmpty) {
+      parts.add(dispute.entityName!);
+    }
+    if (dispute.status == DisputeStatus.resolved) {
+      parts.add(l10n?.statusResolved ?? 'Resolved');
+    } else if (deadlineMissed) {
+      parts.add(l10n?.cardDeadlineMissed ?? 'Deadline missed. Escalate now.');
+    } else if (daysLeft > 0) {
+      parts.add(l10n?.cardDaysLeft(daysLeft) ?? '$daysLeft days left');
+    }
+    return parts.join(', ');
   }
 
   Widget _rightPill(

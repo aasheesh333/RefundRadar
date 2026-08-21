@@ -11,34 +11,39 @@ class AppTheme {
   // ---------- Color helpers ----------
   // (_rot helper removed — unused.)
 
+  // SINGLE SOURCE OF TRUTH: the ColorScheme derives from the AppColors
+  // tokens so that Material-native components (ripples, switches, sliders,
+  // date pickers, selected nav indicator) render the SAME brand blue as the
+  // explicit buttons/cards. Previously this scheme was a hardcoded
+  // indigo+emerald fork that visibly fought the royal-blue token palette.
   static ColorScheme get _lightScheme => ColorScheme.fromSeed(
-        seedColor: const Color(0xFF6366F1), // Modern indigo (Material 3 vibrant)
+        seedColor: AppColors.primary,
         brightness: Brightness.light,
-        primary: const Color(0xFF4F46E5), // Stronger indigo
+        primary: AppColors.primary,
         onPrimary: Colors.white,
-        secondary: const Color(0xFF10B981), // Emerald green accent
-        onSecondary: const Color(0xFF064E3B),
-        surface: const Color(0xFFF8FAFC), // Softer surface
-        onSurface: const Color(0xFF1E293B),
-        error: const Color(0xFFF43F5E), // Modern red
+        secondary: AppColors.accent,
+        onSecondary: Colors.white,
+        surface: AppColors.surfaceLight,
+        onSurface: AppColors.textPrimaryLight,
+        error: AppColors.error,
         onError: Colors.white,
-        outline: const Color(0xFFE2E8F0),
-        outlineVariant: const Color(0xFFCBD5E1),
+        outline: AppColors.dividerLight,
+        outlineVariant: AppColors.dividerLight,
       );
 
   static ColorScheme get _darkScheme => ColorScheme.fromSeed(
-        seedColor: const Color(0xFF6366F1),
+        seedColor: AppColors.primary,
         brightness: Brightness.dark,
-        primary: const Color(0xFF818CF8), // Lighter indigo for dark mode
-        onPrimary: const Color(0xFF1E1B4B),
-        secondary: const Color(0xFF34D399), // Lighter green
-        onSecondary: const Color(0xFF064E3B),
-        surface: const Color(0xFF0F172A), // Deep navy surface
-        onSurface: const Color(0xFFF1F5F9),
-        error: const Color(0xFFFCA5A5),
-        onError: const Color(0xFF450A0A),
-        outline: const Color(0xFF334155),
-        outlineVariant: const Color(0xFF475569),
+        primary: AppColors.accentBright,
+        onPrimary: const Color(0xFF0B1220),
+        secondary: AppColors.accentBright,
+        onSecondary: const Color(0xFF0B1220),
+        surface: AppColors.surfaceDark,
+        onSurface: AppColors.textPrimaryDark,
+        error: AppColors.error,
+        onError: Colors.white,
+        outline: AppColors.dividerDark,
+        outlineVariant: AppColors.dividerDark,
       );
 
   // ---------- Theme data ----------
@@ -252,42 +257,42 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.accent,
-          foregroundColor: Colors.black,
+          backgroundColor: AppColors.accentBright,
+          foregroundColor: const Color(0xFF0B1220),
           disabledBackgroundColor: AppColors.dividerDark,
           disabledForegroundColor: AppColors.textSecondaryDark,
           minimumSize: const Size(64, 52),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          textStyle: AppTypography.h3(color: Colors.black).copyWith(fontWeight: FontWeight.w700),
+          textStyle: AppTypography.h3(color: const Color(0xFF0B1220)).copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.accent,
-          foregroundColor: Colors.black,
+          backgroundColor: AppColors.accentBright,
+          foregroundColor: const Color(0xFF0B1220),
           elevation: 0,
           minimumSize: const Size(64, 52),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          textStyle: AppTypography.h3(color: Colors.black).copyWith(fontWeight: FontWeight.w700),
+          textStyle: AppTypography.h3(color: const Color(0xFF0B1220)).copyWith(fontWeight: FontWeight.w700),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.accent,
+          foregroundColor: AppColors.accentBright,
           minimumSize: const Size(64, 48),
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          side: const BorderSide(color: AppColors.accent, width: 1.5),
-          textStyle: AppTypography.h3(color: AppColors.accent).copyWith(fontWeight: FontWeight.w600),
+          side: const BorderSide(color: AppColors.accentBright, width: 1.5),
+          textStyle: AppTypography.h3(color: AppColors.accentBright).copyWith(fontWeight: FontWeight.w600),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.accent,
+          foregroundColor: AppColors.accentBright,
           minimumSize: const Size(0, 48),
-          textStyle: AppTypography.bodyMedium(color: AppColors.accent),
+          textStyle: AppTypography.bodyMedium(color: AppColors.accentBright),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -299,7 +304,7 @@ class AppTheme {
         ),
         labelStyle: AppTypography.body(color: AppColors.textSecondaryDark),
         hintStyle: AppTypography.body(color: AppColors.textTertiaryDark),
-        floatingLabelStyle: AppTypography.overline(color: AppColors.accent).copyWith(fontWeight: FontWeight.w700),
+        floatingLabelStyle: AppTypography.overline(color: AppColors.accentBright).copyWith(fontWeight: FontWeight.w700),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),
           borderSide: const BorderSide(color: AppColors.dividerDark, width: 1),
@@ -310,7 +315,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),
-          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.accentBright, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.md),
@@ -321,7 +326,7 @@ class AppTheme {
         backgroundColor: AppColors.surfaceAltDark,
         selectedColor: const Color(0xFF17263F),
         labelStyle: AppTypography.caption(color: AppColors.textPrimaryDark),
-        secondaryLabelStyle: AppTypography.caption(color: AppColors.accent),
+        secondaryLabelStyle: AppTypography.caption(color: AppColors.accentBright),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pill)),
         side: BorderSide.none,
@@ -352,8 +357,8 @@ class AppTheme {
         contentTextStyle: AppTypography.body(color: AppColors.textSecondaryDark),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: AppColors.accent,
-        foregroundColor: const Color(0xFF0E1116),
+        backgroundColor: AppColors.accentBright,
+        foregroundColor: const Color(0xFF0B1220),
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.md)),
       ),
@@ -362,7 +367,7 @@ class AppTheme {
         size: 24,
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: AppColors.accent,
+        color: AppColors.accentBright,
         circularTrackColor: AppColors.dividerDark,
       ),
       listTileTheme: ListTileThemeData(

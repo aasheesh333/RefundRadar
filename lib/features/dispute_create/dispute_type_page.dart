@@ -6,6 +6,7 @@ import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/data/extensions/dispute_type_display.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
+import 'package:refund_radar/shared/widgets/pressable_scale.dart';
 
 class DisputeTypePage extends StatefulWidget {
   const DisputeTypePage({super.key});
@@ -218,10 +219,17 @@ class _Row extends StatelessWidget {
     final tc = AppThemeColors.of(context);
     final l10n = AppLocalizations.of(context);
     final comp = type.localizedCompensation(l10n);
-    return Material(
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: comp != null
+          ? '${type.localizedName(l10n)}. ${type.localizedSubtitle(l10n)}. $comp'
+          : '${type.localizedName(l10n)}. ${type.localizedSubtitle(l10n)}',
+      child: Material(
       color: tc.surface,
       borderRadius: BorderRadius.circular(AppRadii.lg),
-      child: InkWell(
+      child: PressableScale(
+        child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadii.lg),
         child: AnimatedContainer(
@@ -318,6 +326,8 @@ class _Row extends StatelessWidget {
             ],
           ),
         ),
+        ),
+      ),
       ),
     );
   }

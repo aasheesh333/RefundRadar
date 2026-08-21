@@ -157,24 +157,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  TextButton(
-                    onPressed: _skip,
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      foregroundColor: tc.textTertiary,
-                    ),
-                    child: Text(
-                      'Not now',
-                      style: TextStyle(
-                        fontFamily: AppTypography.family,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 14),
                   Text(
                     l10n?.settingsNotAffiliated ??
                         'Independent tool · Not affiliated with RBI/NPCI/banks',

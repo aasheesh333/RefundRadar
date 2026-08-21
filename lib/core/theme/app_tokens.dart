@@ -14,6 +14,11 @@ class AppColors {
   static const accent = Color(0xFF3B82F6); // blue 500
   static const accentSoft = Color(0xFFEAF1FF); // very light blue tint
 
+  /// Dark-mode action accent: a brighter, higher-luminance blue that keeps
+  /// AA contrast (≥4.5:1) against near-black surfaces and reads clearly as a
+  /// fill for CTA/FAB in dark mode. Light mode uses [accent]/[primary].
+  static const accentBright = Color(0xFF60A5FA); // blue 400
+
   // Status / counter
   static const alert = Color(0xFFE8590C); // warm amber-orange
   static const alertSoft = Color(0xFFFFF1E6);
@@ -163,6 +168,24 @@ class AppTypography {
         fontWeight: FontWeight.w500,
         height: 1.3,
         letterSpacing: 0.1,
+        color: color,
+      );
+
+  /// Dense secondary text (card subtitles, meta rows) — 13pt.
+  static TextStyle small({Color? color}) => TextStyle(
+        fontFamily: family,
+        fontSize: 13,
+        fontWeight: FontWeight.w500,
+        height: 1.3,
+        color: color,
+      );
+
+  /// Tertiary/meta text (days-left, UTR codes, timestamps) — 11pt.
+  static TextStyle micro({Color? color}) => TextStyle(
+        fontFamily: family,
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        height: 1.25,
         color: color,
       );
 
