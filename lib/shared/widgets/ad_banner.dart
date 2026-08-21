@@ -42,9 +42,7 @@ class _AdBannerState extends ConsumerState<AdBanner> {
   Future<void> _load() async {
     final width =
         MediaQuery.of(context).size.width.truncate();
-    final size = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
-      width,
-    );
+    final size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width);
     if (!mounted || size == null) return;
     final ad = BannerAd(
       adUnitId: kAdMobBannerUnitId,

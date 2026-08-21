@@ -90,6 +90,10 @@ jobs:
           REVENUECAT_SDK_KEY: ${{ secrets.REVENUECAT_SDK_KEY }}
           ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
           ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
+          ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
+          ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
+          ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
           VERSION_CODE: ${{ secrets.VERSION_CODE }}
           VERSION_NAME: ${{ secrets.VERSION_NAME }}
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -160,6 +164,10 @@ jobs:
           REVENUECAT_SDK_KEY: ${{ secrets.REVENUECAT_SDK_KEY }}
           ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
           ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
+          ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
+          ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
+          ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
           VERSION_CODE: ${{ secrets.VERSION_CODE }}
           VERSION_NAME: ${{ secrets.VERSION_NAME }}
         run: |
@@ -190,6 +198,10 @@ jobs:
             --dart-define=REVENUECAT_SDK_KEY="$REVENUECAT_SDK_KEY" \
             --dart-define=ONESIGNAL_APP_ID="$ONESIGNAL_APP_ID" \
             --dart-define=ONESIGNAL_API_KEY="$ONESIGNAL_API_KEY" \
+            --dart-define=ADMOB_BANNER_ID="$ADMOB_BANNER_ID" \
+            --dart-define=ADMOB_INTERSTITIAL_ID="$ADMOB_INTERSTITIAL_ID" \
+            --dart-define=ADMOB_REWARDED_ID="$ADMOB_REWARDED_ID" \
+            --android-project-arg=admobAppId="$ADMOB_APP_ID" \
             --dart-define=VERSION_NAME="$VERSION_NAME" \
             --dart-define=VERSION_CODE="$VERSION_CODE"
 
@@ -291,6 +303,10 @@ jobs:
           REVENUECAT_SDK_KEY: ${{ secrets.REVENUECAT_SDK_KEY }}
           ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
           ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
+          ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
+          ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
+          ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
           VERSION_CODE: ${{ secrets.VERSION_CODE }}
           VERSION_NAME: ${{ secrets.VERSION_NAME }}
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -340,6 +356,10 @@ jobs:
           REVENUECAT_SDK_KEY: ${{ secrets.REVENUECAT_SDK_KEY }}
           ONESIGNAL_APP_ID: ${{ secrets.ONESIGNAL_APP_ID }}
           ONESIGNAL_API_KEY: ${{ secrets.ONESIGNAL_API_KEY }}
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
+          ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
+          ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
+          ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
           VERSION_CODE: ${{ secrets.VERSION_CODE }}
           VERSION_NAME: ${{ secrets.VERSION_NAME }}
         run: |
@@ -366,6 +386,10 @@ jobs:
             --dart-define=REVENUECAT_SDK_KEY="$REVENUECAT_SDK_KEY" \
             --dart-define=ONESIGNAL_APP_ID="$ONESIGNAL_APP_ID" \
             --dart-define=ONESIGNAL_API_KEY="$ONESIGNAL_API_KEY" \
+            --dart-define=ADMOB_BANNER_ID="$ADMOB_BANNER_ID" \
+            --dart-define=ADMOB_INTERSTITIAL_ID="$ADMOB_INTERSTITIAL_ID" \
+            --dart-define=ADMOB_REWARDED_ID="$ADMOB_REWARDED_ID" \
+            --android-project-arg=admobAppId="$ADMOB_APP_ID" \
             --dart-define=VERSION_NAME="$VERSION_NAME" \
             --dart-define=VERSION_CODE="$VERSION_CODE"
 
