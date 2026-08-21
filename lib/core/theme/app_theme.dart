@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:refund_radar/core/theme/app_tokens.dart';
 
@@ -46,14 +45,26 @@ class AppTheme {
         outlineVariant: AppColors.dividerDark,
       );
 
+  /// Builds a TextTheme that uses the BUNDLED Manrope asset font (registered
+  /// in pubspec.yaml) instead of GoogleFonts' runtime download. GoogleFonts
+  /// fetches the .ttf over the network on first use and silently falls back
+  /// to the system font (Roboto) when offline / on slow connections — which
+  /// is exactly why the app looked "cheap/generic" compared to the intended
+  /// design. Bundling guarantees the premium Manrope look on every launch,
+  /// offline included.
+  static TextTheme _manrope(TextTheme base, Color color) {
+    return base.apply(
+      fontFamily: 'Manrope',
+      bodyColor: color,
+      displayColor: color,
+      decorationColor: color,
+    );
+  }
+
   // ---------- Theme data ----------
   static ThemeData get light {
     final base = ThemeData.from(colorScheme: _lightScheme, useMaterial3: true);
-    final manrope = GoogleFonts.manropeTextTheme(base.textTheme).apply(
-      bodyColor: AppColors.textPrimaryLight,
-      displayColor: AppColors.textPrimaryLight,
-      decorationColor: AppColors.textPrimaryLight,
-    );
+    final manrope = _manrope(base.textTheme, AppColors.textPrimaryLight);
     return base.copyWith(
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.bgLight,
@@ -221,11 +232,7 @@ class AppTheme {
 
   static ThemeData get dark {
     final base = ThemeData.from(colorScheme: _darkScheme, useMaterial3: true);
-    final manrope = GoogleFonts.manropeTextTheme(base.textTheme).apply(
-      bodyColor: AppColors.textPrimaryDark,
-      displayColor: AppColors.textPrimaryDark,
-      decorationColor: AppColors.textPrimaryDark,
-    );
+    final manrope = _manrope(base.textTheme, AppColors.textPrimaryDark);
     return base.copyWith(
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.bgDark,
