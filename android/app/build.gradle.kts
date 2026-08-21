@@ -32,10 +32,18 @@ android {
 
     defaultConfig {
         applicationId = "com.dhanuk.refundradar"
-        minSdk = maxOf(flutter.minSdkVersion, 21)
+        minSdk = maxOf(flutter.minSdkVersion, 23) // google_mobile_ads needs ≥23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // AdMob App ID injected into AndroidManifest via placeholder.
+        // Default = Google's TEST App ID (safe for dev). For release, pass:
+        //   flutter build apk -P admobAppId=ca-app-pub-XXXXXXXX~YYYYYYYYYY
+        val admobAppId: String =
+            (project.findProperty("admobAppId") as String?)
+                ?: "ca-app-pub-3940256099942544~3347511713"
+        manifestPlaceholders["admobAppId"] = admobAppId
     }
 
     // 16 KB native library packaging — keeps lib*.so files aligned to

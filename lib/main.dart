@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/fcm_reevaluater.dart';
 import 'package:refund_radar/core/providers/utr_detection_provider.dart';
@@ -148,6 +149,17 @@ Future<void> _bootBackgroundServices(ProviderContainer container) async {
         .timeout(_bootServiceTimeout);
   } catch (e, st) {
     debugPrint('OneSignal.configure failed (non-fatal): $e\n$st');
+  }
+
+  // AdMob (network). Initialised in the background so a slow ad-SDK
+  // handshake never blocks first paint. Ads only render for FREE users
+  // (premium users are ad-free).
+  try {
+    await MobileAds.instance
+        .initialize()
+        .timeout(_bootServiceTimeout);
+  } catch (e, st) {
+    debugPrint('MobileAds.initialize failed (non-fatal): $e\n$st');
   }
 
   // FCM foreground message handler (Task C6). Foreground pushes don't

@@ -12,6 +12,7 @@ import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/widgets/owed_counter_card.dart';
 import 'package:refund_radar/shared/widgets/dispute_card.dart';
+import 'package:refund_radar/shared/widgets/ad_banner.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
@@ -34,6 +35,7 @@ class HomePage extends ConsumerWidget {
     final tc = AppThemeColors.of(context);
     return Scaffold(
       backgroundColor: tc.bg,
+      bottomNavigationBar: const SafeArea(child: AdBanner()),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'home_add_dispute',
         backgroundColor: tc.ctaBackground,
