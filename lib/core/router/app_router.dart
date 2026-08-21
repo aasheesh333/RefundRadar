@@ -22,6 +22,7 @@ import 'package:refund_radar/features/shell/home_shell.dart';
 import 'package:refund_radar/features/templates/template_library_page.dart';
 import 'package:refund_radar/features/templates/template_picker_page.dart';
 import 'package:refund_radar/features/templates/template_preview_page.dart';
+import 'package:refund_radar/core/router/page_transitions.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -84,56 +85,80 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           builder: (c, s) => const DisputeTypePage()),
       GoRoute(
         path: '/disputes/form',
-        builder: (c, s) => DisputeFormPage(
-          type: s.uri.queryParameters['type'] ?? 'upi_p2p',
-          prefilledUtr: s.uri.queryParameters['utr'],
-          prefilledAmount:
-              double.tryParse(s.uri.queryParameters['amount'] ?? ''),
-          prefilledSender: s.uri.queryParameters['sender'],
+        pageBuilder: (c, s) => sharedAxisYPage(
+          key: s.pageKey,
+          child: DisputeFormPage(
+            type: s.uri.queryParameters['type'] ?? 'upi_p2p',
+            prefilledUtr: s.uri.queryParameters['utr'],
+            prefilledAmount:
+                double.tryParse(s.uri.queryParameters['amount'] ?? ''),
+            prefilledSender: s.uri.queryParameters['sender'],
+          ),
         ),
       ),
       GoRoute(
         path: '/disputes/:id',
-        builder: (c, s) => DisputeDetailPage(id: s.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/wizard/:disputeId',
-        builder: (c, s) =>
-            WizardPage(disputeId: s.pathParameters['disputeId']!),
-      ),
-      GoRoute(
-        path: '/ombudsman/:disputeId',
-        builder: (c, s) =>
-            OmbudsmanLetterPage(disputeId: s.pathParameters['disputeId']!),
-      ),
-      GoRoute(
-        path: '/escalate/:id',
-        builder: (c, s) => EscalatePage(disputeId: s.pathParameters['id']!),
-      ),
-      GoRoute(
-        path: '/paywall',
-        builder: (c, s) => PaywallPage(
-          returnPath: s.uri.queryParameters['return'] ?? '/home',
-          trigger: s.uri.queryParameters['trigger'] ?? 'generic',
-          templateId: s.uri.queryParameters['templateId'],
-          templateTitle: s.uri.queryParameters['templateTitle'],
+        pageBuilder: (c, s) => sharedAxisYPage(
+          key: s.pageKey,
+          child: DisputeDetailPage(id: s.pathParameters['id']!),
         ),
       ),
       GoRoute(
-          path: '/reminders', builder: (c, s) => const RemindersPage()),
+        path: '/wizard/:disputeId',
+        pageBuilder: (c, s) => sharedAxisYPage(
+          key: s.pageKey,
+          child: WizardPage(disputeId: s.pathParameters['disputeId']!),
+        ),
+      ),
+      GoRoute(
+        path: '/ombudsman/:disputeId',
+        pageBuilder: (c, s) => sharedAxisYPage(
+          key: s.pageKey,
+          child: OmbudsmanLetterPage(disputeId: s.pathParameters['disputeId']!),
+        ),
+      ),
+      GoRoute(
+        path: '/escalate/:id',
+        pageBuilder: (c, s) => sharedAxisYPage(
+          key: s.pageKey,
+          child: EscalatePage(disputeId: s.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
+        path: '/paywall',
+        pageBuilder: (c, s) => sharedAxisYPage(
+          key: s.pageKey,
+          child: PaywallPage(
+            returnPath: s.uri.queryParameters['return'] ?? '/home',
+            trigger: s.uri.queryParameters['trigger'] ?? 'generic',
+            templateId: s.uri.queryParameters['templateId'],
+            templateTitle: s.uri.queryParameters['templateTitle'],
+          ),
+        ),
+      ),
+      GoRoute(
+          path: '/reminders',
+          pageBuilder: (c, s) =>
+              sharedAxisYPage(key: s.pageKey, child: const RemindersPage())),
       // Wave 4a — full-screen Template Picker + Preview used by
       // DisputeDetail (and reusable from Escalate) for "change template".
       GoRoute(
         path: '/templates/picker',
-        builder: (c, s) => TemplatePickerPage(
-          disputeId: s.uri.queryParameters['disputeId'] ?? '',
+        pageBuilder: (c, s) => sharedAxisYPage(
+          key: s.pageKey,
+          child: TemplatePickerPage(
+            disputeId: s.uri.queryParameters['disputeId'] ?? '',
+          ),
         ),
       ),
       GoRoute(
         path: '/templates/preview',
-        builder: (c, s) => TemplatePreviewPage(
-          disputeId: s.uri.queryParameters['disputeId'] ?? '',
-          templateId: s.uri.queryParameters['templateId'] ?? '',
+        pageBuilder: (c, s) => sharedAxisYPage(
+          key: s.pageKey,
+          child: TemplatePreviewPage(
+            disputeId: s.uri.queryParameters['disputeId'] ?? '',
+            templateId: s.uri.queryParameters['templateId'] ?? '',
+          ),
         ),
       ),
       GoRoute(

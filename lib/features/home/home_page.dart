@@ -290,10 +290,14 @@ class _EmptyState extends StatelessWidget {
               height: 80,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: tc.surfaceAlt,
+                color: tc.accentSoft,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Text('💰', style: TextStyle(fontSize: 36)),
+              child: Icon(
+                Icons.account_balance_wallet_rounded,
+                size: 38,
+                color: tc.ctaBackground,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
@@ -357,7 +361,8 @@ class _DetectedTransactionsSection extends ConsumerWidget {
                 color: tc.accentSoft,
                 borderRadius: BorderRadius.circular(AppRadii.sm),
               ),
-              child: const Text('🔍', style: TextStyle(fontSize: 11)),
+              child: Icon(Icons.search_rounded,
+                  size: 14, color: tc.ctaBackground),
             ),
             const SizedBox(width: 8),
             Text(

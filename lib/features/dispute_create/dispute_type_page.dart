@@ -253,8 +253,7 @@ class _Row extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppRadii.sm),
                 ),
                 child: Center(
-                  child:
-                      Text(type.emoji, style: const TextStyle(fontSize: 20)),
+                  child: Icon(type.icon, size: 22, color: type.iconColor),
                 ),
               ),
               const SizedBox(width: 12),

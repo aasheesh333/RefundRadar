@@ -57,7 +57,7 @@ class DisputeCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // emoji tile
+            // brand icon tile
             Container(
               width: 36,
               height: 36,
@@ -66,9 +66,11 @@ class DisputeCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadii.sm),
               ),
               child: Center(
-                child: Text(
-                  dispute.type.emoji,
-                  style: const TextStyle(fontSize: 18, height: 1),
+                child: Icon(
+                  dispute.type.icon,
+                  size: 20,
+                  color: dispute.type.iconColor,
+                  semanticLabel: dispute.type.localizedName(l10n),
                 ),
               ),
             ),

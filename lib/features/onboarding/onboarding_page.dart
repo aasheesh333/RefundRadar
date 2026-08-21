@@ -45,7 +45,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   List<_SlideData> _slidesFor(AppLocalizations? l10n, AppThemeColors tc) => [
         _SlideData(
-          emoji: '💸',
+          icon: Icons.currency_rupee_rounded,
+          iconColor: tc.ctaBackground,
           title: l10n?.onboardSlide1Title ??
               '₹100/day — banks owe YOU\nfor failed UPI',
           desc: l10n?.onboardSlide1Desc ??
@@ -54,7 +55,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
           ctaLabel: l10n?.onboardCta ?? 'Start free',
         ),
         _SlideData(
-          emoji: '🚗',
+          icon: Icons.directions_car_rounded,
+          iconColor: AppColors.alert,
           title: l10n?.onboardSlide2Title ??
               "FASTag double-cut?\nYou're owed ₹100/day",
           desc: l10n?.onboardSlide2Desc ??
@@ -63,7 +65,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
           ctaLabel: l10n?.disputeTypeContinue ?? 'Continue',
         ),
         _SlideData(
-          emoji: '⚖️',
+          icon: Icons.gavel_rounded,
+          iconColor: AppColors.premiumGold,
           title: l10n?.onboardSlide3Title ??
               'Banks ignoring you?\nTake them to the Ombudsman',
           desc: l10n?.onboardSlide3Desc ??
@@ -181,14 +184,16 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 }
 
 class _SlideData {
-  final String emoji;
+  final IconData icon;
+  final Color iconColor;
   final String title;
   final String desc;
   final Color softColor;
   final String ctaLabel;
 
   const _SlideData({
-    required this.emoji,
+    required this.icon,
+    required this.iconColor,
     required this.title,
     required this.desc,
     required this.softColor,
@@ -204,7 +209,21 @@ class _SlideView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tc = AppThemeColors.of(context);
-    return LayoutBuilder(
+    // One-shot fade+rise entrance each time a slide becomes visible, so the
+    // hero feels alive as the user swipes. TweenAnimationBuilder re-runs on
+    // rebuild (PageView rebuilds the visible child) — cheap and stateless.
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+      builder: (context, t, child) => Opacity(
+        opacity: t,
+        child: Transform.translate(
+          offset: Offset(0, (1 - t) * 18),
+          child: child,
+        ),
+      ),
+      child: LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxHeight < 420;
         return Padding(
@@ -217,7 +236,8 @@ class _SlideView extends StatelessWidget {
             children: [
               const Spacer(flex: 2),
               HeroEmojiCircle(
-                emoji: slide.emoji,
+                icon: slide.icon,
+                iconColor: slide.iconColor,
                 softColor: slide.softColor,
               ),
               SizedBox(height: compact ? 16 : 24),
@@ -255,6 +275,7 @@ class _SlideView extends StatelessWidget {
           ),
         );
       },
+    ),
     );
   }
 }

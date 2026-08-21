@@ -527,17 +527,17 @@ class _TopBar extends StatelessWidget {
             onPressed: () => context.pop(),
           ),
           const SizedBox(width: 4),
-          Container(
-            width: 32,
-            height: 32,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: dispute.type.softColorFor(tc),
-              borderRadius: BorderRadius.circular(AppRadii.sm),
-            ),
-            child: Text(dispute.type.emoji,
-                style: const TextStyle(fontSize: 14)),
-          ),
+           Container(
+             width: 32,
+             height: 32,
+             alignment: Alignment.center,
+             decoration: BoxDecoration(
+               color: dispute.type.softColorFor(tc),
+               borderRadius: BorderRadius.circular(AppRadii.sm),
+             ),
+             child: Icon(dispute.type.icon,
+                 size: 17, color: dispute.type.iconColor),
+           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
