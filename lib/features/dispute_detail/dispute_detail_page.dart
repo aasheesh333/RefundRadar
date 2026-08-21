@@ -617,7 +617,7 @@ class _HeroCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      l10n?.detailDisputedAmountLabel ?? 'Disputed amount',
+                      'Disputed amount',
                       style: TextStyle(
                         fontFamily: AppTypography.family,
                         fontSize: 11,
