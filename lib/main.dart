@@ -15,6 +15,7 @@ import 'package:refund_radar/core/router/app_routes.dart';
 import 'package:refund_radar/core/theme/app_theme.dart';
 import 'package:refund_radar/core/providers/theme_provider.dart';
 import 'package:refund_radar/data/models/utr_detection.dart';
+import 'package:refund_radar/data/repositories/draft_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/notification_service.dart';
@@ -123,6 +124,26 @@ Future<void> _bootBackgroundServices(ProviderContainer container) async {
         .timeout(_bootServiceTimeout);
   } catch (e, st) {
     debugPrint('NotificationService.init failed (non-fatal): $e\n$st');
+  }
+
+  // Draft nudge (closed-app reminder): if saved dispute drafts exist,
+  // arm a one-shot ~next-day-10:00-local nudge; otherwise clear any
+  // stale one. Re-evaluated every cold start, so opening/resuming/
+  // submitting a draft needs no per-edit wiring. Bounded + best-effort:
+  // a stuck prefs read skips it entirely rather than delaying boot.
+  try {
+    final draftCount = await container
+        .read(draftRepositoryProvider)
+        .count()
+        .timeout(_bootServiceTimeout);
+    final notifService = container.read(notificationServiceProvider);
+    if (draftCount > 0) {
+      await notifService.scheduleDraftNudge().timeout(_bootServiceTimeout);
+    } else {
+      await notifService.cancelDraftNudge().timeout(_bootServiceTimeout);
+    }
+  } catch (e, st) {
+    debugPrint('Draft nudge scheduling skipped (non-fatal): $e\n$st');
   }
 
   // OneSignal (network). Coexists with FCM (OneSignal = segmentation layer;

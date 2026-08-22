@@ -88,6 +88,48 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
   final _cardLast4Ctrl = TextEditingController();
   final _beneficiaryAcctCtrl = TextEditingController();
   final _beneficiaryIfscCtrl = TextEditingController();
+
+  /// Letter-template blanks for this dispute type that have NO dedicated
+  /// field above (GOAL: collect template blanks at creation). Keys match
+  /// asset `{TOKEN}` placeholder names exactly so they can be stored on
+  /// `Dispute.metadata` and merged into `Template.fill` at preview time.
+  /// Derived from the actual placeholders in `assets/templates/**` minus
+  /// everything already auto-filled by form fields / user profile /
+  /// computed values (`template_fill.dart`).
+  static const Map<DisputeType, Map<String, String>> _kTemplateBlanks = {
+    DisputeType.upiP2p: {
+      'VPA_PAYEE': 'Payee VPA / handle',
+      'BENEFICIARY_BANK': 'Payee bank name',
+    },
+    DisputeType.upiP2m: {
+      'VPA_PAYEE': 'Payee VPA / handle',
+      'BENEFICIARY_BANK': 'Payee bank name',
+    },
+    DisputeType.imps: {
+      'VPA_PAYEE': 'Payee account / handle',
+      'BENEFICIARY_BANK': 'Payee bank name',
+    },
+    // ATM letters only use ATM_ID / CARD_LAST4 / core txn fields — all
+    // captured above.
+    DisputeType.atm: {},
+    DisputeType.fastag: {
+      'LANE_ID': 'Lane number at toll plaza',
+      'CROSSINGS_USED': 'Crossings used (pass / monthly plans)',
+      'PASS_ACTIVATION_DATE': 'Pass / recharge activation date',
+      'SECURITY_DEPOSIT': 'Security deposit amount',
+    },
+    DisputeType.bankCharge: {
+      'CARD_LAST4': 'Card last 4 digits (if charged on card)',
+    },
+    DisputeType.wrongTransfer: {
+      'VPA': 'Your UPI VPA',
+      'BENEFICIARY_BANK': 'Beneficiary bank name',
+    },
+  };
+
+  late final Map<String, String> _neededBlanks;
+  final Map<String, TextEditingController> _blankCtrls = {};
+
   final _profileKey = GlobalKey<ProfileFormState>();
   DateTime? _date;
   String _bankName = '';
@@ -106,6 +148,12 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     final resume = widget.resumeDraft;
     _draftId = resume?.id ??
         'draft_${DateTime.now().microsecondsSinceEpoch}';
+    // Template blanks are fixed per dispute type — one controller each.
+    _neededBlanks =
+        _kTemplateBlanks[DisputeType.fromId(widget.type)] ?? const {};
+    for (final key in _neededBlanks.keys) {
+      _blankCtrls[key] = TextEditingController();
+    }
     if (resume != null) {
       if (resume.utr != null && resume.utr!.isNotEmpty) {
         _utrCtrl.text = resume.utr!;
@@ -198,6 +246,9 @@ class _DisputeFormPageState extends ConsumerState<DisputeFormPage> {
     _cardLast4Ctrl.dispose();
     _beneficiaryAcctCtrl.dispose();
     _beneficiaryIfscCtrl.dispose();
+    for (final c in _blankCtrls.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -510,6 +561,13 @@ separatorBuilder: (_, _) => const Divider(height: 1),
         return t.isEmpty ? null : t;
       }
 
+      // Template blanks (token -> value). Only non-empty values are kept
+      // so preview falls back to the standard fill map for the rest.
+      final templateBlanks = <String, String>{
+        for (final e in _blankCtrls.entries)
+          if (e.value.text.trim().isNotEmpty) e.key: e.value.text.trim(),
+      };
+
       // Write any edits to the inline "Your details" section back to the
       // one-time profile so every later email is pre-addressed.
       final editedProfile = _profileKey.currentState?.current;
@@ -549,6 +607,7 @@ separatorBuilder: (_, _) => const Divider(height: 1),
         cardLast4: nullifyEmpty(_cardLast4Ctrl.text),
         beneficiaryAccountNo: nullifyEmpty(_beneficiaryAcctCtrl.text),
         beneficiaryIfsc: nullifyEmpty(_beneficiaryIfscCtrl.text),
+        metadata: templateBlanks,
       );
       final repo = ref.read(disputeRepositoryProvider);
       Dispute saved;
@@ -862,6 +921,7 @@ separatorBuilder: (_, _) => const Divider(height: 1),
                     ),
                     const SizedBox(height: 12),
                     _buildInfoBanner(type),
+                    ..._buildTemplateBlanksSection(tc),
                   ],
                 ),
               ),
@@ -994,6 +1054,70 @@ separatorBuilder: (_, _) => const Divider(height: 1),
       case DisputeType.bankCharge:
         return [];
     }
+  }
+
+  /// Bottom-of-form "missing details" card listing this category's
+  /// letter-template blanks that no field above captures. Values are
+  /// persisted on Dispute.metadata and merged into Template.fill at
+  /// preview time. Hidden entirely when the category has no extra blanks.
+  List<Widget> _buildTemplateBlanksSection(AppThemeColors tc) {
+    if (_neededBlanks.isEmpty) return const [];
+    return [
+      Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: tc.surface,
+          border: Border.all(color: tc.divider),
+          borderRadius: BorderRadius.circular(AppRadii.lg),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'MISSING DETAILS FOR YOUR LETTER (OPTIONAL)',
+              style: TextStyle(
+                fontFamily: AppTypography.family,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: tc.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Used to pre-fill these fields in your complaint letter. Leave blank if not sure.',
+              style: TextStyle(
+                fontSize: 12,
+                color: tc.textTertiary,
+                height: 1.4,
+              ),
+            ),
+            for (final e in _neededBlanks.entries) ...[
+              const SizedBox(height: 12),
+              FormFieldBox(
+                label: e.value,
+                child: TextField(
+                  controller: _blankCtrls[e.key],
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: tc.textPrimary,
+                    fontFamily: AppTypography.family,
+                  ),
+                  cursorColor: tc.ctaBackground,
+                  decoration: const InputDecoration(
+                    isCollapsed: true,
+                    isDense: true,
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ];
   }
 
   Widget _buildInfoBanner(DisputeType type) {

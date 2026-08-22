@@ -173,6 +173,44 @@ class NotificationService {
     await _plugin.cancel(_weeklyDigestNotificationId);
   }
 
+  /// Draft nudge: ONE-shot closed-app reminder ~next day 10:00 local when
+  /// saved dispute drafts exist. Wired once in `main.dart`
+  /// (`_bootBackgroundServices`) at cold start — opening/resuming/submitting
+  /// a draft changes `DraftRepository.count()`, so the next cold start
+  /// naturally re-arms or cancels; no per-edit scheduling.
+  ///
+  /// Fixed id follows the 9001/9002 app-level-notification pattern:
+  /// distinct from the FNV-1a reminder-id space and the negative
+  /// instant-show id space, so it can't collide with deadline alarms.
+  static const _draftNudgeNotificationId = 9003;
+
+  Future<void> scheduleDraftNudge() async {
+    final now = tz.TZDateTime.now(tz.local);
+    final scheduled =
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, 10, 0)
+            .add(const Duration(days: 1));
+    await _plugin.zonedSchedule(
+      _draftNudgeNotificationId,
+      'Unfinished dispute?',
+      'You have a saved draft waiting. Finish filing to recover your money.',
+      scheduled,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'draft_nudge_channel',
+          'Unfinished draft reminders',
+          channelDescription: 'Reminder when a saved dispute draft is waiting',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+    );
+  }
+
+  Future<void> cancelDraftNudge() async {
+    await _plugin.cancel(_draftNudgeNotificationId);
+  }
+
   /// Task C5: fire an instant high-priority notification the moment a UTR
   /// is auto-detected from an incoming SMS. Tapping the notification opens
   /// the dispute form with the UTR / amount / sender pre-filled — the

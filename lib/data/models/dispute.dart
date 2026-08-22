@@ -82,6 +82,13 @@ class Dispute {
   final DateTime? agreementDate;
   final String? fdNumber;
 
+  /// Free-form merge values captured at creation time (e.g. template
+  /// placeholder blanks from DisputeFormPage's "missing details"
+  /// section). Keys match asset `{TOKEN}` placeholder names so
+  /// template preview / escalation mail can merge them straight into
+  /// `Template.fill`.
+  final Map<String, String> metadata;
+
   const Dispute({
     required this.id,
     this.uid = '',
@@ -122,6 +129,7 @@ class Dispute {
     this.caseNo,
     this.agreementDate,
     this.fdNumber,
+    this.metadata = const {},
   });
 
   static const Object _unset = Object();
@@ -166,6 +174,7 @@ class Dispute {
     Object? caseNo = _unset,
     Object? agreementDate = _unset,
     Object? fdNumber = _unset,
+    Map<String, String>? metadata,
   }) =>
       Dispute(
         id: id ?? this.id,
@@ -253,6 +262,7 @@ class Dispute {
         fdNumber: identical(fdNumber, _unset)
             ? this.fdNumber
             : fdNumber as String?,
+        metadata: metadata ?? this.metadata,
       );
 
   DisputeStatus reopenTarget() {
@@ -328,6 +338,7 @@ class Dispute {
         'caseNo': caseNo,
         'agreementDate': agreementDate == null ? null : toUtcIso(agreementDate!),
         'fdNumber': fdNumber,
+        'metadata': metadata,
       };
 
   factory Dispute.fromJson(Map<String, dynamic> json) => Dispute(
@@ -380,5 +391,8 @@ class Dispute {
         caseNo: json['caseNo'] as String?,
         agreementDate: parseDate(json['agreementDate'] as String?),
         fdNumber: json['fdNumber'] as String?,
+        metadata: (json['metadata'] as Map?)
+                ?.map((k, v) => MapEntry(k as String, v as String)) ??
+            const {},
       );
 }

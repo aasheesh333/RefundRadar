@@ -72,6 +72,15 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
           desc: l10n?.onboardSlide3Desc ??
               "If a bank doesn't refund within 10 days, we auto-draft a Banking Ombudsman complaint citing the exact RBI circular.",
           softColor: tc.premiumGoldSoft,
+          ctaLabel: l10n?.disputeTypeContinue ?? 'Continue',
+        ),
+        _SlideData(
+          icon: Icons.shield_rounded,
+          iconColor: tc.ctaBackground,
+          title: 'Private by design',
+          desc:
+              'All disputes, drafts and documents stay on your device. We never see your bank logins, never sell your data — and you can delete everything anytime from Settings.',
+          softColor: tc.accentSoft,
           ctaLabel: l10n?.onboardCta ?? 'Get started',
         ),
       ];
@@ -161,6 +170,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                     ),
                   ),
                   const SizedBox(height: 14),
+                  Text(
+                    'No bank passwords. Data stays on your phone.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: AppTypography.family,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: tc.textTertiary,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
                   Text(
                     l10n?.settingsNotAffiliated ??
                         'Independent tool · Not affiliated with RBI/NPCI/banks',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:refund_radar/core/providers/auth_provider.dart';
 import 'package:refund_radar/core/providers/dispute_provider.dart';
 import 'package:refund_radar/core/providers/premium_provider.dart';
@@ -11,11 +12,13 @@ import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/data/models/dispute.dart';
 import 'package:refund_radar/data/models/template.dart';
 import 'package:refund_radar/data/models/template_fill.dart';
+import 'package:refund_radar/data/models/user_profile.dart';
 import 'package:refund_radar/core/providers/user_profile_provider.dart';
 import 'package:refund_radar/data/repositories/firestore_dispute_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/data/repositories/template_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
+import 'package:refund_radar/shared/widgets/info_banner.dart';
 
 /// Full-screen Template Preview. Wave 4a.
 ///
@@ -146,7 +149,7 @@ class TemplatePreviewPage extends ConsumerWidget {
   ) {
     final locale = Localizations.localeOf(context).languageCode;
     final profile = ref.watch(userProfileProvider);
-    final fillMap = fillValuesForDispute(d, profile: profile);
+    final fillMap = _fillValuesWithMetadata(d, profile);
     final rawBody = t.bodyFor(locale);
     final filledBody = Template.fill(rawBody, fillMap);
 
@@ -165,6 +168,7 @@ class TemplatePreviewPage extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
           child: ListView(
             children: [
+              _DocsAlertBanner(template: t),
               _previewHeader(context, t, locked, tc, l10n),
               const SizedBox(height: 18),
               _subjectCard(subject, tc, l10n),
@@ -420,8 +424,8 @@ class TemplatePreviewPage extends ConsumerWidget {
             onPressed: () async {
               final locale =
                   Localizations.localeOf(context).languageCode;
-              final fillMap =
-                  fillValuesForDispute(d, profile: ref.read(userProfileProvider));
+              final fillMap = _fillValuesWithMetadata(
+                  d, ref.read(userProfileProvider));
               final filled =
                   Template.fill(t.bodyFor(locale), fillMap);
               final clipboardText =
@@ -532,6 +536,131 @@ class TemplatePreviewPage extends ConsumerWidget {
   String _derivedSubject(Dispute d) {
     final id = d.txnId.isEmpty ? d.id : d.txnId;
     return 'Escalation — UTR $id';
+  }
+}
+
+/// Standard fill map with creation-time template blanks layered on top.
+/// `Dispute.metadata` (captured by DisputeFormPage's "missing details"
+/// section) is keyed by asset `{TOKEN}` names; non-empty values override
+/// the defaults so those placeholders auto-fill in the preview instead of
+/// rendering blank.
+Map<String, String> _fillValuesWithMetadata(Dispute d, UserProfile? profile) {
+  final m = fillValuesForDispute(d, profile: profile);
+  d.metadata.forEach((k, v) {
+    if (v.trim().isNotEmpty) m[k] = v.trim();
+  });
+  return m;
+}
+
+/// Required enclosures per template category (docs-needed alert).
+const Map<String, List<String>> _kEnclosuresByCategory = {
+  'UPI / IMPS / ATM': [
+    'Screenshot of the failed / stuck payment screen',
+    'Bank statement row showing the debit',
+    'Payment SMS with the UTR / RRN',
+  ],
+  'FASTag': [
+    'FASTag statement showing the double debit',
+    'Wallet recharge history screenshot',
+    'SMS alerts for both deductions',
+  ],
+  'Bank charges': [
+    'Charge SMS or notification',
+    'Account statement row highlighting the levy',
+  ],
+  'Wrong transfer': [
+    'Bank statement row showing the debit',
+    'Payment success screenshot from your UPI app',
+  ],
+};
+
+const List<String> _kDefaultEnclosures = [
+  'Copy of your earlier complaint and its reply',
+  'Statement / proof supporting your claim',
+];
+
+/// Dismissible "attach these before sending" alert shown at the top of
+/// the preview. Dismissal is persisted per template id so the user only
+/// sees it once per template.
+class _DocsAlertBanner extends StatefulWidget {
+  final Template template;
+  const _DocsAlertBanner({required this.template});
+
+  @override
+  State<_DocsAlertBanner> createState() => _DocsAlertBannerState();
+}
+
+class _DocsAlertBannerState extends State<_DocsAlertBanner> {
+  static const _dismissedKeyPrefix = 'docs_alert_dismissed_';
+  bool _hidden = true; // hidden until prefs resolve to avoid flicker
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDismissed();
+  }
+
+  Future<void> _loadDismissed() async {
+    try {
+      final sp = await SharedPreferences.getInstance();
+      if (!mounted) return;
+      setState(() => _hidden =
+          sp.getBool('$_dismissedKeyPrefix${widget.template.id}') ?? false);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _hidden = false);
+    }
+  }
+
+  Future<void> _dismiss() async {
+    setState(() => _hidden = true);
+    try {
+      final sp = await SharedPreferences.getInstance();
+      await sp.setBool('$_dismissedKeyPrefix${widget.template.id}', true);
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hidden) return const SizedBox.shrink();
+    final items =
+        _kEnclosuresByCategory[widget.template.category] ??
+            _kDefaultEnclosures;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: InfoBanner(
+              kind: InfoKind.warn,
+              message: TextSpan(
+                children: [
+                  const TextSpan(
+                    text: 'Attach these before sending:\n',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  for (var i = 0; i < items.length; i++) ...[
+                    TextSpan(text: '\u2022 ${items[i]}'),
+                    if (i != items.length - 1)
+                      const TextSpan(text: '\n'),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: _dismiss,
+            behavior: HitTestBehavior.opaque,
+            child: const Padding(
+              padding: EdgeInsets.only(left: 8, top: 10, bottom: 10),
+              child: Icon(Icons.close,
+                  size: 16, color: AppColors.premiumGold),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
