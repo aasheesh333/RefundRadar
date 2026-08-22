@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:workmanager/workmanager.dart';
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/providers/fcm_reevaluater.dart';
 import 'package:refund_radar/core/providers/utr_detection_provider.dart';
@@ -20,6 +21,7 @@ import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/notification_service.dart';
 import 'package:refund_radar/services/onesignal_service.dart';
+import 'package:refund_radar/services/reminder_worker.dart';
 import 'package:refund_radar/shared/utils/working_day_calendar.dart';
 import 'package:refund_radar/firebase_options.dart';
 
@@ -205,6 +207,15 @@ void main() {
   //    not handled by Future.catchError goes here first.
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
+    // WorkManager init: registers the headless-isolate dispatcher so
+    // background reminder tasks (deadlines, draft nudge, digests) can run
+    // with the app process dead. Must happen before any task registration;
+    // failures are non-fatal (scheduling calls will just throw + be caught).
+    try {
+      await Workmanager().initialize(callbackDispatcher);
+    } catch (e, st) {
+      debugPrint('Workmanager.initialize failed (non-fatal): $e\n$st');
+    }
     // Firebase init first — it's a local config-parse (no network on the
     // initialise call itself) and the Crashlytics wiring here must be in
     // place before any later error. Bounded by a safety timeout.

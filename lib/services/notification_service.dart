@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -5,8 +7,19 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:workmanager/workmanager.dart';
+
+import 'reminder_worker.dart';
 
 const _kPrefMigratedFnv1aIds = 'migrated_fnv1a_ids';
+
+/// One-time migration: pre-WorkManager builds scheduled alarms via
+/// `zonedSchedule` (AlarmManager). Those pending OS alarms can't be
+/// individually cancelled by unique name, so on the first launch after the
+/// WorkManager switch we wipe the entire FLN alarm queue exactly once.
+/// [repairScheduledNotifications] then re-arms everything as WorkManager
+/// tasks on this same cold start. Guarded by a SharedPreferences bool.
+const _kPrefMigratedToWorkManager = 'migrated_workmanager_v1';
 
 class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
@@ -55,19 +68,28 @@ class NotificationService {
         ?.requestNotificationsPermission();
   }
 
-  static int scheduledIdFor(String reminderId) {
-    var hash = 0x811c9dc5;
-    for (final byte in reminderId.codeUnits) {
-      hash ^= byte;
-      hash = (hash * 0x01000193) & 0xFFFFFFFF;
-    }
-    return hash & 0x7FFFFFFF;
-  }
+  /// Stable positive id for a reminder — shared with the worker isolate via
+  /// [wmNotificationIdFor] so ids match across process boundaries. Kept as a
+  /// delegating static because legacy call sites reference it directly.
+  static int scheduledIdFor(String reminderId) =>
+      wmNotificationIdFor(reminderId);
 
   static int cancelIdFor(String reminderId) {
     return scheduledIdFor(reminderId);
   }
 
+  /// Schedule a dispute-deadline reminder for when the app may be fully
+  /// closed.
+  ///
+  /// Android: registers a WorkManager one-off task with `initialDelay`
+  /// = time until [fireAt]. The OS persists the task across reboots and runs
+  /// it under Doze without any exact-alarm permission; the worker isolate
+  /// shows the notification (see reminder_worker.dart). Re-registering the
+  /// same reminder replaces its pending task instead of duplicating.
+  ///
+  /// iOS keeps the AlarmManager-style `zonedSchedule` path: iOS local
+  /// notifications are already reliable and BGTaskScheduler is too throttled
+  /// to guarantee delivery windows.
   Future<int> scheduleDeadlineReminder({
     required String reminderId,
     required String title,
@@ -75,7 +97,19 @@ class NotificationService {
     required DateTime fireAt,
   }) async {
     final id = scheduledIdFor(reminderId);
-    final androidDetails = AndroidNotificationDetails(
+    if (!Platform.isIOS) {
+      var delay = fireAt.difference(DateTime.now());
+      if (delay < Duration.zero) delay = Duration.zero;
+      await Workmanager().registerOneOffTask(
+        wmDeadlineUniqueName(reminderId),
+        kWmDeadlineTask,
+        inputData: {'notifId': id, 'title': title, 'body': body},
+        initialDelay: delay,
+        existingWorkPolicy: ExistingWorkPolicy.replace,
+      );
+      return id;
+    }
+    const androidDetails = AndroidNotificationDetails(
       'refund_radar_deadlines',
       'Dispute deadlines',
       importance: Importance.high,
@@ -93,7 +127,14 @@ class NotificationService {
     return id;
   }
 
+  /// Cancel a deadline reminder's WorkManager task (Android) plus any legacy
+  /// pending FLN alarm with the same numeric id (pre-migration installs).
   Future<void> cancelForReminder(String reminderId) async {
+    try {
+      await Workmanager().cancelByUniqueName(wmDeadlineUniqueName(reminderId));
+    } catch (e) {
+      debugPrint('cancelByUniqueName($reminderId) failed: $e');
+    }
     final id = cancelIdFor(reminderId);
     await _plugin.cancel(id);
   }
@@ -105,12 +146,33 @@ class NotificationService {
   }
 
   Future<void> cancelAll() async {
+    try {
+      await Workmanager().cancelAll();
+    } catch (e) {
+      debugPrint('Workmanager.cancelAll failed: $e');
+    }
     await _plugin.cancelAll();
   }
 
   static const _dailyCompNotificationId = 9001;
 
+  /// Daily compensation digest at ~09:00 local. Implemented as a self-chaining
+  /// WorkManager one-off (the worker reschedules tomorrow's task after firing)
+  /// so the wall-clock anchor survives without periodic-drift, while still
+  /// working when the app process is dead.
   Future<void> scheduleDailyComp() async {
+    if (!Platform.isIOS) {
+      final now = DateTime.now();
+      var next = DateTime(now.year, now.month, now.day, 9, 0);
+      if (!next.isAfter(now)) next = next.add(const Duration(days: 1));
+      await Workmanager().registerOneOffTask(
+        wmDailyCompUniqueName,
+        kWmDailyCompTask,
+        initialDelay: next.difference(now),
+        existingWorkPolicy: ExistingWorkPolicy.replace,
+      );
+      return;
+    }
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, 9, 0);
     if (scheduled.isBefore(now)) {
@@ -136,12 +198,32 @@ class NotificationService {
   }
 
   Future<void> cancelDailyComp() async {
+    if (!Platform.isIOS) {
+      await Workmanager().cancelByUniqueName(wmDailyCompUniqueName);
+      return;
+    }
     await _plugin.cancel(_dailyCompNotificationId);
   }
 
   static const _weeklyDigestNotificationId = 9002;
 
+  /// Weekly dispute digest, Sunday ~09:00 local. Same self-chaining one-off
+  /// pattern as [scheduleDailyComp].
   Future<void> scheduleWeeklyDigest() async {
+    if (!Platform.isIOS) {
+      final now = DateTime.now();
+      var next = DateTime(now.year, now.month, now.day, 9, 0);
+      while (next.weekday != DateTime.sunday || !next.isAfter(now)) {
+        next = next.add(const Duration(hours: 1));
+      }
+      await Workmanager().registerOneOffTask(
+        wmWeeklyDigestUniqueName,
+        kWmWeeklyDigestTask,
+        initialDelay: next.difference(now),
+        existingWorkPolicy: ExistingWorkPolicy.replace,
+      );
+      return;
+    }
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, 9, 0);
     while (scheduled.weekday != DateTime.sunday) {
@@ -170,6 +252,10 @@ class NotificationService {
   }
 
   Future<void> cancelWeeklyDigest() async {
+    if (!Platform.isIOS) {
+      await Workmanager().cancelByUniqueName(wmWeeklyDigestUniqueName);
+      return;
+    }
     await _plugin.cancel(_weeklyDigestNotificationId);
   }
 
@@ -177,7 +263,9 @@ class NotificationService {
   /// saved dispute drafts exist. Wired once in `main.dart`
   /// (`_bootBackgroundServices`) at cold start — opening/resuming/submitting
   /// a draft changes `DraftRepository.count()`, so the next cold start
-  /// naturally re-arms or cancels; no per-edit scheduling.
+  /// naturally re-arms or cancels; no per-edit scheduling. Delivered via
+  /// WorkManager on Android (works with the app process dead); no chaining
+  /// — every cold start re-derives from draft count.
   ///
   /// Fixed id follows the 9001/9002 app-level-notification pattern:
   /// distinct from the FNV-1a reminder-id space and the negative
@@ -185,6 +273,19 @@ class NotificationService {
   static const _draftNudgeNotificationId = 9003;
 
   Future<void> scheduleDraftNudge() async {
+    if (!Platform.isIOS) {
+      final now = DateTime.now();
+      var next = DateTime(now.year, now.month, now.day, 10, 0)
+          .add(const Duration(days: 1));
+      final delay = next.difference(now);
+      await Workmanager().registerOneOffTask(
+        wmDraftNudgeUniqueName,
+        kWmDraftNudgeTask,
+        initialDelay: delay < Duration.zero ? Duration.zero : delay,
+        existingWorkPolicy: ExistingWorkPolicy.replace,
+      );
+      return;
+    }
     final now = tz.TZDateTime.now(tz.local);
     final scheduled =
         tz.TZDateTime(tz.local, now.year, now.month, now.day, 10, 0)
@@ -208,6 +309,10 @@ class NotificationService {
   }
 
   Future<void> cancelDraftNudge() async {
+    if (!Platform.isIOS) {
+      await Workmanager().cancelByUniqueName(wmDraftNudgeUniqueName);
+      return;
+    }
     await _plugin.cancel(_draftNudgeNotificationId);
   }
 
@@ -290,21 +395,33 @@ class NotificationService {
     );
   }
 
-  /// One-time upgrade guard: previous builds keyed scheduled-notification ids
-  /// with `reminder.id.hashCode & 0x7FFFFFFF`, which differs from the current
-  /// FNV-1a derivation used by [cancelForReminder] / [cancelForDispute]. On the
-  /// first launch after the id change, those orphaned OS alarms can't be
-  /// individually cancelled, so before [repairScheduledNotifications] re-arms
-  /// the new stable ids we wipe the entire alarm queue exactly once. Guarded
-  /// by a SharedPreferences bool so it runs only once per upgrade boundary and
-  /// never blocks app start on failure.
+  /// One-time upgrade guards, run once per boundary:
+  ///
+  /// 1. [_kPrefMigratedFnv1aIds] — previous builds keyed scheduled ids with
+  ///    `reminder.id.hashCode & 0x7FFFFFFF`, which differs from the current
+  ///    FNV-1a derivation. Orphaned OS alarms can't be individually
+  ///    cancelled → wipe the alarm queue once before re-arm.
+  /// 2. [_kPrefMigratedToWorkManager] — the switch from AlarmManager
+  ///    (`zonedSchedule`) to WorkManager tasks. Pending legacy alarms are
+  ///    wiped once; [repairScheduledNotifications] re-arms them as
+  ///    WorkManager tasks on this same cold start, so nothing is lost.
   Future<void> migrateNotificationIdsIfNeeded() async {
     try {
       final sp = await SharedPreferences.getInstance();
-      final migrated = sp.getBool(_kPrefMigratedFnv1aIds) ?? false;
-      if (migrated) return;
+      final migratedFnv = sp.getBool(_kPrefMigratedFnv1aIds) ?? false;
+      final migratedWm = sp.getBool(_kPrefMigratedToWorkManager) ?? false;
+      if (migratedFnv && migratedWm) return;
       await _plugin.cancelAll();
+      if (!migratedWm && !Platform.isIOS) {
+        // Legacy AlarmManager tasks live outside WorkManager's namespace —
+        // cancelAll() on WorkManager only clears WM work, so also drop any
+        // stale WM entries from interrupted upgrades.
+        try {
+          await Workmanager().cancelAll();
+        } catch (_) {}
+      }
       await sp.setBool(_kPrefMigratedFnv1aIds, true);
+      await sp.setBool(_kPrefMigratedToWorkManager, true);
     } catch (e) {
       debugPrint('migrateNotificationIdsIfNeeded failed: $e');
     }
