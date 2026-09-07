@@ -22,9 +22,10 @@ void main() {
       expect(uri.toString(), isNot(contains('+')));
     });
 
-    test('null values are handled without crashing', () {
+    test('null values produce a bare mailto with no trailing ?', () {
       final uri = EmailUtil.build('test@example.com', subject: null, body: null);
-      expect(uri.toString(), equals('mailto:test@example.com?'));
+      // RFC 6068: no query params → no '?'. A trailing bare '?' is malformed.
+      expect(uri.toString(), equals('mailto:test@example.com'));
     });
 
     test('empty strings do not add parameters', () {
