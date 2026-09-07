@@ -66,7 +66,19 @@ class AiLetterService {
   static const String _lastTsKey = 'ai_letter_last_ts';
   static const String adGateFirstDoneKey = 'ai_letter_first_ad_done';
 
+  /// Model to call. Overridable at build time so a model retirement only
+  /// needs a new build (or Remote-Config-style swap) instead of a code edit.
+  static const String _model =
+      String.fromEnvironment('GEMINI_MODEL', defaultValue: 'gemini-3.6-flash');
+
   bool get isAvailable => apiKey.isNotEmpty;
+
+  /// In-flight guard: prevents concurrent generate() calls (double-tap on
+  /// the Generate button) from BOTH passing the quota() check before the
+  /// first call writes its count — the race that let the daily limit
+  /// be exceeded. generate() awaits this before proceeding; the flag is
+  /// cleared on every exit path.
+  bool _generating = false;
 
   Future<AiQuota> quota() async {
     final prefs = await SharedPreferences.getInstance();
@@ -98,70 +110,76 @@ class AiLetterService {
     required String merchantOrBankName,
   }) async {
     if (!isAvailable) return const Unavailable();
+    if (_generating) return const Failed('A generation is already running.');
+    _generating = true;
 
-    final q = await quota();
-    if (!q.canGenerate) {
-      return RateLimited(Duration(seconds: q.secondsUntilNextAllowed));
-    }
-
-    final uri = Uri.parse(
-      'https://generativelanguage.googleapis.com/v1beta/models/'
-      'gemini-3.6-flash:generateContent?key=$apiKey',
-    );
-    final body = jsonEncode({
-      'contents': [
-        {
-          'parts': [
-            {'text': _buildPrompt(dispute, merchantOrBankName)},
-          ],
-        },
-      ],
-      'generationConfig': {'temperature': 0.4},
-    });
-
-    String letter;
     try {
-      final res = await http
-          .post(
-            uri,
-            headers: const {
-              'Content-Type': 'application/json',
-              // Required by the Android-apps key restriction set in Google
-              // Cloud console (package + release SHA-1 of our signing key).
-              'X-Android-Package': 'com.dhanuk.refundradar',
-              'X-Android-Cert':
-                  '65E76FB3510E9B3A788CCADFACB8A68F40EC8AFF',
-            },
-            body: body,
-          )
-          .timeout(const Duration(seconds: 30));
-      if (res.statusCode != 200) {
-        return Failed('Gemini API error ${res.statusCode}');
+      final q = await quota();
+      if (!q.canGenerate) {
+        return RateLimited(Duration(seconds: q.secondsUntilNextAllowed));
       }
-      final json = jsonDecode(res.body) as Map<String, dynamic>;
-      final candidates = json['candidates'] as List<dynamic>?;
-      final content =
-          candidates?.firstOrNull?['content'] as Map<String, dynamic>?;
-      final parts = content?['parts'] as List<dynamic>?;
-      letter = (parts?.firstOrNull?['text'] as String?)?.trim() ?? '';
-      if (letter.isEmpty) return const Failed('Empty response from Gemini');
-    } catch (e) {
-      debugPrint('AiLetterService: generate failed: $e');
-      return const Failed('Could not reach the AI service. Try again later.');
+
+      final uri = Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models/'
+        '$_model:generateContent?key=$apiKey',
+      );
+      final body = jsonEncode({
+        'contents': [
+          {
+            'parts': [
+              {'text': _buildPrompt(dispute, merchantOrBankName)},
+            ],
+          },
+        ],
+        'generationConfig': {'temperature': 0.4},
+      });
+
+      String letter;
+      try {
+        final res = await http
+            .post(
+              uri,
+              headers: const {
+                'Content-Type': 'application/json',
+                // Required by the Android-apps key restriction set in Google
+                // Cloud console (package + release SHA-1 of our signing key).
+                'X-Android-Package': 'com.dhanuk.refundradar',
+                'X-Android-Cert':
+                    '65E76FB3510E9B3A788CCADFACB8A68F40EC8AFF',
+              },
+              body: body,
+            )
+            .timeout(const Duration(seconds: 30));
+        if (res.statusCode != 200) {
+          return Failed('Gemini API error ${res.statusCode}');
+        }
+        final json = jsonDecode(res.body) as Map<String, dynamic>;
+        final candidates = json['candidates'] as List<dynamic>?;
+        final content =
+            candidates?.firstOrNull?['content'] as Map<String, dynamic>?;
+        final parts = content?['parts'] as List<dynamic>?;
+        letter = (parts?.firstOrNull?['text'] as String?)?.trim() ?? '';
+        if (letter.isEmpty) return const Failed('Empty response from Gemini');
+      } catch (e) {
+        debugPrint('AiLetterService: generate failed: $e');
+        return const Failed('Could not reach the AI service. Try again later.');
+      }
+
+      // Count only successful generations towards quotas.
+      final prefs = await SharedPreferences.getInstance();
+      final now = DateTime.now();
+      final today = _dayString(now);
+      final stored = prefs.getString(_dayKey);
+      final count = (stored != null && stored.startsWith('$today:'))
+          ? (int.tryParse(stored.split(':').last) ?? 0)
+          : 0;
+      await prefs.setString(_dayKey, '$today:${count + 1}');
+      await prefs.setInt(_lastTsKey, now.millisecondsSinceEpoch);
+
+      return Ok(letter);
+    } finally {
+      _generating = false;
     }
-
-    // Count only successful generations towards quotas.
-    final prefs = await SharedPreferences.getInstance();
-    final now = DateTime.now();
-    final today = _dayString(now);
-    final stored = prefs.getString(_dayKey);
-    final count = (stored != null && stored.startsWith('$today:'))
-        ? (int.tryParse(stored.split(':').last) ?? 0)
-        : 0;
-    await prefs.setString(_dayKey, '$today:${count + 1}');
-    await prefs.setInt(_lastTsKey, now.millisecondsSinceEpoch);
-
-    return Ok(letter);
   }
 
   String _dayString(DateTime d) =>
