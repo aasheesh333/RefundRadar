@@ -83,8 +83,17 @@ android {
         release {
             if (hasKeystore) {
                 signingConfig = signingConfigs.getByName("release")
+            } else if (System.getenv("REQUIRE_RELEASE_SIGNING") == "1") {
+                // CI / Play Store builds must NEVER silently fall back to a
+                // debug-signed artifact. Set REQUIRE_RELEASE_SIGNING=1 in CI
+                // so a missing keystore fails the build instead of shipping
+                // an un-uploadable APK/AAB.
+                throw GradleException(
+                    "Release build requires keystore.jks + KEYSTORE_PASSWORD/" +
+                    "KEY_ALIAS/KEY_PASSWORD env vars (REQUIRE_RELEASE_SIGNING=1)."
+                )
             } else {
-                // Fallback: sign with debug keys (developer machines only).
+                // Local dev convenience: debug-signed release build.
                 signingConfig = signingConfigs.getByName("debug")
             }
             // Strip native debug symbols and enable R8.
