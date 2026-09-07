@@ -49,6 +49,10 @@ class EmailUtil {
     if (body != null) parts.add('body=${enc(body)}');
     if (cc != null) parts.add('cc=${enc(cc)}');
 
+    // Only append '?params' when at least one part exists — a bare
+    // 'mailto:user@host?' is malformed per RFC 6068 and some clients
+    // reject it.
+    if (parts.isEmpty) return Uri.parse('mailto:$email');
     return Uri.parse('mailto:$email?${parts.join('&')}');
   }
 }
