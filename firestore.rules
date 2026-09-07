@@ -12,12 +12,18 @@ service cloud.firestore {
       return isAuth() && request.auth.uid == uid;
     }
 
-    // Hard cap on a single document's write size (1 MiB is the Firestore
-    // server limit; we enforce a tighter 512 KiB here so a runaway client
-    // can't balloon a doc — defensive against bugs, not a real attack
-    // surface since each user only writes their own data).
+    // Guard against runaway client writes. NOTE: in Firestore rules,
+    // `data.size()` returns the NUMBER OF FIELDS in the map, not bytes —
+    // the old `< 524288` check was effectively a no-op (500K fields far
+    // exceeds any legit doc). We now cap the field count at a generous
+    // 80 (current Dispute docs use ~45 fields) and clamp the two known
+    // unbounded string fields explicitly. Firestore rules cannot iterate
+    // map values, so string caps are per-field; the 1 MiB server limit
+    // remains the final backstop.
     function isReasonableSize() {
-      return request.resource.data.size() < 524288;
+      return request.resource.data.size() <= 80
+        && request.resource.data.get('description', '').size() <= 5000
+        && request.resource.data.get('notes', '').size() <= 5000;
     }
 
     // users/{uid}
