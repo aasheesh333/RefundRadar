@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +25,7 @@ import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/features/profile/profile_form.dart';
 import 'package:refund_radar/features/templates/template_library_page.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
+import 'package:refund_radar/services/ads_service.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
@@ -1215,6 +1218,8 @@ class _StickyFooter extends StatelessWidget {
                     // Best-effort.
                   }
                   if (ok && context.mounted) {
+                    final ads = mq.read(adsServiceProvider);
+                    unawaited(ads.showInterstitial());
                     EscalatePostSendDialog.show(
                         context, dispute, isPremiumUser);
                   }

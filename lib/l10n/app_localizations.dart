@@ -1081,11 +1081,11 @@ class AppLocalizations {
     },
     'formClaimAmount': {'en': 'Claim {amount}', 'hi': 'दावा {amount}'},
     'formClaimAmountCompo': {
-      'en': 'Claim {amount} + compo',
+      'en': 'Claim {amount} + comp.',
       'hi': 'दावा {amount} + मुआवजा',
     },
     'formClaimAmountCompoDue': {
-      'en': 'Claim {amount} + {comp} compo',
+      'en': 'Claim {amount} + {comp} comp.',
       'hi': 'दावा {amount} + {comp} मुआवजा',
     },
     'formWrongUpiNote': {

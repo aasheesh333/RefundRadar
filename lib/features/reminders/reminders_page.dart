@@ -9,6 +9,7 @@ import 'package:refund_radar/data/extensions/dispute_type_display.dart';
 import 'package:refund_radar/data/models/reminder.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
+import 'package:refund_radar/shared/widgets/ad_banner.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/utils/date_time_ext.dart';
@@ -24,6 +25,7 @@ class RemindersPage extends ConsumerWidget {
     final uidAsync = ref.watch(userIdProvider);
     return Scaffold(
       backgroundColor: tc.bg,
+      bottomNavigationBar: const SafeArea(child: AdBanner()),
       body: SafeArea(
         child: uidAsync.when(
           loading: () => const SkeletonList(itemCount: 4, itemHeight: 84),

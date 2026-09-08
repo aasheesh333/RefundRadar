@@ -16,6 +16,7 @@ import 'package:refund_radar/features/dispute_create/create_dispute_auth_guard.d
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/shared/widgets/ad_banner.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/core/utils/url_launcher_helper.dart';
@@ -161,6 +162,7 @@ class _WizardPageState extends ConsumerState<WizardPage> {
     return Scaffold(
       backgroundColor: tc.bg,
       resizeToAvoidBottomInset: true,
+      bottomNavigationBar: const SafeArea(child: AdBanner()),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -177,7 +177,7 @@ class _Footer extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             SizedBox(
-              height: 46,
+              height: 48,
               child: FilledButton(
                 onPressed: selected == null ? null : onContinue,
                 style: FilledButton.styleFrom(
@@ -234,6 +234,7 @@ class _Row extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadii.lg),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
+          constraints: const BoxConstraints(minHeight: 52),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: tc.surface,

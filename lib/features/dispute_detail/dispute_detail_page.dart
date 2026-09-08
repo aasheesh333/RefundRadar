@@ -20,6 +20,7 @@ import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/shared/utils/error_mapper.dart';
 import 'package:refund_radar/shared/widgets/activity_log.dart';
+import 'package:refund_radar/shared/widgets/ad_banner.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/rbi_timeline.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
@@ -197,6 +198,7 @@ class _DisputeBodyState extends ConsumerState<_DisputeBody> {
             ],
           ),
         ),
+        const SafeArea(top: false, child: AdBanner()),
         _StickyFooter(
           dispute: dispute,
           hoursLeft: hoursLeft,

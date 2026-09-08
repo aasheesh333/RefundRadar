@@ -21,6 +21,7 @@ import 'package:refund_radar/data/repositories/draft_repository.dart';
 import 'package:refund_radar/data/repositories/reminder_repository.dart';
 import 'package:refund_radar/data/repositories/rules_engine_repository.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
+import 'package:refund_radar/services/ads_service.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/services/compensation_calculator.dart';
 import 'package:refund_radar/services/sms_inbox_service.dart';
@@ -674,6 +675,7 @@ separatorBuilder: (_, _) => const Divider(height: 1),
       } catch (e) {
         debugPrint('best-effort step failed: $e');
       }
+      unawaited(ref.read(adsServiceProvider).showInterstitial());
       if (mounted) context.go(AppRoutes.home);
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -699,7 +701,7 @@ separatorBuilder: (_, _) => const Divider(height: 1),
               _PageHeader(type: type, tc: tc, l10n: l10n),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
                   children: [
                     Container(
                       padding: const EdgeInsets.all(14),
@@ -1228,7 +1230,7 @@ separatorBuilder: (_, _) => const Divider(height: 1),
       return l10n?.formClaimAmount(amtStr) ?? 'Claim $amtStr';
     }
     if (_date == null) {
-      return l10n?.formClaimAmountCompo(amtStr) ?? 'Claim $amtStr + compo';
+      return l10n?.formClaimAmountCompo(amtStr) ?? 'Claim $amtStr + comp.';
     }
     final comp = CompensationCalculator.compute(
       Dispute(
@@ -1245,8 +1247,8 @@ separatorBuilder: (_, _) => const Divider(height: 1),
                 amtStr,
                 CompensationCalculator.formatIndian(comp.compensationDue),
               ) ??
-            'Claim $amtStr + ${CompensationCalculator.formatIndian(comp.compensationDue).toString()} compo')
-        : (l10n?.formClaimAmountCompo(amtStr) ?? 'Claim $amtStr + compo');
+            'Claim $amtStr + ${CompensationCalculator.formatIndian(comp.compensationDue).toString()} comp.')
+        : (l10n?.formClaimAmountCompo(amtStr) ?? 'Claim $amtStr + comp.');
   }
 
   Future<void> _pickBank(BuildContext context, RulesEngine rules) async {

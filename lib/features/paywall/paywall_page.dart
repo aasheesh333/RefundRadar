@@ -7,6 +7,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:refund_radar/core/providers/app_state_provider.dart';
 import 'package:refund_radar/core/theme/app_theme_colors.dart';
 import 'package:refund_radar/core/theme/app_tokens.dart';
+import 'package:refund_radar/core/utils/url_launcher_helper.dart';
 import 'package:refund_radar/l10n/app_localizations.dart';
 import 'package:refund_radar/services/analytics_service.dart';
 import 'package:refund_radar/services/revenue_cat_service.dart';
@@ -778,6 +779,41 @@ class _RestoreRow extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+              onTap: () => launchExternalUrl('https://refundradar.app/terms'),
+              child: Text(
+                'Terms of Use',
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 11,
+                  color: tc.textTertiary,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+            Text(
+              '  ·  ',
+              style: TextStyle(fontSize: 11, color: tc.textTertiary),
+            ),
+            GestureDetector(
+              onTap: () => launchExternalUrl('https://refundradar.app/privacy'),
+              child: Text(
+                'Privacy Policy',
+                style: TextStyle(
+                  fontFamily: AppTypography.family,
+                  fontSize: 11,
+                  color: tc.textTertiary,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
       ],
     );
   }

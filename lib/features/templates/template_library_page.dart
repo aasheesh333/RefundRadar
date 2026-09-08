@@ -18,6 +18,7 @@ import '../../data/repositories/template_repository.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/filter_pills.dart';
 import '../../shared/widgets/status_pill.dart';
+import 'package:refund_radar/shared/widgets/ad_banner.dart';
 import 'package:refund_radar/shared/widgets/branded_error_banner.dart';
 import 'package:refund_radar/shared/widgets/skeleton.dart';
 import 'package:refund_radar/shared/utils/indian_number_formatter.dart';
@@ -70,6 +71,7 @@ class _TemplateLibraryPageState extends ConsumerState<TemplateLibraryPage> {
     final disputes = disputesAsync?.asData?.value ?? const <Dispute>[];
     return Scaffold(
       backgroundColor: tc.bg,
+      bottomNavigationBar: const SafeArea(child: AdBanner()),
       body: SafeArea(
         child: templatesAsync.when(
           data: (templates) => rulesAsync.when(

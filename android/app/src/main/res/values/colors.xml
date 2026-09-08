@@ -4,4 +4,6 @@
          pre-Flutter launch frame + NormalTheme window background never
          flash white/system-default before the Flutter UI draws. -->
     <color name="app_bg">#F5F5F5</color>
+    <!-- Launcher adaptive-icon background — Patang kite sky blue. -->
+    <color name="ic_launcher_background">#A9D7F6</color>
 </resources>
