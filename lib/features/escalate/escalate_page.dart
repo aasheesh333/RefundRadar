@@ -1218,7 +1218,9 @@ class _StickyFooter extends StatelessWidget {
                     // Best-effort.
                   }
                   if (ok && context.mounted) {
-                    final ads = mq.read(adsServiceProvider);
+                    // ignore: use_build_context_synchronously
+                    final ads = ProviderScope.containerOf(context)
+                        .read(adsServiceProvider);
                     unawaited(ads.showInterstitial());
                     EscalatePostSendDialog.show(
                         context, dispute, isPremiumUser);
